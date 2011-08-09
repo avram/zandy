@@ -3,6 +3,10 @@ package org.zotero.client;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.zotero.client.data.Database;
+import org.zotero.client.data.Item;
+import org.zotero.client.task.ZoteroAPITask;
+
 import oauth.signpost.OAuthProvider;
 import oauth.signpost.basic.DefaultOAuthProvider;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
@@ -13,6 +17,7 @@ import oauth.signpost.exception.OAuthNotAuthorizedException;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -39,6 +44,28 @@ public class ZoteroActivity extends Activity {
 				startOAuth();
 			}
 		});
+
+        Button makeRequest = (Button)findViewById(R.id.buttonMakeRequest);
+        makeRequest.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				EditText keyBox = (EditText)findViewById(R.id.editText1);
+				String key = keyBox.getText().toString();
+				
+				EditText requestBox = (EditText)findViewById(R.id.editRequest);
+				String request = requestBox.getText().toString();
+				
+				if (request == null || request.length() == 0) {
+					new ZoteroAPITask(key).execute("/users/5770/items/top");
+				} else {
+					new ZoteroAPITask(key).execute(request);	
+				}
+			}
+		});
+        
+        // Let items in on the fun
+        Item.db = new Database(getBaseContext());
+        XMLResponseParser.db = Item.db;
         
         updateBoxes();
     }
@@ -46,13 +73,13 @@ public class ZoteroActivity extends Activity {
     /** Makes the OAuth call  */
     protected void startOAuth() {
     	try {
-    		this.httpOAuthConsumer = new CommonsHttpOAuthConsumer(OAuthCredentials.CONSUMERKEY,
-    													OAuthCredentials.CONSUMERSECRET);
-    		this.httpOAuthProvider = new DefaultOAuthProvider("https://www.zotero.org/oauth/request",
-    			"https://www.zotero.org/oauth/access", "https://www.zotero.org/oauth/authorize");
+    		this.httpOAuthConsumer = new CommonsHttpOAuthConsumer(ServerCredentials.CONSUMERKEY,
+    													ServerCredentials.CONSUMERSECRET);
+    		this.httpOAuthProvider = new DefaultOAuthProvider(ServerCredentials.OAUTHREQUEST,
+    			ServerCredentials.OAUTHACCESS, ServerCredentials.OAUTHAUTHORIZE);
     	
     		String authUrl;
-    		authUrl = httpOAuthProvider.retrieveRequestToken(httpOAuthConsumer, OAuthCredentials.CALLBACKURL);
+    		authUrl = httpOAuthProvider.retrieveRequestToken(httpOAuthConsumer, ServerCredentials.CALLBACKURL);
     		startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl)));
     	} catch (OAuthMessageSignerException e) {
     		Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
@@ -109,6 +136,7 @@ public class ZoteroActivity extends Activity {
 				
 				// Show this in the UI boxes
 				updateBoxes();
+							
 			} catch (OAuthMessageSignerException e) {
 				Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
 			} catch (OAuthNotAuthorizedException e) {
