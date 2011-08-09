@@ -1,0 +1,11 @@
+Zotero for Android
+by Avram Lyon (ajlyon@gmail.com)
+
+Currently using emulator only-- you're welcome to buy me an Android device for more thorough testing.
+
+License:
+GNU Affero General Public License, Version 3 or later.
+Full declaration to come later.
+
+Dependencies:
+Requires signpost for OAuth support.
