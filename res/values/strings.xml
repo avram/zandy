@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, ZoteroActivity!</string>
+    <string name="app_name">Zotero</string>
+    <string name="buttonInitOAuth">Initialize OAuth</string>
+    <string name="applicationTitle">Zotero for Android</string>
+</resources>
