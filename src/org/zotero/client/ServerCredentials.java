@@ -22,8 +22,8 @@ public class ServerCredentials {
 
 	/* These are the manipulation methods */
 	// /users/1/items GET, POST, PUT, DELETE
-	public static final String ITEMS = "/items";
-	public static final String COLLECTIONS = "/collections";
+	public static final String ITEMS = "/users/5770/items";
+	public static final String COLLECTIONS = "/users/5770/collections";
 	
 	public static final String TAGS = "/tags";
 	public static final String GROUPS = "/groups";	

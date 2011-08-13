@@ -5,4 +5,9 @@
     <string name="buttonInitOAuth">Initialize OAuth</string>
     <string name="applicationTitle">Zotero for Android</string>
     <string name="buttonMakeRequest">Make Request</string>
+    <string name="prefs_sync_collections_summary">Syncing collections is a great idea.</string>
+    <string name="prefs_sync_collections_title">Sync collections</string>
+    <string name="menu_sync">Sync</string>
+    <string name="menu_quit">Quit</string>
+    <string name="prefs_cat_sync_title">Sync title</string>    
 </resources>

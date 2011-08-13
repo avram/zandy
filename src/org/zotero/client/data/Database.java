@@ -8,10 +8,12 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.util.Log;
 
 public class Database {
+	public static final String[] ITEMCOLS = {"item_title", "item_type", "item_content", "etag", "dirty", "_id"};
+	
 	private static final String TAG = "org.zotero.client.data.Database";
 	
 	// the database version; increment to call update
-	private static final int DATABASE_VERSION = 2;
+	private static final int DATABASE_VERSION = 7;
 	
 	private static final String DATABASE_NAME = "Zotero";
 	private final DatabaseOpenHelper mDatabaseOpenHelper;
@@ -28,14 +30,28 @@ public class Database {
 		if (cursor == null) {
 			return null;
 		} else if (!cursor.moveToFirst()) {
+			cursor.close();
 			return null;
 		}
 		return cursor;
 	}
 	
-	public Cursor rawQuery(String selection, String[] selectionArgs) {
+	public Cursor query(String table, String[] columns, String selection,
+			String[] selectionArgs, String groupBy, String having, String orderBy, String limit) {
 		SQLiteDatabase db = mDatabaseOpenHelper.getWritableDatabase();
-		Cursor cursor = db.rawQuery(selection, selectionArgs);
+		Cursor cursor = db.query(table, columns, selection, selectionArgs, groupBy, having, orderBy, limit);
+		if (cursor == null) {
+			return null;
+		} else if (!cursor.moveToFirst()) {
+			cursor.close();
+			return null;
+		}
+		return cursor;
+	}
+		
+	public Cursor rawQuery(String selection, String[] args) {
+		SQLiteDatabase db = mDatabaseOpenHelper.getWritableDatabase();
+		Cursor cursor = db.rawQuery(selection, args);
 
 		if (cursor == null) {
 			return null;
@@ -46,6 +62,12 @@ public class Database {
 		return cursor;
 	}
 	
+	public SQLiteDatabase beginTransaction() {
+		SQLiteDatabase db = mDatabaseOpenHelper.getWritableDatabase();
+		db.beginTransaction();
+		return db;
+	}
+		
 	public void close() {
 		mDatabaseOpenHelper.close();
 	}
@@ -59,14 +81,22 @@ public class Database {
 		// for temp table creation to work, must have (_id as first field
 		private static final String COLLECTIONS_CREATE =
 			"create table collections"+ 
-			" (_id bigint primary key, "
-			+ "collection_name text not null, collection_type text not null, collection_size int not null);";
+			" (_id integer primary key autoincrement, " +
+			"collection_name text not null, " +
+			"collection_key string unique, " +
+			"collection_type text not null, " +
+			"collection_size int not null," +
+			"dirty string);";
 		
 		private static final String ITEMS_CREATE =
 			"create table items"+ 
-			" (_id bigint primary key, "
-			+ "collection_id int not null, item_title string not null," +
-					"item_type string not null, item_content string);";
+			" (_id integer primary key autoincrement, " +
+			"item_key string unique, " +
+			"item_title string not null, " +
+			"etag string, " +
+			"item_type string not null, " +
+			"item_content string," +
+			"dirty string);";
 		
 		private static final String CREATORS_CREATE =
 			"create table creators"+ 

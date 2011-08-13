@@ -21,27 +21,30 @@
 
 package org.zotero.client.task;
 
-import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URI;
-import java.net.URL;
+import java.net.URISyntaxException;
 
-import javax.net.ssl.HttpsURLConnection;
-
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
-import org.zotero.client.ServerCredentials;
 import org.zotero.client.XMLResponseParser;
+import org.zotero.client.data.Item;
+import org.zotero.client.data.ItemCollection;
 
 import android.os.AsyncTask;
 import android.util.Log;
 
-public class ZoteroAPITask extends AsyncTask<String, Integer, JSONArray[]> {
+public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	
 	private String key;
 	
@@ -51,53 +54,29 @@ public class ZoteroAPITask extends AsyncTask<String, Integer, JSONArray[]> {
 	}
 
 	@Override
-	protected JSONArray[] doInBackground(String... params) {
+	protected JSONArray[] doInBackground(APIRequest... params) {
         return doFetch(params);
 	} 
 	
-	public JSONArray[] doFetch(String... urls)
+	public JSONArray[] doFetch(APIRequest... reqs)
 	{	
-		int count = urls.length;
+		int count = reqs.length;
 		
 		JSONArray[] ret = new JSONArray[count];
-
         
         for (int i = 0; i < count; i++) {
         	try {
-        		Log.i("org.zotero.client.task.ZoteroAPITask", "Executing API call: " + urls[i]);
-
-        		// Pretty hacky-- we just append the key and JSON content reques
-        		if (urls[i].indexOf("?") == -1)
-        			urls[i] += "?";
-        		else
-        			urls[i] += "&";
-        		urls[i] += "key=" + this.key + "&content=json";
+        		Log.i("org.zotero.client.task.ZoteroAPITask", "Executing API call: " + reqs[i].query);
         		
-        		if (urls[i].startsWith("/users/5770"+ServerCredentials.ITEMS)
-        				|| urls[i].startsWith("/users/5770"+ServerCredentials.COLLECTIONS)
-        				|| urls[i].startsWith("/users/5770"+ServerCredentials.TAGS)
-        				|| urls[i].startsWith("/users/5770"+ServerCredentials.GROUPS)) {
-        			// We have an XML-formatted response-- treat it as such
-        			getParsedResponse(ServerCredentials.APIBASE + urls[i]);
-        			continue;
-        		}
+        		reqs[i].key = key;
         		
-        		// The remaining requests types are JSON-based
-        		String strResponse = getResponse(ServerCredentials.APIBASE + urls[i]);
+        		String strResponse = issue(reqs[i]);
 				
-				if(!strResponse.replace("\n", "").startsWith("["))
-				{
-					// wrap in JSONArray delimiters
-					strResponse = "[" + strResponse + "]";
-				}
-				
-				ret[i] = new JSONArray(strResponse);
-				
-				Log.i("org.zotero.client.task.ZoteroAPITask", "Succesfully retrieved API call: " + urls[i]);
+				Log.i("org.zotero.client.task.ZoteroAPITask", "Succesfully retrieved API call: " + reqs[i].query);
 				
 			} catch (Exception e) {
 				// TODO: determine if this is due to needing re-auth
-				Log.e("org.zotero.client.task.ZoteroAPITask", "Failed to execute API call: " + urls[i], e);
+				Log.e("org.zotero.client.task.ZoteroAPITask", "Failed to execute API call: " + reqs[i].query, e);
 				return null;
 			}
             publishProgress((int) ((i / (float) count) * 100));
@@ -123,29 +102,141 @@ public class ZoteroAPITask extends AsyncTask<String, Integer, JSONArray[]> {
         }
     }
 	
-	/** Gets a response from the API server */
-	/* This is for JSON calls, I suppose */
-	public String getResponse(String strURL) throws Exception {
-		Log.i("org.zotero.client.task.ZoteroAPITask", "Requesting: " + strURL);
-		URI uri = new URI(strURL);
-		HttpClient client = new DefaultHttpClient();
-		HttpGet request = new HttpGet();
-		request.setURI(uri);
-		String content = client.execute(request, new BasicResponseHandler());
-		Log.i("org.zotero.client.task.ZoteroAPITask", "Response: " + content);
-		return content;
-	}
+	/**
+	 * Executes the specified APIRequest and handles the response
+	 * 
+	 * This is done synchronously; use the the AsyncTask interface for calls
+	 * from the UI thread.
+	 * 
+	 * @param req
+	 * @return
+	 */
+	public static String issue(APIRequest req) {
+		// Check that the method makes sense
+		String method = req.method.toLowerCase();
+		if (method != "get"
+			&& method != "post"
+			&& method != "delete"
+			&& method != "put"
+		) {
+			// TODO Throw an exception here.
+			return null;
+		}
+		String resp = "";
+		try {
+			// Append content=json everywhere
+			if (req.query.indexOf("?") != -1) {
+				req.query += "&content=json";
+			} else {
+				req.query += "?content=json";
+			}
+			
+			// Append the key, if defined, to all requests
+			if (req.key != null && req.key != "") {
+				req.query += "&key=" + req.key;
 
-	/** Gets a response from the API server */
-	public void getParsedResponse(String strURL) throws Exception {
-		Log.i("org.zotero.client.task.ZoteroAPITask", "Requesting parsed: " + strURL);
-		URL url = new URL(strURL);
-		HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
+			}
+			Log.i("org.zotero.client.task.ZoteroAPITask", "Request "+ req.method +": " + req.query);		
 
-		InputStream in = urlConnection.getInputStream();
+			URI uri = new URI(req.query);
+			HttpClient client = new DefaultHttpClient();
 
-		XMLResponseParser parse = new XMLResponseParser(in);
-		parse.parse();
-		urlConnection.disconnect();
+			/* It would be good to rework this mess to be less repetitive */
+			if (method == "post") {
+				HttpPost request = new HttpPost();
+				request.setURI(uri);
+				
+				// Set headers if necessary
+				if(req.ifMatch != null) {
+					request.setHeader("If-Match", req.ifMatch);
+				}
+				if(req.contentType != null) {
+					request.setHeader("Content-Type", req.contentType);
+				}
+				if(req.body != null) {
+					StringEntity entity = new StringEntity(req.body);
+					request.setEntity(entity);
+				}
+				if (req.disposition == "xml") {
+					InputStream in = client.execute(request).getEntity().getContent();
+					XMLResponseParser parse = new XMLResponseParser(in);
+					parse.parse();
+					resp = "XML was parsed.";
+				} else {
+					resp = client.execute(request, new BasicResponseHandler());
+				}
+			} else if (method == "put") {
+				HttpPut request = new HttpPut();
+				request.setURI(uri);
+				
+				// Set headers if necessary
+				if(req.ifMatch != null) {
+					request.setHeader("If-Match", req.ifMatch);
+				}
+				if(req.contentType != null) {
+					request.setHeader("Content-Type", req.contentType);
+				}
+				if(req.body != null) {
+					StringEntity entity = new StringEntity(req.body);
+					request.setEntity(entity);
+				}
+				if (req.disposition == "xml") {
+					InputStream in = client.execute(request).getEntity().getContent();
+					XMLResponseParser parse = new XMLResponseParser(in);
+					parse.parse();
+					resp = "XML was parsed.";
+				} else {
+					resp = client.execute(request, new BasicResponseHandler());
+				}
+			} else if (method == "delete") {
+				HttpDelete request = new HttpDelete();
+				request.setURI(uri);
+				if(req.ifMatch != null) {
+					request.setHeader("If-Match", req.ifMatch);
+				}
+				if (req.disposition == "xml") {
+					InputStream in = client.execute(request).getEntity().getContent();
+					XMLResponseParser parse = new XMLResponseParser(in);
+					parse.parse();
+					resp = "XML was parsed.";
+				} else {
+					resp = client.execute(request, new BasicResponseHandler());
+				}
+			} else {
+				HttpGet request = new HttpGet();
+				request.setURI(uri);
+				if(req.contentType != null) {
+					request.setHeader("Content-Type", req.contentType);
+				}
+				if (req.disposition == "xml") {
+					HttpResponse hr = client.execute(request);
+					HttpEntity en = hr.getEntity();
+					InputStream in = en.getContent();
+					XMLResponseParser parse = new XMLResponseParser(in);
+					parse.parse();
+					resp = "XML was parsed.";
+				} else {
+					resp = client.execute(request, new BasicResponseHandler());
+				}
+			}
+			Log.i("org.zotero.client.task.ZoteroAPITask", "Response: " + resp);
+		} catch (IOException e) {
+			Log.e("org.zotero.client.task.ZoteroAPITask", "Connection error", e);
+		} catch (URISyntaxException e) {
+			Log.e("org.zotero.client.task.ZoteroAPITask", "URI error", e);
+		}
+		return resp;
+	}	
+	
+	/**
+	 * Removes specified item from the specified collection on the server.
+	 * 
+	 * @param item			Item to be removed. If null, the request is discarded.
+	 * @param collection	Collection to remove the item from. Does not check
+	 * 						if the item is a member before making request. If
+	 * 						null, the request is discarded.
+	 */
+	public void removeItemFromCollection(Item item, ItemCollection collection) {
+		
 	}
 }
