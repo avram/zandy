@@ -3,6 +3,8 @@ by Avram Lyon (ajlyon@gmail.com)
 
 Currently using emulator only-- you're welcome to buy me an Android device for more thorough testing.
 
+This is based in part on the code by Martin Paul Eve (University of Sussex) to create an Android client for Mendeley, hosted at <https://code.google.com/p/mendeley-for-android/>. That code is GPL-licensed, and the present code is licensed under the GPL-compatible Affero GPL.
+
 License:
 GNU Affero General Public License, Version 3 or later.
 Full declaration to come later.
