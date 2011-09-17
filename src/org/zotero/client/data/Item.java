@@ -14,6 +14,8 @@ public class Item  {
 	private String owner;
 	private String key;
 	private String etag;
+	private String year;
+	private String creatorSummary;
 	private JSONObject content;
 	
 	public String dbId;
@@ -119,22 +121,38 @@ public class Item  {
 		return etag;
 	}
 	
+	public String getYear() {
+		return year;
+	}
+
+	public void setYear(String year) {
+		this.year = year;
+	}
+
+	public String getCreatorSummary() {
+		return creatorSummary;
+	}
+
+	public void setCreatorSummary(String creatorSummary) {
+		this.creatorSummary = creatorSummary;
+	}
+	
 	public void save() {
 		Item existing = load(key);
 		if (existing == null) {
-			String[] args = { title, key, type, content.toString(), etag, dirty };
+			String[] args = { title, key, type, year, creatorSummary, content.toString(), etag, dirty };
 			Cursor cur = db.rawQuery(
-					"insert into items (item_title, item_key, item_type, item_content, etag, dirty) " +
-					"values (?, ?, ?, ?, ?, ?)", args);
+					"insert into items (item_title, item_key, item_type, item_year, item_creator, item_content, etag, dirty) " +
+					"values (?, ?, ?, ?, ?, ?, ?, ?)", args);
 			if (cur != null) cur.close();
 			Item fromDB = load(key);
 			dbId = fromDB.dbId;
 		} else {
 			dbId = existing.dbId;
-			String[] args = { title, type, content.toString(), etag, dirty, dbId };
+			String[] args = { title, type, year, creatorSummary, content.toString(), etag, dirty, dbId };
 			Log.i(TAG, "Updating existing item.");
 			Cursor cur = db.rawQuery(
-					"update items set item_title=?, item_type=?, item_content=?, etag=?, dirty=? " +
+					"update items set item_title=?, item_type=?, item_year=?, item_creator=?, item_content=?, etag=?, dirty=? " +
 					" where _id=?", args);
 			if (cur != null) cur.close();
 		}
@@ -153,7 +171,7 @@ public class Item  {
 		Cursor cur = db.query("items", cols, "item_key=?", args, null, null, null, null);
 
 		Item item = load(cur);
-		cur.close();
+		if (cur != null) cur.close();
 		return item;
 	}
 	
@@ -183,6 +201,9 @@ public class Item  {
 		item.setEtag(cur.getString(3));
 		item.dirty = cur.getString(4);
 		item.dbId = cur.getString(5);
+		item.setKey(cur.getString(6));
+		item.setYear(cur.getString(7));
+		item.setCreatorSummary(cur.getString(8));
 		return item;
 	}
 

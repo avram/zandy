@@ -22,6 +22,7 @@ import android.util.Log;
 public class APIRequest {
 
 	public static final String API_DIRTY =	"Unsynced change";
+	public static final String API_MISSING ="Partial data; needs to be downloaded from API";
 	public static final String API_WIP  = 	"Sync attempted, still unsynced";
 	public static final String API_CLEAN =	"No unsynced change";
 	

@@ -4,6 +4,7 @@ import org.zotero.client.R;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,19 +20,43 @@ import android.widget.TextView;
 public class ItemAdapter extends ResourceCursorAdapter {
 	private static final String TAG = "org.zotero.client.data.ItemAdapter";
 
+	private Database db;
+	private Context context;
+	private ItemCollection parent;
+	
+	public String whoami = "Item";
+
+	
 	public ItemAdapter(Context context, Cursor cursor) {
 		super(context, R.layout.list_item, cursor, false);
+		this.context = context;
 	}
 	
     public View newView(Context context, Cursor cur, ViewGroup parent) {
         LayoutInflater li = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        Log.d(TAG, "running newView");
+        //Log.d(TAG, "running newView");
         return li.inflate(R.layout.list_item, parent, false);
     }
 
+    /**
+     * Utility function to return parent collection, or null
+     * if there is no parent collection being shown.
+     * @return
+     */
+    public ItemCollection getParent() {
+    	return parent;
+    }
+    
+    /**
+     * Call this when the data has been updated-- it refreshes the cursor and notifies of the change
+     */
+    public void notifyDataSetChanged() {
+    	super.notifyDataSetChanged();
+    }
+    
 	@Override
 	public void bindView(View view, Context context, Cursor cursor) {
-		Log.d(TAG, "bindView view is: " + view.getId());
+		//Log.d(TAG, "bindView view is: " + view.getId());
 		TextView tvTitle = (TextView)view.findViewById(R.id.item_title);
 		TextView tvType = (TextView)view.findViewById(R.id.item_type);
 		TextView tvSummary = (TextView)view.findViewById(R.id.item_summary);
@@ -51,6 +76,9 @@ public class ItemAdapter extends ResourceCursorAdapter {
 		
 		tvType.setText(item.getType());
 		tvDirty.setText(item.dirty);
+		
+		tvSummary.setText(item.getCreatorSummary() + " (" + item.getYear() + ")");
+		
 	}
 
 	public static ItemAdapter create(Context context) {
@@ -61,6 +89,26 @@ public class ItemAdapter extends ResourceCursorAdapter {
 		}
 		Log.e(TAG, "created itemadapter");
 		ItemAdapter adapter = new ItemAdapter(context, cursor);
+		adapter.db = db;
+		return adapter;
+	}
+	
+	public static ItemAdapter create(Context context, ItemCollection parent) {
+		// ITEMCOLS = {"item_title", "item_type", "item_content", "etag", "dirty",
+		// 				"_id", "item_key", "item_year", "item_creator"};
+		Database db = new Database(context);
+		String[] args = { parent.dbId };
+		Cursor cursor = db.rawQuery("SELECT item_title, item_type, item_content, etag, dirty, " +
+				"items._id, item_key, item_year, item_creator " +
+				" FROM items, itemtocollections WHERE items._id = item_id AND collection_id=? ORDER BY item_title",
+				args);
+		if (cursor == null) {
+			Log.e(TAG, "cursor is null");
+		}
+		Log.e(TAG, "created itemadapter");
+		ItemAdapter adapter = new ItemAdapter(context, cursor);
+		adapter.db = db;
+		adapter.parent = parent;
 		return adapter;
 	}
 }

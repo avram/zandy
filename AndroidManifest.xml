@@ -6,9 +6,8 @@
     <uses-sdk android:minSdkVersion="7" />
     <uses-permission android:name="android.permission.INTERNET"></uses-permission>
     
-
     <application android:icon="@drawable/icon" android:label="@string/app_name">
-        <activity android:name=".ZoteroActivity"
+        <activity android:name=".MainActivity"
                   android:label="@string/app_name"
                   android:launchMode="singleInstance">
             <intent-filter>
@@ -22,6 +21,13 @@
 				<data android:scheme="zotero" />
             </intent-filter>
         </activity>
-
+        <activity android:name=".CollectionActivity"
+                  android:label="@string/app_name"
+                  android:launchMode="standard">
+        </activity>
+        <activity android:name=".ItemActivity"
+                  android:label="@string/app_name"
+                  android:launchMode="standard">
+        </activity>
     </application>
 </manifest>

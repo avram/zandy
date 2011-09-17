@@ -13,21 +13,12 @@
 	</TableRow>
 	<TableRow>
 		<TextView android:text="" android:id="@+id/item_type"
-			android:layout_column="1"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:gravity="left"
 	        android:padding="3dip" />
 	    <TextView android:text="" android:id="@+id/item_dirty"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:gravity="right"
 	        android:padding="3dip" />
     </TableRow>
     <TableRow>
 	    <TextView android:text="" android:id="@+id/item_summary"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
 			android:padding="3dip" />
     </TableRow>
 </TableLayout>

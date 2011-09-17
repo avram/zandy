@@ -3,17 +3,20 @@ package org.zotero.client.data;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
 public class Database {
-	public static final String[] ITEMCOLS = {"item_title", "item_type", "item_content", "etag", "dirty", "_id"};
+	public static final String[] ITEMCOLS = {"item_title", "item_type", "item_content", "etag", "dirty", "_id", "item_key", "item_year", "item_creator"};
+	public static final String[] COLLCOLS = {"collection_name", "collection_parent", "etag", "dirty", "_id", "collection_key, collection_size"};
 	
 	private static final String TAG = "org.zotero.client.data.Database";
 	
 	// the database version; increment to call update
-	private static final int DATABASE_VERSION = 7;
+	private static final int DATABASE_VERSION = 11;
 	
 	private static final String DATABASE_NAME = "Zotero";
 	private final DatabaseOpenHelper mDatabaseOpenHelper;
@@ -72,6 +75,11 @@ public class Database {
 		mDatabaseOpenHelper.close();
 	}
 	
+	public SQLiteStatement compileStatement(String sql) throws SQLiteException {
+		SQLiteDatabase db = mDatabaseOpenHelper.getWritableDatabase();
+		return db.compileStatement(sql);
+	}
+	
 	private static class DatabaseOpenHelper extends SQLiteOpenHelper {
 		
 		private final Context mHelperContext;
@@ -84,8 +92,10 @@ public class Database {
 			" (_id integer primary key autoincrement, " +
 			"collection_name text not null, " +
 			"collection_key string unique, " +
-			"collection_type text not null, " +
-			"collection_size int not null," +
+			"collection_parent string, " +
+			"collection_type text, " +
+			"collection_size int, " +
+			"etag string, " +
 			"dirty string);";
 		
 		private static final String ITEMS_CREATE =
@@ -96,6 +106,8 @@ public class Database {
 			"etag string, " +
 			"item_type string not null, " +
 			"item_content string," +
+			"item_year string," +
+			"item_creator string," +
 			"dirty string);";
 		
 		private static final String CREATORS_CREATE =

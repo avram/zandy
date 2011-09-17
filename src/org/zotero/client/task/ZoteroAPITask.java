@@ -43,16 +43,24 @@ import org.zotero.client.data.ItemCollection;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.CursorAdapter;
 
 public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	
 	private String key;
+	private CursorAdapter adapter;
 	
 	public ZoteroAPITask(String key)
 	{
 		this.key = key;
 	}
 
+	public ZoteroAPITask(String key, CursorAdapter adapter)
+	{
+		this.key = key;
+		this.adapter = adapter;
+	}
+	
 	@Override
 	protected JSONArray[] doInBackground(APIRequest... params) {
         return doFetch(params);
@@ -70,7 +78,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
         		
         		reqs[i].key = key;
         		
-        		String strResponse = issue(reqs[i]);
+        		issue(reqs[i]);
 				
 				Log.i("org.zotero.client.task.ZoteroAPITask", "Succesfully retrieved API call: " + reqs[i].query);
 				
@@ -79,6 +87,15 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 				Log.e("org.zotero.client.task.ZoteroAPITask", "Failed to execute API call: " + reqs[i].query, e);
 				return null;
 			}
+	    	if (XMLResponseParser.queue != null && !XMLResponseParser.queue.isEmpty()) {
+	        	Log.i("org.zotero.client.task.ZoteroAPITask", "Finished call, but trying to add from parser's request queue");
+	    		APIRequest[] templ = { };
+	    		APIRequest[] queue = XMLResponseParser.queue.toArray(templ); 
+	    		XMLResponseParser.queue.clear();
+	    		this.doInBackground(queue);
+	    	} else {
+	        	Log.i("org.zotero.client.task.ZoteroAPITask", "Finished call, and parser's request queue is empty");
+	    	}
             publishProgress((int) ((i / (float) count) * 100));
         }
              
@@ -89,17 +106,20 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	@Override
 	protected void onPostExecute(JSONArray[] result) {
 		// invoked on the UI thread
-		
-        if (result == null)
-        {
-        	Log.e("org.zotero.client.task.ZoteroAPITask", "Returned NULL; looks like a problem communicating with server; review stack trace.");
-        	// there was an error
-        	String text = "Error communicating with server.";
 
-        	Log.i("org.zotero.client.task.ZoteroAPITask", text);
-        } else {
-        	Log.i("org.zotero.client.task.ZoteroAPITask", "Finished call, got something back!");
-        }
+    		if (result == null) {
+	        	Log.e("org.zotero.client.task.ZoteroAPITask", "Returned NULL; looks like a problem communicating with server; review stack trace.");
+	        	// there was an error
+	        	String text = "Error communicating with server.";	
+	        	Log.i("org.zotero.client.task.ZoteroAPITask", text);
+    		} else {
+	        	if (this.adapter != null) {
+		        	this.adapter.notifyDataSetChanged();
+		        	Log.i("org.zotero.client.task.ZoteroAPITask", "Finished call, notified parent adapter!");
+	        	} else {
+		        	Log.i("org.zotero.client.task.ZoteroAPITask", "Finished call successfully, but nobody to notify");        		
+	        	}
+    		}
     }
 	
 	/**
@@ -124,11 +144,13 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 		}
 		String resp = "";
 		try {
-			// Append content=json everywhere
-			if (req.query.indexOf("?") != -1) {
-				req.query += "&content=json";
-			} else {
-				req.query += "?content=json";
+			// Append content=json everywhere, if we don't have it yet
+			if (req.query.indexOf("content=json") == -1) {
+				if (req.query.indexOf("?") != -1) {
+					req.query += "&content=json";
+				} else {
+					req.query += "?content=json";
+				}
 			}
 			
 			// Append the key, if defined, to all requests
@@ -160,7 +182,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 				if (req.disposition == "xml") {
 					InputStream in = client.execute(request).getEntity().getContent();
 					XMLResponseParser parse = new XMLResponseParser(in);
-					parse.parse();
+					parse.parse(XMLResponseParser.MODE_ENTRY, uri.toString());
 					resp = "XML was parsed.";
 				} else {
 					resp = client.execute(request, new BasicResponseHandler());
@@ -183,7 +205,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 				if (req.disposition == "xml") {
 					InputStream in = client.execute(request).getEntity().getContent();
 					XMLResponseParser parse = new XMLResponseParser(in);
-					parse.parse();
+					parse.parse(XMLResponseParser.MODE_ENTRY, uri.toString());
 					resp = "XML was parsed.";
 				} else {
 					resp = client.execute(request, new BasicResponseHandler());
@@ -197,7 +219,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 				if (req.disposition == "xml") {
 					InputStream in = client.execute(request).getEntity().getContent();
 					XMLResponseParser parse = new XMLResponseParser(in);
-					parse.parse();
+					parse.parse(XMLResponseParser.MODE_ENTRY, uri.toString());
 					resp = "XML was parsed.";
 				} else {
 					resp = client.execute(request, new BasicResponseHandler());
@@ -213,7 +235,12 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 					HttpEntity en = hr.getEntity();
 					InputStream in = en.getContent();
 					XMLResponseParser parse = new XMLResponseParser(in);
-					parse.parse();
+					// We can tell from the URL whether we have a single item or a feed
+					int mode = (uri.toString().indexOf("/items?") == -1
+									&& uri.toString().indexOf("/top?") == -1
+									&& uri.toString().indexOf("/collections?") == -1) ?
+										XMLResponseParser.MODE_ENTRY : XMLResponseParser.MODE_FEED;
+					parse.parse(mode, uri.toString());
 					resp = "XML was parsed.";
 				} else {
 					resp = client.execute(request, new BasicResponseHandler());
