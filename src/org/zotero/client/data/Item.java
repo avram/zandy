@@ -2,6 +2,7 @@ package org.zotero.client.data;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.zotero.client.R;
 import org.zotero.client.task.APIRequest;
 
 import android.database.Cursor;
@@ -31,6 +32,13 @@ public class Item  {
 	
 	public Item() {
 		content = new JSONObject();
+		year = "";
+		creatorSummary = "";
+		key = "";
+		owner = "";
+		type = "";
+		title = "";
+		id = "";
 	}
 
 	public String getId() {
@@ -205,6 +213,54 @@ public class Item  {
 		item.setYear(cur.getString(7));
 		item.setCreatorSummary(cur.getString(8));
 		return item;
+	}
+	
+	public static int resourceForType(String type) {
+		if (type == null || type.equals("")) return R.drawable.page_white;
+		
+		if (type.equals("artwork")) return R.drawable.picture;
+//		if (type.equals("audioRecording")) return R.drawable.ic_menu_close_clear_cancel;
+//		if (type.equals("bill")) return R.drawable.ic_menu_close_clear_cancel;
+//		if (type.equals("blogPost")) return R.drawable.ic_menu_close_clear_cancel;
+		if (type.equals("book")) return R.drawable.book;
+		if (type.equals("bookSection")) return R.drawable.book_open;
+//		if (type.equals("case")) return R.drawable.ic_menu_close_clear_cancel;
+//		if (type.equals("computerProgram")) return R.drawable.ic_menu_close_clear_cancel;
+//		if (type.equals("conferencePaper")) return R.drawable.ic_menu_close_clear_cancel;
+		if (type.equals("dictionaryEntry")) return R.drawable.page_white_width;
+		if (type.equals("document")) return R.drawable.page_white;
+//		if (type.equals("email")) return R.drawable.ic_menu_close_clear_cancel;
+		if (type.equals("encyclopediaArticle")) return R.drawable.page_white_text_width;
+		if (type.equals("film")) return R.drawable.film;
+//		if (type.equals("forumPost")) return R.drawable.ic_menu_close_clear_cancel;
+//		if (type.equals("hearing")) return R.drawable.ic_menu_close_clear_cancel;
+		if (type.equals("instantMessage")) return R.drawable.comment;
+//		if (type.equals("interview")) return R.drawable.ic_menu_close_clear_cancel;
+		if (type.equals("journalArticle")) return R.drawable.page_white_text;
+		if (type.equals("letter")) return R.drawable.email;
+		if (type.equals("magazineArticle")) return R.drawable.layout;
+		if (type.equals("manuscript")) return R.drawable.script;
+		if (type.equals("map")) return R.drawable.map;
+		if (type.equals("newspaperArticle")) return R.drawable.newspaper;
+		if (type.equals("patent")) return R.drawable.ic_menu_close_clear_cancel;
+//		if (type.equals("podcast")) return R.drawable.ic_menu_close_clear_cancel;
+		if (type.equals("presentation")) return R.drawable.page_white_powerpoint;
+//		if (type.equals("radioBroadcast")) return R.drawable.ic_menu_close_clear_cancel;
+		if (type.equals("report")) return R.drawable.report;
+//		if (type.equals("statute")) return R.drawable.ic_menu_close_clear_cancel;
+		if (type.equals("thesis")) return R.drawable.report_user;
+		if (type.equals("tvBroadcast")) return R.drawable.television;
+		if (type.equals("videoRecording")) return R.drawable.film;
+		if (type.equals("webpage")) return R.drawable.page;
+
+		// Not item types, but still something
+		if (type.equals("collection")) return R.drawable.folder;
+//		if (type.equals("pdf")) return R.drawable.ic_menu_close_clear_cancel;
+//		if (type.equals("snapshot")) return R.drawable.ic_menu_close_clear_cancel;
+//		if (type.equals("link")) return R.drawable.ic_menu_close_clear_cancel;
+		
+		// Return something generic if all else fails
+		return R.drawable.page_white;
 	}
 
 }

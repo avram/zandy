@@ -4,11 +4,12 @@ import org.zotero.client.R;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteStatement;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
@@ -34,7 +35,6 @@ public class ItemAdapter extends ResourceCursorAdapter {
 	
     public View newView(Context context, Cursor cur, ViewGroup parent) {
         LayoutInflater li = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        //Log.d(TAG, "running newView");
         return li.inflate(R.layout.list_item, parent, false);
     }
 
@@ -56,34 +56,35 @@ public class ItemAdapter extends ResourceCursorAdapter {
     
 	@Override
 	public void bindView(View view, Context context, Cursor cursor) {
-		//Log.d(TAG, "bindView view is: " + view.getId());
 		TextView tvTitle = (TextView)view.findViewById(R.id.item_title);
-		TextView tvType = (TextView)view.findViewById(R.id.item_type);
+		ImageView tvType = (ImageView)view.findViewById(R.id.item_type);
 		TextView tvSummary = (TextView)view.findViewById(R.id.item_summary);
-		TextView tvDirty = (TextView)view.findViewById(R.id.item_dirty);
 	
 		if (cursor == null) {
 			Log.e(TAG, "cursor is null in bindView");
 		}
 		Item item = Item.load(cursor);
+		
 		if (item == null) {
 			Log.e(TAG, "item is null in bindView");
 		}
 		if (tvTitle == null) {
 			Log.e(TAG, "tvTitle is null in bindView");
 		}
-		tvTitle.setText(item.getTitle());
 		
-		tvType.setText(item.getType());
-		tvDirty.setText(item.dirty);
-		
+		Log.d(TAG, "setting image for item of type: "+item.getType());
+		tvType.setImageResource(Item.resourceForType(item.getType()));
+
 		tvSummary.setText(item.getCreatorSummary() + " (" + item.getYear() + ")");
+		if (tvSummary.getText() == " ()") tvSummary.setVisibility(View.GONE);
+		
+		tvTitle.setText(item.getTitle());
 		
 	}
 
 	public static ItemAdapter create(Context context) {
 		Database db = new Database(context);
-		Cursor cursor = db.query("items", Database.ITEMCOLS, null, null, null, null, "item_title", null);
+		Cursor cursor = db.query("items", Database.ITEMCOLS, null, null, null, null, "item_year, item_title", null);
 		if (cursor == null) {
 			Log.e(TAG, "cursor is null");
 		}
@@ -100,7 +101,7 @@ public class ItemAdapter extends ResourceCursorAdapter {
 		String[] args = { parent.dbId };
 		Cursor cursor = db.rawQuery("SELECT item_title, item_type, item_content, etag, dirty, " +
 				"items._id, item_key, item_year, item_creator " +
-				" FROM items, itemtocollections WHERE items._id = item_id AND collection_id=? ORDER BY item_title",
+				" FROM items, itemtocollections WHERE items._id = item_id AND collection_id=? ORDER BY item_year, item_title",
 				args);
 		if (cursor == null) {
 			Log.e(TAG, "cursor is null");

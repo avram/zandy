@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical" android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:id="@+id/items">
+
+	<ListView android:id="@android:id/list" android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:layout_weight="1" android:drawSelectorOnTop="false" />
+
+	<!-- What to do if there's no data to show in the list  -->
+	<TextView android:id="@android:id/empty" android:layout_width="fill_parent"
+		android:layout_height="fill_parent" android:textAppearance="?android:attr/textAppearanceMedium"
+		android:text="No item data" />
+</RelativeLayout>

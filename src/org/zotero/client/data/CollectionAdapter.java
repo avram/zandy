@@ -63,7 +63,7 @@ public class CollectionAdapter extends ResourceCursorAdapter {
 		}
 		tvTitle.setText(collection.getTitle());
 
-		tvDirty.setText(collection.dirty);
+		//tvDirty.setText(collection.dirty);
 	}
 
 	/**
