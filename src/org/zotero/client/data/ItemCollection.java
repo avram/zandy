@@ -29,6 +29,11 @@ public class ItemCollection extends ArrayList<Item> {
 	
 	private static final String TAG = "org.zotero.client.data.ItemCollection";
 
+	/**
+	 * Queue of dirty collections to be sent to the server
+	 */
+	public static ArrayList<ItemCollection> queue;
+	
 	private String id;
 	private String title;
 	private String key;
@@ -301,6 +306,7 @@ public class ItemCollection extends ArrayList<Item> {
 	 * @return
 	 */
 	public static ItemCollection load(String collKey) {
+		if (collKey == null) return null;
 		String[] cols = Database.COLLCOLS;
 		String[] args = { collKey };
 		Log.i(TAG, "Loading collection with key: "+collKey);

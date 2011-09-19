@@ -4,7 +4,6 @@ import org.zotero.client.R;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,14 +19,11 @@ import android.widget.TextView;
  */
 public class ItemAdapter extends ResourceCursorAdapter {
 	private static final String TAG = "org.zotero.client.data.ItemAdapter";
-
+	
 	private Database db;
 	private Context context;
 	private ItemCollection parent;
-	
-	public String whoami = "Item";
 
-	
 	public ItemAdapter(Context context, Cursor cursor) {
 		super(context, R.layout.list_item, cursor, false);
 		this.context = context;
@@ -76,7 +72,7 @@ public class ItemAdapter extends ResourceCursorAdapter {
 		tvType.setImageResource(Item.resourceForType(item.getType()));
 
 		tvSummary.setText(item.getCreatorSummary() + " (" + item.getYear() + ")");
-		if (tvSummary.getText() == " ()") tvSummary.setVisibility(View.GONE);
+		if (tvSummary.getText().equals(" ()")) tvSummary.setVisibility(View.GONE);
 		
 		tvTitle.setText(item.getTitle());
 		

@@ -39,6 +39,8 @@ public class MainActivity extends Activity implements OnClickListener {
         
         Button collectionButton = (Button)findViewById(R.id.collectionButton);
         collectionButton.setOnClickListener(this);
+        Button itemButton = (Button)findViewById(R.id.itemButton);
+        itemButton.setOnClickListener(this);
         
         // Let items in on the fun
         Item.db = new Database(getBaseContext());
@@ -50,9 +52,15 @@ public class MainActivity extends Activity implements OnClickListener {
      * Implementation of the OnClickListener interface, to handle button events.
      */
     public void onClick(View v) {
-    	Log.d(TAG, "Trying to start collection activity");
-    	Intent i = new Intent(this, CollectionActivity.class);
-    	startActivity(i);
+    	if (v.getId() == R.id.collectionButton) {
+	    	Log.d(TAG, "Trying to start collection activity");
+	    	Intent i = new Intent(this, CollectionActivity.class);
+	    	startActivity(i);
+    	} else if (v.getId() == R.id.itemButton) {
+	    	Log.d(TAG, "Trying to start all-item activity");
+	    	Intent i = new Intent(this, ItemActivity.class);
+	    	startActivity(i);
+    	}
     }
     
     /** 

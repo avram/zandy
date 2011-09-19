@@ -21,6 +21,7 @@
 
 package org.zotero.client.task;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -34,19 +35,19 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.zotero.client.XMLResponseParser;
-import org.zotero.client.data.Item;
-import org.zotero.client.data.ItemCollection;
 
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.CursorAdapter;
 
 public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
-	
+	private static final String TAG = "org.zotero.client.task.ZoteroAPITask";
+		
 	private String key;
 	private CursorAdapter adapter;
 	
@@ -74,27 +75,27 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
         
         for (int i = 0; i < count; i++) {
         	try {
-        		Log.i("org.zotero.client.task.ZoteroAPITask", "Executing API call: " + reqs[i].query);
+        		Log.i(TAG, "Executing API call: " + reqs[i].query);
         		
         		reqs[i].key = key;
         		
         		issue(reqs[i]);
 				
-				Log.i("org.zotero.client.task.ZoteroAPITask", "Succesfully retrieved API call: " + reqs[i].query);
+				Log.i(TAG, "Succesfully retrieved API call: " + reqs[i].query);
 				
 			} catch (Exception e) {
 				// TODO: determine if this is due to needing re-auth
-				Log.e("org.zotero.client.task.ZoteroAPITask", "Failed to execute API call: " + reqs[i].query, e);
+				Log.e(TAG, "Failed to execute API call: " + reqs[i].query, e);
 				return null;
 			}
 	    	if (XMLResponseParser.queue != null && !XMLResponseParser.queue.isEmpty()) {
-	        	Log.i("org.zotero.client.task.ZoteroAPITask", "Finished call, but trying to add from parser's request queue");
+	        	Log.i(TAG, "Finished call, but trying to add from parser's request queue");
 	    		APIRequest[] templ = { };
 	    		APIRequest[] queue = XMLResponseParser.queue.toArray(templ); 
 	    		XMLResponseParser.queue.clear();
 	    		this.doInBackground(queue);
 	    	} else {
-	        	Log.i("org.zotero.client.task.ZoteroAPITask", "Finished call, and parser's request queue is empty");
+	        	Log.i(TAG, "Finished call, and parser's request queue is empty");
 	    	}
             publishProgress((int) ((i / (float) count) * 100));
         }
@@ -108,16 +109,16 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 		// invoked on the UI thread
 
     		if (result == null) {
-	        	Log.e("org.zotero.client.task.ZoteroAPITask", "Returned NULL; looks like a problem communicating with server; review stack trace.");
+	        	Log.e(TAG, "Returned NULL; looks like a problem communicating with server; review stack trace.");
 	        	// there was an error
 	        	String text = "Error communicating with server.";	
-	        	Log.i("org.zotero.client.task.ZoteroAPITask", text);
+	        	Log.i(TAG, text);
     		} else {
 	        	if (this.adapter != null) {
 		        	this.adapter.notifyDataSetChanged();
-		        	Log.i("org.zotero.client.task.ZoteroAPITask", "Finished call, notified parent adapter!");
+		        	Log.i(TAG, "Finished call, notified parent adapter!");
 	        	} else {
-		        	Log.i("org.zotero.client.task.ZoteroAPITask", "Finished call successfully, but nobody to notify");        		
+		        	Log.i(TAG, "Finished call successfully, but nobody to notify");        		
 	        	}
     		}
     }
@@ -134,12 +135,13 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	public static String issue(APIRequest req) {
 		// Check that the method makes sense
 		String method = req.method.toLowerCase();
-		if (method != "get"
-			&& method != "post"
-			&& method != "delete"
-			&& method != "put"
+		if (!method.equals("get")
+			&& !method.equals("post")
+			&& !method.equals("delete")
+			&& !method.equals("put")
 		) {
 			// TODO Throw an exception here.
+			Log.e(TAG, "Invalid method: "+method);
 			return null;
 		}
 		String resp = "";
@@ -158,13 +160,23 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 				req.query += "&key=" + req.key;
 
 			}
-			Log.i("org.zotero.client.task.ZoteroAPITask", "Request "+ req.method +": " + req.query);		
+			if (method.equals("put")) {
+				req.query = req.query.replace("content=json&", "");
+			}
+			Log.i(TAG, "Request "+ req.method +": " + req.query);		
 
 			URI uri = new URI(req.query);
 			HttpClient client = new DefaultHttpClient();
+			// The default implementation includes an Expect: header, which
+			// confuses the Zotero servers.
+			//((AbstractHttpClient) client).removeRequestInterceptorByClass(
+			//		org.apache.http.protocol.RequestExpectContinue.class);
+			client.getParams().setParameter("http.protocol.expect-continue", false);
+			// We also need to send our data nice and raw.
+			client.getParams().setParameter("http.protocol.content-charset", "UTF-8");
 
 			/* It would be good to rework this mess to be less repetitive */
-			if (method == "post") {
+			if (method.equals("post")) {
 				HttpPost request = new HttpPost();
 				request.setURI(uri);
 				
@@ -176,10 +188,11 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 					request.setHeader("Content-Type", req.contentType);
 				}
 				if(req.body != null) {
-					StringEntity entity = new StringEntity(req.body);
+					// Force the encoding here
+					StringEntity entity = new StringEntity(req.body,"UTF-8");
 					request.setEntity(entity);
 				}
-				if (req.disposition == "xml") {
+				if (req.disposition.equals("xml")) {
 					InputStream in = client.execute(request).getEntity().getContent();
 					XMLResponseParser parse = new XMLResponseParser(in);
 					parse.parse(XMLResponseParser.MODE_ENTRY, uri.toString());
@@ -187,7 +200,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 				} else {
 					resp = client.execute(request, new BasicResponseHandler());
 				}
-			} else if (method == "put") {
+			} else if (method.equals("put")) {
 				HttpPut request = new HttpPut();
 				request.setURI(uri);
 				
@@ -199,24 +212,44 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 					request.setHeader("Content-Type", req.contentType);
 				}
 				if(req.body != null) {
-					StringEntity entity = new StringEntity(req.body);
+					// Force the encoding here
+					StringEntity entity = new StringEntity(req.body,"UTF-8");
 					request.setEntity(entity);
 				}
-				if (req.disposition == "xml") {
-					InputStream in = client.execute(request).getEntity().getContent();
-					XMLResponseParser parse = new XMLResponseParser(in);
-					parse.parse(XMLResponseParser.MODE_ENTRY, uri.toString());
-					resp = "XML was parsed.";
+				if (req.disposition.equals("xml")) {
+					HttpResponse hr = client.execute(request);
+					int code = hr.getStatusLine().getStatusCode();
+					Log.d(TAG, code + " : "+ hr.getStatusLine().getReasonPhrase());
+					if (code < 400) {
+						HttpEntity he = hr.getEntity();
+						InputStream in = he.getContent();
+						XMLResponseParser parse = new XMLResponseParser(in);
+						parse.parse(XMLResponseParser.MODE_ENTRY, uri.toString());
+						resp = "XML was parsed.";
+					} else {
+						Log.e(TAG, "Not parsing non-XML response, code >= 400");
+						ByteArrayOutputStream ostream = new ByteArrayOutputStream();
+						hr.getEntity().writeTo(ostream);
+						Log.e(TAG,"Error Body: "+ ostream.toString());
+						//Log.e(TAG,"Put Body:"+ req.body);
+						
+						// "Precondition Failed"
+						// The item changed server-side, so we have a conflict to resolve...
+						// XXX This is a hard problem.
+						if (code == 412) {
+							Log.e(TAG, "Skipping dirtied item with server-side changes as well");
+						}
+					}
 				} else {
 					resp = client.execute(request, new BasicResponseHandler());
 				}
-			} else if (method == "delete") {
+			} else if (method.equals("delete")) {
 				HttpDelete request = new HttpDelete();
 				request.setURI(uri);
 				if(req.ifMatch != null) {
 					request.setHeader("If-Match", req.ifMatch);
 				}
-				if (req.disposition == "xml") {
+				if (req.disposition.equals("xml")) {
 					InputStream in = client.execute(request).getEntity().getContent();
 					XMLResponseParser parse = new XMLResponseParser(in);
 					parse.parse(XMLResponseParser.MODE_ENTRY, uri.toString());
@@ -230,7 +263,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 				if(req.contentType != null) {
 					request.setHeader("Content-Type", req.contentType);
 				}
-				if (req.disposition == "xml") {
+				if (req.disposition.equals("xml")) {
 					HttpResponse hr = client.execute(request);
 					HttpEntity en = hr.getEntity();
 					InputStream in = en.getContent();
@@ -246,24 +279,12 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 					resp = client.execute(request, new BasicResponseHandler());
 				}
 			}
-			Log.i("org.zotero.client.task.ZoteroAPITask", "Response: " + resp);
+			Log.i(TAG, "Response: " + resp);
 		} catch (IOException e) {
-			Log.e("org.zotero.client.task.ZoteroAPITask", "Connection error", e);
+			Log.e(TAG, "Connection error", e);
 		} catch (URISyntaxException e) {
-			Log.e("org.zotero.client.task.ZoteroAPITask", "URI error", e);
+			Log.e(TAG, "URI error", e);
 		}
 		return resp;
-	}	
-	
-	/**
-	 * Removes specified item from the specified collection on the server.
-	 * 
-	 * @param item			Item to be removed. If null, the request is discarded.
-	 * @param collection	Collection to remove the item from. Does not check
-	 * 						if the item is a member before making request. If
-	 * 						null, the request is discarded.
-	 */
-	public void removeItemFromCollection(Item item, ItemCollection collection) {
-		
 	}
 }

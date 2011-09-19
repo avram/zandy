@@ -29,5 +29,9 @@
                   android:label="@string/app_name"
                   android:launchMode="standard">
         </activity>
+        <activity android:name=".ItemDataActivity"
+                  android:label="@string/app_name"
+                  android:launchMode="standard">
+        </activity>
     </application>
 </manifest>

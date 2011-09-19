@@ -5,7 +5,9 @@
 	android:id="@+id/main">
 	<TextView android:id="@+id/welcome" android:layout_width="fill_parent"
 		android:textAppearance="?android:attr/textAppearanceLarge"
-		android:text="Welcome to Zandy, the Android client for the Zotero project." android:layout_height="58dp"/>
-	<Button android:layout_weight="1" android:id="@+id/collectionButton" android:layout_height="wrap_content"
-		android:layout_width="wrap_content" android:text="View Collections"></Button>
+		android:text="Welcome to Zandy, the Android client for the Zotero project." android:layout_height="wrap_content"/>
+	<Button android:id="@+id/collectionButton" android:layout_height="wrap_content"
+		android:text="View Collections" android:layout_width="match_parent" android:layout_weight="0.10"></Button>
+	<Button android:id="@+id/itemButton" android:layout_height="wrap_content"
+		android:text="View Items" android:layout_width="match_parent" android:layout_weight="0.21"></Button>
 </LinearLayout>

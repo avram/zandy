@@ -65,6 +65,7 @@ public class XMLResponseParser extends DefaultHandler {
 	        entry = root.getChild(ATOM_NAMESPACE, "entry");
 		} else {
 			// MODE_ITEM, MODE_COLLECTION
+			Log.d(TAG, "entry mode");
 			root = new RootElement(ATOM_NAMESPACE, "entry");
 			entry = (Element) root;
 		}

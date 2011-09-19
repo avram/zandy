@@ -22,11 +22,7 @@ public class CollectionAdapter extends ResourceCursorAdapter {
 	private Database db;
 	public Context context;
 	private ItemCollection parent;
-	
-	public String whoami = "Collection";
-	
-	public boolean justSwapped = false;
-	
+		
 	public CollectionAdapter(Context context, Cursor cursor) {
 		super(context, R.layout.list_collection, cursor, false);
 		this.context = context;
@@ -34,7 +30,6 @@ public class CollectionAdapter extends ResourceCursorAdapter {
 	
     public View newView(Context context, Cursor cur, ViewGroup parent) {
         LayoutInflater li = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        //Log.d(TAG, "running newView");
         return li.inflate(R.layout.list_collection, parent, false);
     }
 

@@ -20,7 +20,9 @@ import android.util.Log;
  *
  */
 public class APIRequest {
+	private static final String TAG = "org.zotero.client.task.APIRequest";
 
+	
 	public static final String API_DIRTY =	"Unsynced change";
 	public static final String API_MISSING ="Partial data; needs to be downloaded from API";
 	public static final String API_WIP  = 	"Sync attempted, still unsynced";
@@ -179,7 +181,26 @@ public class APIRequest {
 								"POST",
 								null);
 		templ.setBody(items);
-		templ.contentType = "application/json";
+		templ.disposition = "xml";
+		
+		return templ;
+	}
+	
+	/**
+	 * Craft a request to update an item on the server
+	 * Does not refresh eTag
+	 * 
+	 * @param item
+	 * @return
+	 */
+	public static APIRequest update(Item item) {
+		APIRequest templ = new APIRequest(ServerCredentials.APIBASE
+								+ ServerCredentials.ITEMS+"/"+item.getKey(),
+								"PUT",
+								null);
+		templ.setBody(item);
+		templ.ifMatch = '"' + item.getEtag() + '"';
+		Log.d(TAG,"etag: "+item.getEtag());
 		templ.disposition = "xml";
 		
 		return templ;

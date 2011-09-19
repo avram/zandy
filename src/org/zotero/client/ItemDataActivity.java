@@ -1,15 +1,10 @@
 package org.zotero.client;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 
 import oauth.signpost.OAuthProvider;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.zotero.client.data.Item;
 import org.zotero.client.task.APIRequest;
 import org.zotero.client.task.ZoteroAPITask;
@@ -18,6 +13,8 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.util.Log;
@@ -29,9 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.CursorAdapter;
 import android.widget.EditText;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,6 +45,7 @@ public class ItemDataActivity extends ListActivity {
 	static final int DIALOG_ITEM_TYPE = 1;
 	static final int DIALOG_CREATORS = 2;
 	static final int DIALOG_TAGS = 3;
+	static final int DIALOG_CONFIRM_NAVIGATE = 4;	
 	
     /** Called when the activity is first created. */
     @Override
@@ -105,6 +101,20 @@ public class ItemDataActivity extends ListActivity {
      			// If we have a click on an entry, do something...
         		ArrayAdapter<Bundle> adapter = (ArrayAdapter<Bundle>) parent.getAdapter();
         		Bundle row = adapter.getItem(position);
+        		if (row.getString("label").equals("url")) {
+        			row.putString("url", row.getString("content"));
+        			removeDialog(DIALOG_CONFIRM_NAVIGATE);
+        			showDialog(DIALOG_CONFIRM_NAVIGATE, row);
+        			return;
+        		}
+        		
+        		if (row.getString("label").equals("DOI")) {
+        			String url = "http://dx.doi.org/"+Uri.encode(row.getString("content"));
+        			row.putString("url", url);
+        			removeDialog(DIALOG_CONFIRM_NAVIGATE);
+        			showDialog(DIALOG_CONFIRM_NAVIGATE, row);
+        			return;
+        		}
         		
 				Toast.makeText(getApplicationContext(), row.getString("content"), 
         				Toast.LENGTH_SHORT).show();
@@ -152,7 +162,7 @@ public class ItemDataActivity extends ListActivity {
 	protected Dialog onCreateDialog(int id, Bundle b) {
 		final String label = b.getString("label");
 		final String itemKey = b.getString("itemKey");
-		String content = b.getString("content");
+		final String content = b.getString("content");
 		AlertDialog dialog;
 		
 		switch (id) {
@@ -162,7 +172,7 @@ public class ItemDataActivity extends ListActivity {
 			input.setText(content, BufferType.EDITABLE);
 			
 			dialog = new AlertDialog.Builder(this)
-	    	    .setTitle("Edit " + label)
+	    	    .setTitle("Edit " + Item.localizedStringForString(label))
 	    	    .setView(input)
 	    	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 	    	        @SuppressWarnings("unchecked")
@@ -211,6 +221,23 @@ public class ItemDataActivity extends ListActivity {
 		 */
 		case DIALOG_TAGS:
 			return null;
+		case DIALOG_CONFIRM_NAVIGATE:
+			dialog = new AlertDialog.Builder(this)
+		    	    .setTitle("View this online?")
+		    	    .setPositiveButton("View", new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int whichButton) {
+		        			// The behavior for invalid URIs might be nasty, but
+		        			// we'll cross that bridge if we come to it.
+		        			Uri uri = Uri.parse(content);
+		        			startActivity(new Intent(Intent.ACTION_VIEW)
+		        							.setData(uri));
+		    	        }
+		    	    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+		    	        public void onClick(DialogInterface dialog, int whichButton) {
+		    	        	// do nothing
+		    	        }
+		    	    }).create();
+		return dialog;
 		default:
 			Log.e(TAG, "Invalid dialog requested");
 			return null;
