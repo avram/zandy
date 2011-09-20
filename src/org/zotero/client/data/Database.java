@@ -16,7 +16,7 @@ public class Database {
 	private static final String TAG = "org.zotero.client.data.Database";
 	
 	// the database version; increment to call update
-	private static final int DATABASE_VERSION = 12;
+	private static final int DATABASE_VERSION = 13;
 	
 	private static final String DATABASE_NAME = "Zotero";
 	private final DatabaseOpenHelper mDatabaseOpenHelper;

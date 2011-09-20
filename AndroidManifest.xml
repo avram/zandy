@@ -33,5 +33,9 @@
                   android:label="@string/app_name"
                   android:launchMode="standard">
         </activity>
+        <activity android:name=".TagActivity"
+                  android:label="@string/app_name"
+                  android:launchMode="standard">
+        </activity>
     </application>
 </manifest>

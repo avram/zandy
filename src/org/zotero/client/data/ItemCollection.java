@@ -40,6 +40,14 @@ public class ItemCollection extends ArrayList<Item> {
 	private String etag;
 	
 	/**
+	 * Subcollections of this collection. This is accessed through
+	 * a lazy getter, which caches the value. This may at times be
+	 * incorrect, since we don't repopulate this to reflect changes
+	 * after first populating it.
+	 */
+	private ArrayList<ItemCollection> subcollections;
+	
+	/**
 	 * This is an approximate size that we have from the database-- it may be outdated
 	 * at times, but it's often better than wading through the database and figuring out
 	 * the size that way.
@@ -150,6 +158,13 @@ public class ItemCollection extends ArrayList<Item> {
 		return size;
 	}
 	
+	/**
+	 * Marks the collection as clean and clears the pending additions and 
+	 * removals.
+	 * 
+	 * Note that dirty markings don't matter until saved to the DB, so
+	 * this should be followed by a save.
+	 */
 	public void markClean() {
 		additions.clear();
 		removals.clear();
@@ -177,6 +192,8 @@ public class ItemCollection extends ArrayList<Item> {
 	
 	/**
 	 * Saves the collection metadata to the database.
+	 * 
+	 * Does nothing with the collection children.
 	 */
 	public void save() {
 		ItemCollection existing = load(key);
@@ -234,7 +251,8 @@ public class ItemCollection extends ArrayList<Item> {
 	}
 	
 	/**
-	 * Saves the item-collection relationship
+	 * Saves the item-collection relationship. This saves the collection
+	 * itself as well.
 	 * @throws Exception	If we can't save the collection or children
 	 */
 	public void saveChildren() throws Exception {
@@ -296,6 +314,35 @@ public class ItemCollection extends ArrayList<Item> {
 		} else {
 			Log.d(TAG,"Cursor was null, so we still didn't get kids for the collection!");
 		}
+	}
+	
+	/**
+	 * Gets the subcollections of the current collection.
+	 * 
+	 * This is a lazy getter and won't check again after the first time.
+	 * @return
+	 */
+	public ArrayList<ItemCollection> getSubcollections() {
+		if (this.subcollections != null) return this.subcollections;
+		
+		this.subcollections = new ArrayList<ItemCollection>();
+
+		String[] args = { this.key };
+		Cursor cur = db.query("collections", Database.COLLCOLS, "collection_parent=?", args, null, null, null, null);
+
+		if (cur == null) {
+			Log.d(TAG,"No subcollections found for collection: " + this.title);
+			return this.subcollections;
+		}
+		
+		do {
+			ItemCollection collection = load(cur);
+			Log.d(TAG,"Found subcollection: " + collection.title);
+			this.subcollections.add(collection);
+		} while (cur.moveToNext() != false);
+		
+		if (cur != null) cur.close();
+		return this.subcollections;
 	}
 	
 	/**

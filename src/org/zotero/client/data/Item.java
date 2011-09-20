@@ -261,11 +261,18 @@ public class Item  {
 	        	/* Special handling for some types */
 	        	if (fields.getString(i).equals("tags")) {
 	        		// We display the tags semicolon-delimited
+	        		StringBuilder sb = new StringBuilder();
 	        		try {
 	        			JSONArray tagArray = values.getJSONArray(i);
-	        			b.putString("content", tagArray.join("; "));
+	        			for (int j = 0; j < tagArray.length(); j++) {
+	        				sb.append(tagArray.getJSONObject(j).getString("tag"));
+	        				if (j < tagArray.length() - 1) sb.append("; ");
+	        			}
+	        			
+	        			b.putString("content", sb.toString());
 	        		} catch (JSONException e) {
 	        			// Fall back to empty
+	        			Log.e(TAG,"Exception parsing tags, with input: "+values.getString(i),e);
 	        			b.putString("content", "");
 	        		}
 	        	} else if (fields.getString(i).equals("creators")) {
@@ -315,6 +322,48 @@ public class Item  {
 	    			- Item.sortValueForLabel(b2.getString("label"));
 	    	}
 	    });
+	    return rows;
+	}
+	
+	/**
+	 * Makes ArrayList<Bundle> from the present item's tags
+	 * Primarily for use with TagActivity, but who knows?
+	 */
+	public ArrayList<Bundle> tagsToBundleArray() {
+		JSONObject itemContent = this.content;
+	    /* Here we walk through the data and make Bundles to send to the
+	     * ArrayAdapter. There should be no real risk of JSON exceptions,
+	     * since the JSON was checked when initialized in the Item object.
+	     * 
+	     * Each Bundle has three keys: "itemKey", "tag", and "type"
+	     */
+
+	    ArrayList<Bundle> rows = new ArrayList<Bundle>();
+	    
+	    Bundle b = new Bundle();
+	    
+	    if (!itemContent.has("tags")) {
+	    	return rows;
+	    }
+	    
+	    try {
+		    JSONArray tags = itemContent.getJSONArray("tags");
+	    	Log.d(TAG, tags.toString());
+		    for (int i = 0; i < tags.length(); i++) {
+		    	b = new Bundle();
+		    	// Type is not always specified, but we try to get it
+		    	// and fall back to 0 when missing.
+		    	Log.d(TAG, tags.getJSONObject(i).toString());
+		    	if (tags.getJSONObject(i).has("type"))
+		    		b.putInt("type", tags.getJSONObject(i).optInt("type", 0));
+		    	b.putString("tag", tags.getJSONObject(i).optString("tag"));
+		    	b.putString("itemKey", this.key);
+		    	rows.add(b);
+		    }
+	    } catch (JSONException e) {
+	    	Log.e(TAG, "JSON exception caught in tag bundler: ",e);
+	    }
+	    
 	    return rows;
 	}
 	
@@ -407,6 +456,51 @@ public class Item  {
 		
 		try {
 			item.content.put(label, content);
+		} catch (JSONException e) {
+			Log.e(TAG, "Caught JSON exception when we tried to modify the JSON content");
+		}
+		item.dirty = APIRequest.API_DIRTY;
+		item.save();
+	}
+	
+	/**
+	 * Static method for setting tags
+	 * Add a tag, change a tag, or replace an existing tag.
+	 * If newTag is empty ("") or null,
+	 * the old tag is simply deleted.
+	 * 
+	 * If oldTag is empty or null, the new tag is appended.
+	 * 
+	 * We make it into a user tag, which the desktop
+	 * client does as well.
+	 *
+	 */
+	public static void setTag(String itemKey, String oldTag, String newTag, int type) {
+		// Load the item
+		Item item = load(itemKey);
+		
+		try {
+			JSONArray tags = item.content.getJSONArray("tags");
+			JSONArray newTags = new JSONArray();
+			Log.d(TAG, "Old: "+tags.toString());
+			Log.d(TAG, "New: "+newTags.toString());
+			// Allow adding a new tag
+			if (oldTag == null || oldTag.equals("")) {
+				newTags = tags.put(new JSONObject().put("tag", newTag).put("type", type));
+			} else {
+			// In other cases, we're removing or replacing a tag
+				for (int i = 0; i < tags.length(); i++) {
+					if (tags.getJSONObject(i).getString("tag").equals(oldTag)) {
+						if (newTag != null && !newTag.equals(""))
+							newTags.put(new JSONObject().put("tag", newTag).put("type", type));
+						else
+							Log.d(TAG,"Tag removed: "+oldTag);
+					} else {
+						newTags.put(tags.getJSONObject(i));
+					}
+				}
+			}
+			item.content.put("tags", newTags);
 		} catch (JSONException e) {
 			Log.e(TAG, "Caught JSON exception when we tried to modify the JSON content");
 		}

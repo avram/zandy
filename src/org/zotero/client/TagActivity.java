@@ -10,8 +10,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.util.Log;
@@ -31,17 +29,22 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.TextView.BufferType;
 
+/**
+ * This Activity handles displaying and editing tags. It works almost the same as
+ * ItemDataActivity, using a simple ArrayAdapter on Bundles with the tag info.
+ * 
+ * @author ajlyon
+ *
+ */
+public class TagActivity extends ListActivity {
 
-public class ItemDataActivity extends ListActivity {
-
-	private static final String TAG = "org.zotero.client.ItemDataActivity";
+	private static final String TAG = "org.zotero.client.TagActivity";
 	
-	static final int DIALOG_SINGLE_VALUE = 0;
-	static final int DIALOG_ITEM_TYPE = 1;
-//	static final int DIALOG_CREATORS = 2;
-//	static final int DIALOG_TAGS = 3;
+	static final int DIALOG_TAG = 3;
 	static final int DIALOG_CONFIRM_NAVIGATE = 4;	
-		
+	
+	private Item item;
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,9 +53,10 @@ public class ItemDataActivity extends ListActivity {
         /* Get the incoming data from the calling activity */
         // XXX Note that we don't know what to do when there is no key assigned
         String itemKey = getIntent().getStringExtra("org.zotero.client.itemKey");
-        final Item item = Item.load(itemKey);
+        Item item = Item.load(itemKey);
+        this.item = item;
         
-        ArrayList<Bundle> rows = item.toBundleArray();
+        ArrayList<Bundle> rows = item.tagsToBundleArray();
         
         /* 
          * We use the standard ArrayAdapter, passing in our data as a Bundle.
@@ -76,11 +80,11 @@ public class ItemDataActivity extends ListActivity {
         		TextView tvLabel = (TextView) row.findViewById(R.id.data_label);
         		TextView tvContent = (TextView) row.findViewById(R.id.data_content);
         		
-	        	/* Since the field names are the API / internal form, we
-	        	 * attempt to get a localized, human-readable version. */
-        		tvLabel.setText(Item.localizedStringForString(
-        					getItem(position).getString("label")));
-        		tvContent.setText(getItem(position).getString("content"));
+        		if (getItem(position).getInt("type") == 1)
+        			tvLabel.setText("Auto");
+        		else
+        			tvLabel.setText("User");
+        		tvContent.setText(getItem(position).getString("tag"));
          
         		return row;
         	}
@@ -93,9 +97,11 @@ public class ItemDataActivity extends ListActivity {
         	// being used with the correct parametrization.
         	@SuppressWarnings("unchecked")
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-     			// If we have a click on an entry, do something...
+        		// If we have a click on an entry, do something...
         		ArrayAdapter<Bundle> adapter = (ArrayAdapter<Bundle>) parent.getAdapter();
         		Bundle row = adapter.getItem(position);
+        		
+/* TODO Rework this logic to open an ItemActivity showing tagged items
         		if (row.getString("label").equals("url")) {
         			row.putString("url", row.getString("content"));
         			removeDialog(DIALOG_CONFIRM_NAVIGATE);
@@ -110,7 +116,7 @@ public class ItemDataActivity extends ListActivity {
         			showDialog(DIALOG_CONFIRM_NAVIGATE, row);
         			return;
         		}
-        		
+ */       		
 				Toast.makeText(getApplicationContext(), row.getString("content"), 
         				Toast.LENGTH_SHORT).show();
         	}
@@ -125,66 +131,43 @@ public class ItemDataActivity extends ListActivity {
         	 */
         	@SuppressWarnings("unchecked")
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-     			// If we have a long click on an entry, we'll provide a way of editing it
+     			// If we have a long click on an entry, show an editor
         		ArrayAdapter<Bundle> adapter = (ArrayAdapter<Bundle>) parent.getAdapter();
         		Bundle row = adapter.getItem(position);
-        		// Show the right type of dialog for the row in question
-        		if (row.getString("label").equals("itemType")) {
-        			removeDialog(DIALOG_ITEM_TYPE);
-        			showDialog(DIALOG_ITEM_TYPE, row);
-        			return true;
-        		} else if (row.getString("label").equals("creators")) {
-        	    	Log.d(TAG, "Trying to start creators activity");
-        	    	// XXX This should refer to CreatorActivity when that's written
-        	    	Intent i = new Intent(getBaseContext(), TagActivity.class);
-    		    	i.putExtra("org.zotero.client.itemKey", item.getKey());
-        	    	startActivity(i);
-        	    	
-        	    	return true;
-        		} else if (row.getString("label").equals("tags")) {
-        	    	Log.d(TAG, "Trying to start tag activity");
-        	    	Intent i = new Intent(getBaseContext(), TagActivity.class);
-        	    	i.putExtra("org.zotero.client.itemKey", item.getKey());
-        	    	startActivity(i);
-        	    	
-        			return true;
-        		}
         		
-    			removeDialog(DIALOG_SINGLE_VALUE);
-        		showDialog(DIALOG_SINGLE_VALUE, row);
+    			removeDialog(DIALOG_TAG);
+        		showDialog(DIALOG_TAG, row);
         		return true;
           }
         });
 
     }
     
-    /*
-     * Just one kind of dialog for now -- a value editor
-     */
 	protected Dialog onCreateDialog(int id, Bundle b) {
-		final String label = b.getString("label");
+		@SuppressWarnings("unused")
+		final int type = b.getInt("type");
+		final String tag = b.getString("tag");
 		final String itemKey = b.getString("itemKey");
-		final String content = b.getString("content");
 		AlertDialog dialog;
 		
 		switch (id) {
-		/* Simple editor for a single value */
-		case DIALOG_SINGLE_VALUE:			
+		/* Simple editor for a single tag */
+		case DIALOG_TAG:			
 			final EditText input = new EditText(this);
-			input.setText(content, BufferType.EDITABLE);
+			input.setText(tag, BufferType.EDITABLE);
 			
 			dialog = new AlertDialog.Builder(this)
-	    	    .setTitle("Edit " + Item.localizedStringForString(label))
+	    	    .setTitle("Edit Tag")
 	    	    .setView(input)
 	    	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 	    	        @SuppressWarnings("unchecked")
 					public void onClick(DialogInterface dialog, int whichButton) {
 	    	            Editable value = input.getText();
-	    	            Item.set(itemKey, label, value.toString());
+	    	            Item.setTag(itemKey, tag, value.toString(), 0);
 	    	            Item item = Item.load(itemKey);
 	    	            ArrayAdapter<Bundle> la = (ArrayAdapter<Bundle>) getListAdapter();
 	    	            la.clear();
-	    	            for (Bundle b : item.toBundleArray()) {
+	    	            for (Bundle b : item.tagsToBundleArray()) {
 	    	            	la.add(b);
 	    	            }
 	    	            la.notifyDataSetChanged();
@@ -195,36 +178,8 @@ public class ItemDataActivity extends ListActivity {
 	    	        }
 	    	    }).create();
 			return dialog;
-		/* Item type selector */
-		case DIALOG_ITEM_TYPE:
-			dialog = new AlertDialog.Builder(this)
-	    	    .setTitle("Change Item Type")
-	    	    .setItems(Item.ITEM_TYPES_EN, new DialogInterface.OnClickListener() {
-	    	        @SuppressWarnings("unchecked")
-					public void onClick(DialogInterface dialog, int pos) {
-	    	            Item.set(itemKey, label, Item.ITEM_TYPES[pos]);
-	    	            Item item = Item.load(itemKey);
-	    	            ArrayAdapter<Bundle> la = (ArrayAdapter<Bundle>) getListAdapter();
-	    	            la.clear();
-	    	            for (Bundle b : item.toBundleArray()) {
-	    	            	la.add(b);
-	    	            }
-	    	            la.notifyDataSetChanged();
-	    	        }
-	    	    }).create();
-			return dialog;
-		/* Creators editor
-		 * Since we've mangled the JSON, we'll need to load the item anew
-		 */
-//		case DIALOG_CREATORS:
-//			return null;
-		/* Tags editor
-		 * We'll need to load the item anew from DB to get real tags
-		 */
-//		case DIALOG_TAGS:
-//			return null;
 		case DIALOG_CONFIRM_NAVIGATE:
-			dialog = new AlertDialog.Builder(this)
+/*			dialog = new AlertDialog.Builder(this)
 		    	    .setTitle("View this online?")
 		    	    .setPositiveButton("View", new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int whichButton) {
@@ -239,7 +194,8 @@ public class ItemDataActivity extends ListActivity {
 		    	        	// do nothing
 		    	        }
 		    	    }).create();
-		return dialog;
+			return dialog;*/
+			return null;
 		default:
 			Log.e(TAG, "Invalid dialog requested");
 			return null;
@@ -275,8 +231,16 @@ public class ItemDataActivity extends ListActivity {
         	// We should handle collections here too, once they can be modified
         	
         	return true;
+        /*
+         * We're being sloppy for now, so we don't have to find menu icons
+         */
         case R.id.quit:
-        	finish();
+    		Bundle row = new Bundle();
+    		row.putString("tag", null);
+    		row.putString("itemKey", this.item.getKey());
+    		row.putInt("type", 0);
+			removeDialog(DIALOG_TAG);
+    		showDialog(DIALOG_TAG, row);
             return true;
         default:
             return super.onOptionsItemSelected(item);

@@ -1,10 +1,6 @@
 package org.zotero.client;
 
-import oauth.signpost.OAuthProvider;
-import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
-
 import org.zotero.client.data.CollectionAdapter;
-import org.zotero.client.data.ItemAdapter;
 import org.zotero.client.data.ItemCollection;
 import org.zotero.client.task.APIRequest;
 import org.zotero.client.task.ZoteroAPITask;
@@ -20,7 +16,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CursorAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,8 +24,6 @@ import android.widget.AdapterView.OnItemLongClickListener;
 
 /* Rework for collections only, then make another one for items */
 public class CollectionActivity extends ListActivity {
-	private CommonsHttpOAuthConsumer httpOAuthConsumer;
-	private OAuthProvider httpOAuthProvider;
 
 	private static final String TAG = "org.zotero.client.CollectionActivity";
 	
@@ -60,16 +53,16 @@ public class CollectionActivity extends ListActivity {
         		if (cur.moveToPosition(position)) {
         			// and replace the cursor with one for the selected collection
         			ItemCollection coll = ItemCollection.load(cur);
-        			if (coll != null && coll.getKey() != null) {
+        			if (coll != null && coll.getKey() != null && coll.getSubcollections().size() > 0) {
         				Log.d(TAG, "Loading child collection with key: "+coll.getKey());
         				// We create and issue a specified intent with the necessary data
         		    	Intent i = new Intent(getBaseContext(), CollectionActivity.class);
         		    	i.putExtra("org.zotero.client.collectionKey", coll.getKey());
         		    	startActivity(i);
-        				//adapter.refresh(ItemCollection.load(cur));
         			} else {
-        				// collection loaded was null. why?
-        				Log.d(TAG, "Failed loading collection at position: "+position);
+        				Log.d(TAG, "Failed loading child collections for collection");
+        				Toast.makeText(getApplicationContext(), "No subcollections for collection", 
+                				Toast.LENGTH_SHORT).show();
         			}
         		} else {
         			// failed to move cursor-- show a toast
@@ -121,39 +114,15 @@ public class CollectionActivity extends ListActivity {
         		return true;
           }
         });
-       
-        /* override back
-        lv.setOnKeyListener(new OnKeyListener() {
-        	/**
-        	 * We handle the back key in two places: when viewing collections,
-        	 * and when viewing items that are in a collection.
-        	 
-			@Override
-			public boolean onKey(View view, int keyCode, KeyEvent event) {
-				if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-		    			
-			            // we need to go back a level and swap out the cursor...
-						Log.d(TAG,"ID: "+view.getId());
-						Class current = getListAdapter().getClass();
-						if (current == CollectionAdapter.class) {
-				    		CollectionAdapter adapter = (CollectionAdapter) getListAdapter();
-							Log.d(TAG, "BACK as collection in LV");
-				    		adapter.goUp();
-						} else {
-							Log.d(TAG, "BACK as item in LV");
-			    			ItemAdapter adapter2 = (ItemAdapter) getListAdapter();
-			    			ItemCollection parent = adapter2.getParent();
-			    			if (parent != null) {
-			    				CollectionAdapter replacement = CollectionAdapter.create(getApplicationContext(), parent);
-			    				setListAdapter(replacement);
-			    			}
-						}
-			    		return true;
-		        }
-				return true;
-			}
-        });
-        */
+    }
+    
+    protected void onResume() {
+		CollectionAdapter adapter = (CollectionAdapter) getListAdapter();
+		// XXX This may be too agressive-- fix if causes issues
+		Cursor cur = adapter.getCursor();
+		if (cur != null) cur.requery();
+		adapter.notifyDataSetChanged();
+    	super.onResume();
     }
     
     @Override
@@ -168,7 +137,7 @@ public class CollectionActivity extends ListActivity {
         // Handle item selection
         switch (item.getItemId()) {
         case R.id.do_sync:
-        	Log.d(TAG, "Making sync request");
+        	Log.d(TAG, "Making sync request for all collections");
         	APIRequest req = new APIRequest(ServerCredentials.APIBASE + "/users/5770/collections", "get", "NZrpJ7YDnz8U6NPbbonerxlt");
 			req.disposition = "xml";
 			new ZoteroAPITask("NZrpJ7YDnz8U6NPbbonerxlt", (CursorAdapter) getListAdapter()).execute(req);	
@@ -180,24 +149,4 @@ public class CollectionActivity extends ListActivity {
             return super.onOptionsItemSelected(item);
         }
     }
- /*   
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event)  {
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-    		if (getListAdapter() instanceof CollectionAdapter) {
-				Log.d(TAG, "BACK as coll in ACTIVITY");
-
-	            // we need to go back a level and swap out the cursor...
-	    		CollectionAdapter adapter = (CollectionAdapter) getListAdapter();
-	    		if (adapter.getCursor() == null) {
-	    			adapter.goUp();
-	    			adapter.justSwapped = true;
-	    			return true;
-	    		} else {
-	    			return false;
-	    		}
-    		}
-        }
-        return super.onKeyDown(keyCode, event);
-    }*/
 }

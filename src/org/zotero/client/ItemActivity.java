@@ -1,8 +1,5 @@
 package org.zotero.client;
 
-import oauth.signpost.OAuthProvider;
-import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
-
 import org.zotero.client.data.Item;
 import org.zotero.client.data.ItemAdapter;
 import org.zotero.client.data.ItemCollection;
@@ -12,7 +9,6 @@ import org.zotero.client.task.ZoteroAPITask;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
-import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -31,8 +27,6 @@ import android.widget.AdapterView.OnItemClickListener;
 
 
 public class ItemActivity extends ListActivity {
-	private CommonsHttpOAuthConsumer httpOAuthConsumer;
-	private OAuthProvider httpOAuthProvider;
 
 	private static final String TAG = "org.zotero.client.ItemActivity";
 	
@@ -88,7 +82,8 @@ public class ItemActivity extends ListActivity {
     protected void onResume() {
 		ItemAdapter adapter = (ItemAdapter) getListAdapter();
 		// XXX This may be too agressive-- fix if causes issues
-		adapter.getCursor().requery();
+		Cursor cur = adapter.getCursor();
+		if (cur != null) cur.requery();
 		adapter.notifyDataSetChanged();
     	super.onResume();
     }

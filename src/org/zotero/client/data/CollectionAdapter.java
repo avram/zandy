@@ -1,6 +1,7 @@
 package org.zotero.client.data;
 
 import org.zotero.client.R;
+import org.zotero.client.task.APIRequest;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -44,7 +45,7 @@ public class CollectionAdapter extends ResourceCursorAdapter {
 	public void bindView(View view, Context context, Cursor cursor) {
 		//Log.d(TAG, "bindView view is: " + view.getId());
 		TextView tvTitle = (TextView)view.findViewById(R.id.collection_title);
-		TextView tvDirty = (TextView)view.findViewById(R.id.collection_dirty);
+		TextView tvInfo = (TextView)view.findViewById(R.id.collection_info);
 	
 		if (cursor == null) {
 			Log.e(TAG, "cursor is null in bindView");
@@ -57,8 +58,12 @@ public class CollectionAdapter extends ResourceCursorAdapter {
 			Log.e(TAG, "tvTitle is null in bindView");
 		}
 		tvTitle.setText(collection.getTitle());
-
-		//tvDirty.setText(collection.dirty);
+		StringBuilder sb = new StringBuilder();
+		sb.append(collection.getSize() + " items");
+		sb.append("; " + collection.getSubcollections().size() + " subcollections");
+		if(!collection.dirty.equals(APIRequest.API_CLEAN))
+			sb.append("; "+collection.dirty);
+		tvInfo.setText(sb.toString());
 	}
 
 	/**

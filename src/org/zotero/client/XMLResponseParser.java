@@ -2,8 +2,6 @@ package org.zotero.client;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,7 +11,6 @@ import org.zotero.client.data.Database;
 import org.zotero.client.data.Item;
 import org.zotero.client.data.ItemCollection;
 import org.zotero.client.task.APIRequest;
-import org.zotero.client.task.ZoteroAPITask;
 
 import android.sax.Element;
 import android.sax.ElementListener;
@@ -30,7 +27,6 @@ public class XMLResponseParser extends DefaultHandler {
 	private Item item;
 	private ItemCollection collection;
 	private ItemCollection parent;
-	private int mode;
 	private boolean items = false;
 	
 	public static ArrayList<APIRequest> queue;
@@ -54,9 +50,7 @@ public class XMLResponseParser extends DefaultHandler {
 		if (queue == null) queue = new ArrayList<APIRequest>();
 	}
 	
-	public void parse(int mode, String url) {
-		this.mode = mode;
-		
+	public void parse(int mode, String url) {		
 		Element entry;
 		RootElement root;
 		// we have a different root for indiv. items
@@ -199,6 +193,7 @@ public class XMLResponseParser extends DefaultHandler {
             if (parent != null) {
             	parent.saveChildren();
             	parent.markClean();
+            	parent.save();
             }
             db.close();
         } catch (Exception e) {
