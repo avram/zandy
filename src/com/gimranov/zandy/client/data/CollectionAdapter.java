@@ -1,7 +1,4 @@
-package org.zotero.client.data;
-
-import org.zotero.client.R;
-import org.zotero.client.task.APIRequest;
+package com.gimranov.zandy.client.data;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -12,13 +9,16 @@ import android.view.ViewGroup;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
+import com.gimranov.zandy.client.R;
+import com.gimranov.zandy.client.task.APIRequest;
+
 /**
  * Exposes collection to be displayed by a ListView
  * @author ajlyon
  *
  */
 public class CollectionAdapter extends ResourceCursorAdapter {
-	private static final String TAG = "org.zotero.client.data.CollectionAdapter";
+	private static final String TAG = "com.gimranov.zandy.client.data.CollectionAdapter";
 
 	private Database db;
 	public Context context;

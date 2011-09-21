@@ -1,12 +1,13 @@
-package org.zotero.client.task;
+package com.gimranov.zandy.client.task;
 
 import java.util.ArrayList;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.zotero.client.ServerCredentials;
-import org.zotero.client.data.Item;
-import org.zotero.client.data.ItemCollection;
+
+import com.gimranov.zandy.client.ServerCredentials;
+import com.gimranov.zandy.client.data.Item;
+import com.gimranov.zandy.client.data.ItemCollection;
 
 import android.util.Log;
 
@@ -20,11 +21,12 @@ import android.util.Log;
  *
  */
 public class APIRequest {
-	private static final String TAG = "org.zotero.client.task.APIRequest";
+	private static final String TAG = "com.gimranov.zandy.client.task.APIRequest";
 
 	
 	public static final String API_DIRTY =	"Unsynced change";
 	public static final String API_MISSING ="Partial data";
+	public static final String API_STALE = "Stale data";
 	public static final String API_WIP  = 	"Sync attempted";
 	public static final String API_CLEAN =	"No unsynced change";
 	
@@ -79,6 +81,8 @@ public class APIRequest {
 		this.query = query;
 		this.method = method;
 		this.key = key;
+		// default to XML processing
+		this.disposition = "xml";
 	}
 	
 	/**
@@ -93,7 +97,7 @@ public class APIRequest {
 		try {
 			body = item.getContent().toString(4);
 		} catch (JSONException e) {
-			Log.e("org.zotero.client.task.APIRequest", "Error setting body for item", e);
+			Log.e("com.gimranov.zandy.client.task.APIRequest", "Error setting body for item", e);
 		}
 	}
 	
@@ -113,7 +117,7 @@ public class APIRequest {
 			}
 			body = obj.toString(4);
 		} catch (JSONException e) {
-			Log.e("org.zotero.client.task.APIRequest", "Error setting body for items", e);
+			Log.e(TAG, "Error setting body for items", e);
 		}
 	}
 	

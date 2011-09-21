@@ -1,4 +1,4 @@
-package org.zotero.client.data;
+package com.gimranov.zandy.client.data;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,13 +7,14 @@ import java.util.Comparator;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.zotero.client.R;
-import org.zotero.client.task.APIRequest;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
+
+import com.gimranov.zandy.client.R;
+import com.gimranov.zandy.client.task.APIRequest;
 
 public class Item  {
 	private String id;
@@ -31,11 +32,16 @@ public class Item  {
 	public String dbId;
 	
 	/**
+	 * Timestamp of last update from server
+	 */
+	private String timestamp;
+	
+	/**
 	 * Queue of dirty items to be sent to the server
 	 */
 	public static ArrayList<Item> queue = new ArrayList<Item>();
 	
-	private static final String TAG = "org.zotero.client.data.Item";
+	private static final String TAG = "com.gimranov.zandy.client.data.Item";
 	
 	/**
 	 * The next two types are arrays of information on items that we need elsewhere
@@ -237,6 +243,14 @@ public class Item  {
 		this.creatorSummary = creatorSummary;
 	}
 	
+	public String getTimestamp() {
+		return timestamp;
+	}
+	
+	public void setTimestamp(String timestamp) {
+		this.timestamp = timestamp;
+	}
+	
 	/**
 	 * Makes ArrayList<Bundle> from the present item
 	 * This was moved from ItemDataActivity, but it's most likely to
@@ -431,19 +445,19 @@ public class Item  {
 	public void save() {
 		Item existing = load(key);
 		if (existing == null) {
-			String[] args = { title, key, type, year, creatorSummary, content.toString(), etag, dirty };
+			String[] args = { title, key, type, year, creatorSummary, content.toString(), etag, dirty, timestamp };
 			Cursor cur = db.rawQuery(
-					"insert into items (item_title, item_key, item_type, item_year, item_creator, item_content, etag, dirty) " +
-					"values (?, ?, ?, ?, ?, ?, ?, ?)", args);
+					"insert into items (item_title, item_key, item_type, item_year, item_creator, item_content, etag, dirty, timestamp) " +
+					"values (?, ?, ?, ?, ?, ?, ?, ?, ?)", args);
 			if (cur != null) cur.close();
 			Item fromDB = load(key);
 			dbId = fromDB.dbId;
 		} else {
 			dbId = existing.dbId;
-			String[] args = { title, type, year, creatorSummary, content.toString(), etag, dirty, dbId };
+			String[] args = { title, type, year, creatorSummary, content.toString(), etag, dirty, dbId, timestamp };
 			Log.i(TAG, "Updating existing item.");
 			Cursor cur = db.rawQuery(
-					"update items set item_title=?, item_type=?, item_year=?, item_creator=?, item_content=?, etag=?, dirty=? " +
+					"update items set item_title=?, item_type=?, item_year=?, item_creator=?, item_content=?, etag=?, dirty=?, timestamp=? " +
 					" where _id=?", args);
 			if (cur != null) cur.close();
 		}
@@ -481,7 +495,8 @@ public class Item  {
 			Log.e(TAG, "Didn't find an item for update");
 			return null;
 		}
-		
+		//{"item_title", "item_type", "item_content", "etag", "dirty", "_id", "item_key", "item_year", "item_creator", "timestamp"};
+
 		item.setTitle(cur.getString(0));
 		item.setType(cur.getString(1));
 		try {
@@ -495,6 +510,7 @@ public class Item  {
 		item.setKey(cur.getString(6));
 		item.setYear(cur.getString(7));
 		item.setCreatorSummary(cur.getString(8));
+		item.setTimestamp(cur.getString(9));
 		return item;
 	}
 	
@@ -667,7 +683,7 @@ public class Item  {
 		if (type.equals("manuscript")) return R.drawable.script;
 		if (type.equals("map")) return R.drawable.map;
 		if (type.equals("newspaperArticle")) return R.drawable.newspaper;
-		if (type.equals("patent")) return R.drawable.ic_menu_close_clear_cancel;
+//		if (type.equals("patent")) return R.drawable.ic_menu_close_clear_cancel;
 //		if (type.equals("podcast")) return R.drawable.ic_menu_close_clear_cancel;
 		if (type.equals("presentation")) return R.drawable.page_white_powerpoint;
 //		if (type.equals("radioBroadcast")) return R.drawable.ic_menu_close_clear_cancel;

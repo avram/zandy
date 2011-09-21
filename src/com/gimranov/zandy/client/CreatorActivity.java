@@ -1,11 +1,6 @@
-package org.zotero.client;
+package com.gimranov.zandy.client;
 
 import java.util.ArrayList;
-
-import org.zotero.client.data.Creator;
-import org.zotero.client.data.Item;
-import org.zotero.client.task.APIRequest;
-import org.zotero.client.task.ZoteroAPITask;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -13,7 +8,6 @@ import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
-import android.text.Editable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -31,6 +25,11 @@ import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 
+import com.gimranov.zandy.client.data.Creator;
+import com.gimranov.zandy.client.data.Item;
+import com.gimranov.zandy.client.task.APIRequest;
+import com.gimranov.zandy.client.task.ZoteroAPITask;
+
 /**
  * This Activity handles displaying and editing creators. It works almost the same as
  * ItemDataActivity and TagActivity, using a simple ArrayAdapter on Bundles with the creator info.
@@ -44,7 +43,7 @@ import android.widget.AdapterView.OnItemLongClickListener;
  */
 public class CreatorActivity extends ListActivity {
 
-	private static final String TAG = "org.zotero.client.CreatorActivity";
+	private static final String TAG = "com.gimranov.zandy.client.CreatorActivity";
 	
 	static final int DIALOG_CREATOR = 3;
 	static final int DIALOG_CONFIRM_NAVIGATE = 4;	
@@ -59,7 +58,7 @@ public class CreatorActivity extends ListActivity {
                 
         /* Get the incoming data from the calling activity */
         // XXX Note that we don't know what to do when there is no key assigned
-        String itemKey = getIntent().getStringExtra("org.zotero.client.itemKey");
+        String itemKey = getIntent().getStringExtra("com.gimranov.zandy.client.itemKey");
         Item item = Item.load(itemKey);
         this.item = item;
         
@@ -307,6 +306,11 @@ public class CreatorActivity extends ListActivity {
         // Handle item selection
         switch (item.getItemId()) {
         case R.id.do_sync:
+        	if (!ServerCredentials.check(getApplicationContext())) {
+            	Toast.makeText(getApplicationContext(), "Log in to sync", 
+        				Toast.LENGTH_SHORT).show();
+            	return true;
+        	}
         	Log.d(TAG, "Preparing sync requests");
         	Item.queue();
         	if (!Item.queue.isEmpty()) {
@@ -323,7 +327,7 @@ public class CreatorActivity extends ListActivity {
         /*
          * We're being sloppy for now, so we don't have to find menu icons
          */
-        case R.id.quit:
+        case R.id.do_new:
     		Bundle row = new Bundle();
     		row.putInt("position", -1);
     		row.putString("itemKey", this.item.getKey());

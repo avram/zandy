@@ -1,4 +1,4 @@
-package org.zotero.client;
+package com.gimranov.zandy.client;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -7,10 +7,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
-import org.zotero.client.data.Database;
-import org.zotero.client.data.Item;
-import org.zotero.client.data.ItemCollection;
-import org.zotero.client.task.APIRequest;
+
+import com.gimranov.zandy.client.data.Database;
+import com.gimranov.zandy.client.data.Item;
+import com.gimranov.zandy.client.data.ItemCollection;
+import com.gimranov.zandy.client.task.APIRequest;
 
 import android.sax.Element;
 import android.sax.ElementListener;
@@ -21,7 +22,7 @@ import android.util.Log;
 import android.util.Xml;
 
 public class XMLResponseParser extends DefaultHandler {
-	private static final String TAG = "org.zotero.client.XMLResponseParser";
+	private static final String TAG = "com.gimranov.zandy.client.XMLResponseParser";
 	
 	private InputStream input;
 	private Item item;
@@ -94,7 +95,7 @@ public class XMLResponseParser extends DefaultHandler {
 	    			// If there are more items, queue them up to be handled too
 	            	if (rel.contains("next")) {
     					Log.e(TAG, "Found continuation: "+href);
-	            		APIRequest req = new APIRequest(href, "get", "NZrpJ7YDnz8U6NPbbonerxlt");
+	            		APIRequest req = new APIRequest(href, "get", null);
 	        			req.disposition = "xml";
 	        			queue.add(req);
 	            	}
@@ -118,7 +119,15 @@ public class XMLResponseParser extends DefaultHandler {
             		item.save();
             	}
             	if (items == false) {
-            		collection.dirty = APIRequest.API_MISSING;
+            		ItemCollection ic = ItemCollection.load(collection.getKey());
+            		if (ic != null 
+            				&& !ic.getTimestamp()
+            				.equals(collection.
+            						getTimestamp()))
+            			// In this case, we have data, but we should refresh it
+            			collection.dirty = APIRequest.API_STALE;
+            		else
+            			collection.dirty = APIRequest.API_MISSING;
             		collection.save();
             	}
             	Log.i(TAG, "Done parsing an entry.");
@@ -135,6 +144,13 @@ public class XMLResponseParser extends DefaultHandler {
             public void end(String body) {
             	item.setKey(body);
             	collection.setKey(body);
+            	Log.i(TAG, body);
+            }
+        });
+        entry.getChild(ATOM_NAMESPACE, "updated").setEndTextElementListener(new EndTextElementListener(){
+            public void end(String body) {
+            	item.setTimestamp(body);
+            	collection.setTimestamp(body);
             	Log.i(TAG, body);
             }
         });

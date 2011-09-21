@@ -1,4 +1,4 @@
-package org.zotero.client.task;
+package com.gimranov.zandy.client.task;
 
 public class APIException extends Exception {
 

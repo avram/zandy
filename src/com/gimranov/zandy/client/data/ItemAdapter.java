@@ -1,6 +1,4 @@
-package org.zotero.client.data;
-
-import org.zotero.client.R;
+package com.gimranov.zandy.client.data;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -12,13 +10,15 @@ import android.widget.ImageView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
+import com.gimranov.zandy.client.R;
+
 /**
  * Exposes items to be displayed by a ListView
  * @author ajlyon
  *
  */
 public class ItemAdapter extends ResourceCursorAdapter {
-	private static final String TAG = "org.zotero.client.data.ItemAdapter";
+	private static final String TAG = "com.gimranov.zandy.client.data.ItemAdapter";
 	
 	private Database db;
 	private Context context;
@@ -91,12 +91,10 @@ public class ItemAdapter extends ResourceCursorAdapter {
 	}
 	
 	public static ItemAdapter create(Context context, ItemCollection parent) {
-		// ITEMCOLS = {"item_title", "item_type", "item_content", "etag", "dirty",
-		// 				"_id", "item_key", "item_year", "item_creator"};
 		Database db = new Database(context);
 		String[] args = { parent.dbId };
 		Cursor cursor = db.rawQuery("SELECT item_title, item_type, item_content, etag, dirty, " +
-				"items._id, item_key, item_year, item_creator " +
+				"items._id, item_key, item_year, item_creator, timestamp " +
 				" FROM items, itemtocollections WHERE items._id = item_id AND collection_id=? ORDER BY item_year, item_title",
 				args);
 		if (cursor == null) {

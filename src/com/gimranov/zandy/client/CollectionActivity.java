@@ -1,9 +1,4 @@
-package org.zotero.client;
-
-import org.zotero.client.data.CollectionAdapter;
-import org.zotero.client.data.ItemCollection;
-import org.zotero.client.task.APIRequest;
-import org.zotero.client.task.ZoteroAPITask;
+package com.gimranov.zandy.client;
 
 import android.app.ListActivity;
 import android.content.Intent;
@@ -22,11 +17,16 @@ import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 
+import com.gimranov.zandy.client.data.CollectionAdapter;
+import com.gimranov.zandy.client.data.ItemCollection;
+import com.gimranov.zandy.client.task.APIRequest;
+import com.gimranov.zandy.client.task.ZoteroAPITask;
+
 /* Rework for collections only, then make another one for items */
 public class CollectionActivity extends ListActivity {
 
-	private static final String TAG = "org.zotero.client.CollectionActivity";
-	
+	private static final String TAG = "com.gimranov.zandy.client.CollectionActivity";
+		
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -36,7 +36,7 @@ public class CollectionActivity extends ListActivity {
 
         CollectionAdapter collectionAdapter = CollectionAdapter.create(getBaseContext());
 
-        String collectionKey = getIntent().getStringExtra("org.zotero.client.collectionKey");
+        String collectionKey = getIntent().getStringExtra("com.gimranov.zandy.client.collectionKey");
         if (collectionKey != null) {
 	        ItemCollection coll = ItemCollection.load(collectionKey);
 	        collectionAdapter.refresh(coll);
@@ -57,7 +57,7 @@ public class CollectionActivity extends ListActivity {
         				Log.d(TAG, "Loading child collection with key: "+coll.getKey());
         				// We create and issue a specified intent with the necessary data
         		    	Intent i = new Intent(getBaseContext(), CollectionActivity.class);
-        		    	i.putExtra("org.zotero.client.collectionKey", coll.getKey());
+        		    	i.putExtra("com.gimranov.zandy.client.collectionKey", coll.getKey());
         		    	startActivity(i);
         			} else {
         				Log.d(TAG, "Failed loading child collections for collection");
@@ -88,16 +88,18 @@ public class CollectionActivity extends ListActivity {
                     		Toast.makeText(getApplicationContext(), "Collection is empty, requesting update.", 
                     				Toast.LENGTH_SHORT).show();
                 			Log.d(TAG, "Running a request to populate missing data for collection");
-                           	APIRequest req = new APIRequest(ServerCredentials.APIBASE + "/users/5770/collections/"+coll.getKey()+"/items", "get", "NZrpJ7YDnz8U6NPbbonerxlt");
+                           	APIRequest req = new APIRequest(ServerCredentials.APIBASE
+                           			+ ServerCredentials.prep(getBaseContext(), ServerCredentials.COLLECTIONS)
+                           			+"/"+coll.getKey()+"/items", "get", null);
                     		req.disposition = "xml";
                     		// TODO Introduce a callback to update UI when ready
-                    		new ZoteroAPITask("NZrpJ7YDnz8U6NPbbonerxlt", (CursorAdapter) getListAdapter()).execute(req);
+                    		new ZoteroAPITask(getBaseContext(), (CursorAdapter) getListAdapter()).execute(req);
             				return true;
         				}
         				Log.d(TAG, "Loading items for collection with key: "+coll.getKey());
         				// We create and issue a specified intent with the necessary data
         		    	Intent i = new Intent(getBaseContext(), ItemActivity.class);
-        		    	i.putExtra("org.zotero.client.collectionKey", coll.getKey());
+        		    	i.putExtra("com.gimranov.zandy.client.collectionKey", coll.getKey());
         		    	startActivity(i);
         			} else {
         				// collection loaded was null. why?
@@ -137,13 +139,24 @@ public class CollectionActivity extends ListActivity {
         // Handle item selection
         switch (item.getItemId()) {
         case R.id.do_sync:
+        	if (!ServerCredentials.check(getApplicationContext())) {
+            	Toast.makeText(getApplicationContext(), "Log in to sync", 
+        				Toast.LENGTH_SHORT).show();
+            	return true;
+        	}
         	Log.d(TAG, "Making sync request for all collections");
-        	APIRequest req = new APIRequest(ServerCredentials.APIBASE + "/users/5770/collections", "get", "NZrpJ7YDnz8U6NPbbonerxlt");
+        	APIRequest req = new APIRequest(ServerCredentials.APIBASE 
+        			+ ServerCredentials.prep(getBaseContext(), ServerCredentials.COLLECTIONS),
+        			"get", null);
 			req.disposition = "xml";
-			new ZoteroAPITask("NZrpJ7YDnz8U6NPbbonerxlt", (CursorAdapter) getListAdapter()).execute(req);	
+			new ZoteroAPITask(getBaseContext(), (CursorAdapter) getListAdapter()).execute(req);	
+        	Toast.makeText(getApplicationContext(), "Started syncing; refreshing collection list", 
+    				Toast.LENGTH_SHORT).show();
             return true;
-        case R.id.quit:
-        	finish();
+        case R.id.do_new:
+        	Log.d(TAG, "Can't yet make new collections");
+        	Toast.makeText(getApplicationContext(), "Sorry, new collection creation is not yet possible. Soon!", 
+    				Toast.LENGTH_SHORT).show();
             return true;
         default:
             return super.onOptionsItemSelected(item);

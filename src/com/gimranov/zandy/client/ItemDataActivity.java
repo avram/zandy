@@ -1,10 +1,6 @@
-package org.zotero.client;
+package com.gimranov.zandy.client;
 
 import java.util.ArrayList;
-
-import org.zotero.client.data.Item;
-import org.zotero.client.task.APIRequest;
-import org.zotero.client.task.ZoteroAPITask;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -31,10 +27,13 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.TextView.BufferType;
 
+import com.gimranov.zandy.client.data.Item;
+import com.gimranov.zandy.client.task.ZoteroAPITask;
+
 
 public class ItemDataActivity extends ListActivity {
 
-	private static final String TAG = "org.zotero.client.ItemDataActivity";
+	private static final String TAG = "com.gimranov.zandy.client.ItemDataActivity";
 	
 	static final int DIALOG_SINGLE_VALUE = 0;
 	static final int DIALOG_ITEM_TYPE = 1;
@@ -49,7 +48,7 @@ public class ItemDataActivity extends ListActivity {
                 
         /* Get the incoming data from the calling activity */
         // XXX Note that we don't know what to do when there is no key assigned
-        String itemKey = getIntent().getStringExtra("org.zotero.client.itemKey");
+        String itemKey = getIntent().getStringExtra("com.gimranov.zandy.client.itemKey");
         final Item item = Item.load(itemKey);
         
         ArrayList<Bundle> rows = item.toBundleArray();
@@ -110,13 +109,13 @@ public class ItemDataActivity extends ListActivity {
         		}  else if (row.getString("label").equals("creators")) {
         	    	Log.d(TAG, "Trying to start creators activity");
         	    	Intent i = new Intent(getBaseContext(), CreatorActivity.class);
-    		    	i.putExtra("org.zotero.client.itemKey", item.getKey());
+    		    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
         	    	startActivity(i);
         	    	return;
         		} else if (row.getString("label").equals("tags")) {
         	    	Log.d(TAG, "Trying to start tag activity");
         	    	Intent i = new Intent(getBaseContext(), TagActivity.class);
-        	    	i.putExtra("org.zotero.client.itemKey", item.getKey());
+        	    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
         	    	startActivity(i);
         			return;
         		}
@@ -146,13 +145,13 @@ public class ItemDataActivity extends ListActivity {
         		} else if (row.getString("label").equals("creators")) {
         	    	Log.d(TAG, "Trying to start creators activity");
         	    	Intent i = new Intent(getBaseContext(), CreatorActivity.class);
-    		    	i.putExtra("org.zotero.client.itemKey", item.getKey());
+    		    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
         	    	startActivity(i);
         	    	return true;
         		} else if (row.getString("label").equals("tags")) {
         	    	Log.d(TAG, "Trying to start tag activity");
         	    	Intent i = new Intent(getBaseContext(), TagActivity.class);
-        	    	i.putExtra("org.zotero.client.itemKey", item.getKey());
+        	    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
         	    	startActivity(i);
         			return true;
         		}
@@ -164,9 +163,6 @@ public class ItemDataActivity extends ListActivity {
 
     }
     
-    /*
-     * Just one kind of dialog for now -- a value editor
-     */
 	protected Dialog onCreateDialog(int id, Bundle b) {
 		final String label = b.getString("label");
 		final String itemKey = b.getString("itemKey");
@@ -268,21 +264,20 @@ public class ItemDataActivity extends ListActivity {
         // Handle item selection
         switch (item.getItemId()) {
         case R.id.do_sync:
-        	Log.d(TAG, "Preparing sync requests");
-        	Item.queue();
-        	if (!Item.queue.isEmpty()) {
-        		for (Item i : Item.queue) {
-        			Log.d(TAG, "Syncing dirty item: "+i.getTitle());
-        			// XXX We're not queueing here--
-        			new ZoteroAPITask("NZrpJ7YDnz8U6NPbbonerxlt").execute(APIRequest.update(i));
-        		}
+        	if (!ServerCredentials.check(getApplicationContext())) {
+            	Toast.makeText(getApplicationContext(), "Log in to sync", 
+        				Toast.LENGTH_SHORT).show();
+            	return true;
         	}
-        	
-        	// We should handle collections here too, once they can be modified
-        	
+        	Log.d(TAG, "Preparing sync requests");
+        	new ZoteroAPITask(getBaseContext()).execute();
+        	Toast.makeText(getApplicationContext(), "Started syncing...", 
+    				Toast.LENGTH_SHORT).show();
         	return true;
-        case R.id.quit:
-        	finish();
+        case R.id.do_new:
+        	Log.d(TAG, "Can't yet make new items");
+        	Toast.makeText(getApplicationContext(), "Sorry, new item creation is not yet possible. Soon!", 
+    				Toast.LENGTH_SHORT).show();
             return true;
         default:
             return super.onOptionsItemSelected(item);

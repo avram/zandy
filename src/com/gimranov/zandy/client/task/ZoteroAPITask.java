@@ -19,13 +19,14 @@
  *  
  */
 
-package org.zotero.client.task;
+package com.gimranov.zandy.client.task;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -35,29 +36,62 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
-import org.zotero.client.XMLResponseParser;
 
+import com.gimranov.zandy.client.ServerCredentials;
+import com.gimranov.zandy.client.XMLResponseParser;
+import com.gimranov.zandy.client.data.Item;
+import com.gimranov.zandy.client.data.ItemCollection;
+
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.CursorAdapter;
 
 public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
-	private static final String TAG = "org.zotero.client.task.ZoteroAPITask";
+	private static final String TAG = "com.gimranov.zandy.client.task.ZoteroAPITask";
 		
 	private String key;
 	private CursorAdapter adapter;
+	private String userID;
 	
+	// Blacklist of keys that we have synced already-- we won't sync
+	// them again on this attempt. Otherwise we'd keep trying to sync
+	// things that can't go through cleanly.
+	private ArrayList<String> blackList;
+	
+	public int syncMode;
+	
+	public static final int AUTO_SYNC_STALE_COLLECTIONS = 1;
+
 	public ZoteroAPITask(String key)
 	{
+		blackList = new ArrayList<String>();
 		this.key = key;
 	}
 
+	public ZoteroAPITask(Context c)
+	{
+		blackList = new ArrayList<String>();
+		SharedPreferences settings = c.getSharedPreferences("zotero_prefs", 0);
+		userID = settings.getString("user_id", null);
+		key = settings.getString("user_key", null);
+	}
+
+	public ZoteroAPITask(Context c, CursorAdapter adapter)
+	{
+		blackList = new ArrayList<String>();
+		SharedPreferences settings = c.getSharedPreferences("zotero_prefs", 0);
+		userID = settings.getString("user_id", null);
+		key = settings.getString("user_key", null);
+	}
+	
 	public ZoteroAPITask(String key, CursorAdapter adapter)
 	{
+		blackList = new ArrayList<String>();
 		this.key = key;
 		this.adapter = adapter;
 	}
@@ -96,6 +130,53 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	    		this.doInBackground(queue);
 	    	} else {
 	        	Log.i(TAG, "Finished call, and parser's request queue is empty");
+	        	
+	        	// Here's where we'd tie in to periodic housekeeping syncs
+	        	// Probably should be controlled by a preference
+	        	
+	        	Log.d(TAG, "Preparing item sync");
+	        	Item.queue();
+	        	for (Item item : Item.queue) {
+	        		boolean firstTime = true;
+	        		for (String blackKey : blackList) {
+	        			if (blackKey.equals(item.getKey())) {
+	        				firstTime = false;
+	        				break;
+	        			}
+	        		}
+	        		if (firstTime) {
+	        			Log.d(TAG, "Syncing dirty item: "+item.getTitle());
+	        			blackList.add(item.getKey());
+	        			this.doInBackground(APIRequest.update(item));
+	        			break;
+	        		} else {
+	        			Log.d(TAG, "Skipping blacklisted item: "+item.getTitle());
+	        			continue;
+	        		}
+	        	}
+	        	
+	        	ItemCollection.queue();
+	        	for (ItemCollection j : ItemCollection.queue) {
+	        		boolean firstTime = true;
+	        		for (String blackKey : blackList) {
+	        			if (blackKey.equals(j.getKey())) {
+	        				firstTime = false;
+	        				break;
+	        			}
+	        		}
+	        		if (firstTime) {
+	        			Log.d(TAG, "Syncing dirty or stale collection: "+j.getTitle());
+	        			blackList.add(j.getKey());
+	        			this.doInBackground(new APIRequest(ServerCredentials.APIBASE
+								+ ServerCredentials.prep(userID, ServerCredentials.COLLECTIONS)+"/"+j.getKey() + "/items",
+								"get",
+								key));
+	        			break;
+	        		} else {
+	        			Log.d(TAG, "Skipping blacklisted collection: "+j.getTitle());
+	        			continue;
+	        		}
+	        	}
 	    	}
             publishProgress((int) ((i / (float) count) * 100));
         }

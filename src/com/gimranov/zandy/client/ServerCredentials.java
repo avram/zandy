@@ -1,4 +1,7 @@
-package org.zotero.client;
+package com.gimranov.zandy.client;
+
+import android.content.Context;
+import android.content.SharedPreferences;
 
 public class ServerCredentials {
 	/** Application key -- available from Zotero */
@@ -22,8 +25,8 @@ public class ServerCredentials {
 
 	/* These are the manipulation methods */
 	// /users/1/items GET, POST, PUT, DELETE
-	public static final String ITEMS = "/users/5770/items";
-	public static final String COLLECTIONS = "/users/5770/collections";
+	public static final String ITEMS = "/users/USERID/items";
+	public static final String COLLECTIONS = "/users/USERID/collections";
 	
 	public static final String TAGS = "/tags";
 	public static final String GROUPS = "/groups";	
@@ -32,4 +35,22 @@ public class ServerCredentials {
 	public static final String OAUTHREQUEST = "https://www.zotero.org/oauth/request";
 	public static final String OAUTHACCESS = "https://www.zotero.org/oauth/access";
 	public static final String OAUTHAUTHORIZE = "https://www.zotero.org/oauth/authorize";
+	
+	public static String prep(Context c, String in) {
+		SharedPreferences settings = c.getSharedPreferences("zotero_prefs", 0);
+		String userID = settings.getString("user_id", null);
+		return prep(userID, in);
+	}
+	
+	public static String prep(String id, String in) {
+		return in.replace("USERID", id);
+	}
+	
+	public static boolean check(Context c) {
+		SharedPreferences settings = c.getSharedPreferences("zotero_prefs", 0);
+		if (settings.getString("user_id", null) != null
+				&& settings.getString("user_key", null) != null)
+			return true;
+		else return false;
+	}
 }

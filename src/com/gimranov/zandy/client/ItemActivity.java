@@ -1,10 +1,4 @@
-package org.zotero.client;
-
-import org.zotero.client.data.Item;
-import org.zotero.client.data.ItemAdapter;
-import org.zotero.client.data.ItemCollection;
-import org.zotero.client.task.APIRequest;
-import org.zotero.client.task.ZoteroAPITask;
+package com.gimranov.zandy.client;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -25,13 +19,21 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
+import com.gimranov.zandy.client.data.Item;
+import com.gimranov.zandy.client.data.ItemAdapter;
+import com.gimranov.zandy.client.data.ItemCollection;
+import com.gimranov.zandy.client.task.APIRequest;
+import com.gimranov.zandy.client.task.ZoteroAPITask;
+
 
 public class ItemActivity extends ListActivity {
 
-	private static final String TAG = "org.zotero.client.ItemActivity";
+	private static final String TAG = "com.gimranov.zandy.client.ItemActivity";
 	
 	static final int DIALOG_VIEW = 0;
-	static final int DIALOG_NEW = 1;	
+	static final int DIALOG_NEW = 1;
+	
+	private String collectionKey;
 	
     /** Called when the activity is first created. */
     @Override
@@ -42,7 +44,7 @@ public class ItemActivity extends ListActivity {
         
         setContentView(R.layout.items);
         
-        String collectionKey = getIntent().getStringExtra("org.zotero.client.collectionKey");
+        collectionKey = getIntent().getStringExtra("com.gimranov.zandy.client.collectionKey");
         // TODO Figure out how we'll address other views that aren't collections
         if (collectionKey != null) {
         	ItemCollection coll = ItemCollection.load(collectionKey);
@@ -67,7 +69,7 @@ public class ItemActivity extends ListActivity {
         			Log.d(TAG, "Loading item data with key: "+item.getKey());
     				// We create and issue a specified intent with the necessary data
     		    	Intent i = new Intent(getBaseContext(), ItemDataActivity.class);
-    		    	i.putExtra("org.zotero.client.itemKey", item.getKey());
+    		    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
     		    	startActivity(i);
         		} else {
         			// failed to move cursor-- show a toast
@@ -118,14 +120,47 @@ public class ItemActivity extends ListActivity {
         // Handle item selection
         switch (item.getItemId()) {
         case R.id.do_sync:
-        	// TODO Make this a collection-specific sync, preceding by de-dirtying
-        	Log.d(TAG, "Making sync request");
-        	APIRequest req = new APIRequest(ServerCredentials.APIBASE + "/users/5770/collections", "get", "NZrpJ7YDnz8U6NPbbonerxlt");
-			req.disposition = "xml";
-			new ZoteroAPITask("NZrpJ7YDnz8U6NPbbonerxlt", (CursorAdapter) getListAdapter()).execute(req);	
+        	if (!ServerCredentials.check(getApplicationContext())) {
+            	Toast.makeText(getApplicationContext(), "Log in to sync", 
+        				Toast.LENGTH_SHORT).show();
+            	return true;
+        	}
+        	// Make this a collection-specific sync, preceding by de-dirtying
+        	// De-dirtying
+        	Item.queue();
+        	APIRequest[] reqs = new APIRequest[Item.queue.size() + 1];
+        	for (int j = 0; j < Item.queue.size(); j++) {
+        		Log.d(TAG, "Adding dirty item to sync: "+item.getTitle());
+        		reqs[j] = APIRequest.update(Item.queue.get(j));
+        	}
+        	if (collectionKey == null) {
+            	Log.d(TAG, "Adding sync request for all items");
+            	APIRequest req = new APIRequest(ServerCredentials.APIBASE 
+            			+ ServerCredentials.prep(getBaseContext(), ServerCredentials.ITEMS +"/top"),
+            			"get", null);
+    			req.disposition = "xml";
+    			reqs[Item.queue.size()] = req;
+        	} else {
+            	Log.d(TAG, "Adding sync request for collection: " + collectionKey);
+            	APIRequest req = new APIRequest(ServerCredentials.APIBASE
+							+ ServerCredentials.prep(getBaseContext(), ServerCredentials.COLLECTIONS)
+							+"/"
+							+ collectionKey + "/items",
+						"get",
+						null);
+    			req.disposition = "xml";
+    			reqs[Item.queue.size()] = req;
+        	}
+        	// This then provides a full queue, with the locally dirty items first, followed
+        	// by a scoped sync. Cool!
+			new ZoteroAPITask(getBaseContext(), (CursorAdapter) getListAdapter()).execute(reqs);
+        	Toast.makeText(getApplicationContext(), "Started syncing...", 
+    				Toast.LENGTH_SHORT).show();
             return true;
-        case R.id.quit:
-        	finish();
+        case R.id.do_new:
+        	Log.d(TAG, "Can't yet make new items");
+        	Toast.makeText(getApplicationContext(), "Sorry, new item creation is not yet possible. Soon!", 
+    				Toast.LENGTH_SHORT).show();
             return true;
         default:
             return super.onOptionsItemSelected(item);

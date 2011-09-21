@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/do_sync"
-          android:icon="@drawable/ic_menu_refresh"
+          android:icon="@drawable/glyphish_02_redo"
           android:title="@string/menu_sync" />
-    <item android:id="@+id/quit"
-          android:icon="@drawable/ic_menu_close_clear_cancel"
-          android:title="@string/menu_quit" />
+    <item android:id="@+id/do_new"
+          android:icon="@drawable/glyphish_10_medical"
+          android:title="@string/menu_new" />
+    <item android:id="@+id/do_prefs"
+          android:icon="@drawable/glyphish_106_sliders"
+          android:title="@string/menu_prefs" />
 </menu>

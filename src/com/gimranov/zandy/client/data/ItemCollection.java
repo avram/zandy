@@ -1,11 +1,10 @@
-package org.zotero.client.data;
+package com.gimranov.zandy.client.data;
 
 import java.util.ArrayList;
 
-import org.zotero.client.task.APIRequest;
+import com.gimranov.zandy.client.task.APIRequest;
 
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
@@ -27,12 +26,12 @@ public class ItemCollection extends ArrayList<Item> {
 	 */
 	private static final long serialVersionUID = -4673800475017605707L;
 	
-	private static final String TAG = "org.zotero.client.data.ItemCollection";
+	private static final String TAG = "com.gimranov.zandy.client.data.ItemCollection";
 
 	/**
 	 * Queue of dirty collections to be sent to the server
 	 */
-	public static ArrayList<ItemCollection> queue;
+	public static ArrayList<ItemCollection> queue = new ArrayList<ItemCollection>();
 	
 	private String id;
 	private String title;
@@ -62,6 +61,11 @@ public class ItemCollection extends ArrayList<Item> {
 	public String dbId;
 	
 	public String dirty;
+	
+	/**
+	 * Timestamp of last update from server
+	 */
+	private String timestamp;
 	
 	/**
 	 * APIRequests for changes that need to be propagated to the server. Not sure when these will get done.
@@ -104,6 +108,14 @@ public class ItemCollection extends ArrayList<Item> {
 	
 	public void setEtag(String etag) {
 		this.etag = etag;
+	}
+
+	public String getTimestamp() {
+		return timestamp;
+	}
+	
+	public void setTimestamp(String timestamp) {
+		this.timestamp = timestamp;
 	}
 	
 	public String getTitle() {
@@ -200,8 +212,8 @@ public class ItemCollection extends ArrayList<Item> {
 		if (existing == null) {
 			try {
 				SQLiteStatement insert = db.compileStatement("insert or replace into collections " +
-					"(collection_name, collection_key, collection_parent, etag, dirty, collection_size)" +
-					" values (?, ?, ?, ?, ?, ?)");
+					"(collection_name, collection_key, collection_parent, etag, dirty, collection_size, timestamp)" +
+					" values (?, ?, ?, ?, ?, ?, ?)");
 				// Why, oh why does bind* use 1-based indexing? And cur.get* uses 0-based!
 				insert.bindString(1, title);
 				if (key == null) insert.bindNull(2);
@@ -213,6 +225,8 @@ public class ItemCollection extends ArrayList<Item> {
 				if (dirty == null) insert.bindNull(5);
 				else insert.bindString(5, dirty);
 				insert.bindLong(6, size);
+				if (timestamp == null) insert.bindNull(7);
+				else insert.bindString(7, timestamp);
 				insert.executeInsert();
 				insert.clearBindings();
 				Log.d(TAG, "Saved collection with key: "+key);
@@ -231,7 +245,7 @@ public class ItemCollection extends ArrayList<Item> {
 			dbId = existing.dbId;
 			try {
 				SQLiteStatement update = db.compileStatement("update collections set " +
-						"collection_name=?, etag=?, dirty=?, collection_size=?" +
+						"collection_name=?, etag=?, dirty=?, collection_size=?, timestamp=?" +
 						" where _id=?");
 				update.bindString(1, title);
 				if (etag == null) update.bindNull(2);
@@ -239,7 +253,9 @@ public class ItemCollection extends ArrayList<Item> {
 				if (dirty == null) update.bindNull(3);
 				else update.bindString(3, dirty);
 				update.bindLong(4, size);
-				update.bindString(5, dbId);
+				if (timestamp == null) update.bindNull(5);
+				else update.bindString(5, timestamp);
+				update.bindString(6, dbId);
 				update.executeInsert();
 				update.clearBindings();
 				Log.i(TAG, "Updating existing collection.");
@@ -298,7 +314,7 @@ public class ItemCollection extends ArrayList<Item> {
 		Log.d(TAG, "Looking for the kids of a collection with id: "+dbId);
 		
 		String[] args = { dbId };
-		Cursor cursor = db.rawQuery("SELECT item_title, item_type, item_content, etag, dirty, items._id, item_key" +
+		Cursor cursor = db.rawQuery("SELECT item_title, item_type, item_content, etag, dirty, items._id, item_key, item_year, item_creator, items.timestamp" +
 				" FROM items, itemtocollections WHERE items._id = item_id AND collection_id=? ORDER BY item_title",
 				args);
 		if (cursor != null) {
@@ -389,6 +405,33 @@ public class ItemCollection extends ArrayList<Item> {
 		coll.dbId = cur.getString(4);
 		coll.setKey(cur.getString(5));
 		coll.size = cur.getInt(6);
+		coll.timestamp = cur.getString(7);
 		return coll;
+	}
+	
+	/**
+	 * Identifies stale or missing collections in the database and queues them for syncing
+	 */
+	public static void queue() {
+		Log.d(TAG,"Clearing dirty queue before repopulation");		
+		queue.clear();
+		ItemCollection coll;
+		String[] cols = Database.COLLCOLS;
+		String[] args = { APIRequest.API_CLEAN };
+		Cursor cur = db.query("collections", cols, "dirty!=?", args, null, null, null, null);
+		
+		if (cur == null) {
+			Log.d(TAG,"No dirty items found in database");
+			queue.clear();
+			return;
+		}
+		
+		do {
+			Log.d(TAG,"Adding collection to dirty queue");
+			coll = load(cur);
+			queue.add(coll);
+		} while (cur.moveToNext() != false);
+		
+		if (cur != null) cur.close();
 	}
 }

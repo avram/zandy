@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="hello">Hello World, ZoteroActivity!</string>
-    <string name="app_name">Zotero</string>
-    <string name="buttonInitOAuth">Initialize OAuth</string>
-    <string name="applicationTitle">Zotero for Android</string>
-    <string name="buttonMakeRequest">Make Request</string>
-    <string name="prefs_sync_collections_summary">Syncing collections is a great idea.</string>
-    <string name="prefs_sync_collections_title">Sync collections</string>
+    <string name="app_name">Zandy</string>
+    <string name="applicationTitle">Zandy: A Zotero Client for Android</string>
     <string name="menu_sync">Sync</string>
-    <string name="menu_quit">Quit</string>
-    <string name="prefs_cat_sync_title">Sync title</string>    
+    <string name="menu_new">New</string>
+    <string name="menu_prefs">Settings</string>
 	<!-- JSON templates -->
     <string name="template_artwork">{"itemType":"artwork","title":"","creators":[{"creatorType":"artist","firstName":"","lastName":""}],"abstractNote":"","artworkMedium":"","artworkSize":"","date":"","language":"","shortTitle":"","archive":"","archiveLocation":"","libraryCatalog":"","callNumber":"","url":"","accessDate":"","rights":"","extra":"","tags":[],"notes":[]}</string>
     <string name="template_audioRecording">{"itemType":"audioRecording","title":"","creators":[{"creatorType":"performer","firstName":"","lastName":""}],"abstractNote":"","audioRecordingFormat":"","seriesTitle":"","volume":"","numberOfVolumes":"","place":"","label":"","date":"","runningTime":"","language":"","ISBN":"","shortTitle":"","archive":"","archiveLocation":"","libraryCatalog":"","callNumber":"","url":"","accessDate":"","rights":"","extra":"","tags":[],"notes":[]}</string>    

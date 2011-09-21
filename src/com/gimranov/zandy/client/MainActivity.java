@@ -1,4 +1,4 @@
-package org.zotero.client;
+package com.gimranov.zandy.client;
 
 import oauth.signpost.OAuthProvider;
 import oauth.signpost.basic.DefaultOAuthProvider;
@@ -8,11 +8,6 @@ import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
 import oauth.signpost.exception.OAuthNotAuthorizedException;
 import oauth.signpost.http.HttpParameters;
-
-import org.zotero.client.data.Database;
-import org.zotero.client.data.Item;
-import org.zotero.client.data.ItemCollection;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -24,11 +19,15 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.gimranov.zandy.client.data.Database;
+import com.gimranov.zandy.client.data.Item;
+import com.gimranov.zandy.client.data.ItemCollection;
+
 public class MainActivity extends Activity implements OnClickListener {
 	private CommonsHttpOAuthConsumer httpOAuthConsumer;
 	private OAuthProvider httpOAuthProvider;
 	
-	private static final String TAG = "org.zotero.client.MainActivity";
+	private static final String TAG = "com.gimranov.zandy.client.MainActivity";
 	
     /** Called when the activity is first created. */
     @Override
@@ -47,7 +46,16 @@ public class MainActivity extends Activity implements OnClickListener {
         // Let items in on the fun
         Item.db = new Database(getBaseContext());
         XMLResponseParser.db = Item.db;
-        ItemCollection.db = Item.db;  
+        ItemCollection.db = Item.db;
+        
+		SharedPreferences settings = getBaseContext().getSharedPreferences("zotero_prefs", 0);
+		String userID = settings.getString("user_id", null);
+		String userKey = settings.getString("user_key", null);
+		
+		if (userID != null && userKey != null) {
+			loginButton.setText("Logged in");
+			loginButton.setClickable(false);
+		}
     }
     
     /**
@@ -144,6 +152,11 @@ public class MainActivity extends Activity implements OnClickListener {
 				editor.putString("user_id", userID);
 				
 				editor.commit();
+				
+		        Button loginButton = (Button)findViewById(R.id.loginButton);
+		        loginButton.setText("Logged in");
+		        loginButton.setClickable(false);
+
 							
 			} catch (OAuthMessageSignerException e) {
 				Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();

@@ -1,10 +1,6 @@
-package org.zotero.client;
+package com.gimranov.zandy.client;
 
 import java.util.ArrayList;
-
-import org.zotero.client.data.Item;
-import org.zotero.client.task.APIRequest;
-import org.zotero.client.task.ZoteroAPITask;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -29,6 +25,9 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.TextView.BufferType;
 
+import com.gimranov.zandy.client.data.Item;
+import com.gimranov.zandy.client.task.ZoteroAPITask;
+
 /**
  * This Activity handles displaying and editing tags. It works almost the same as
  * ItemDataActivity, using a simple ArrayAdapter on Bundles with the tag info.
@@ -38,7 +37,7 @@ import android.widget.TextView.BufferType;
  */
 public class TagActivity extends ListActivity {
 
-	private static final String TAG = "org.zotero.client.TagActivity";
+	private static final String TAG = "com.gimranov.zandy.client.TagActivity";
 	
 	static final int DIALOG_TAG = 3;
 	static final int DIALOG_CONFIRM_NAVIGATE = 4;	
@@ -52,7 +51,7 @@ public class TagActivity extends ListActivity {
                 
         /* Get the incoming data from the calling activity */
         // XXX Note that we don't know what to do when there is no key assigned
-        String itemKey = getIntent().getStringExtra("org.zotero.client.itemKey");
+        String itemKey = getIntent().getStringExtra("com.gimranov.zandy.client.itemKey");
         Item item = Item.load(itemKey);
         this.item = item;
         
@@ -202,10 +201,6 @@ public class TagActivity extends ListActivity {
 		}
 	}
                
-    /*
-     * I've been just copying-and-pasting the options menu code from activity to activity.
-     * It needs to be reworked for some of these activities.
-     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -218,23 +213,17 @@ public class TagActivity extends ListActivity {
         // Handle item selection
         switch (item.getItemId()) {
         case R.id.do_sync:
-        	Log.d(TAG, "Preparing sync requests");
-        	Item.queue();
-        	if (!Item.queue.isEmpty()) {
-        		for (Item i : Item.queue) {
-        			Log.d(TAG, "Syncing dirty item: "+i.getTitle());
-        			// XXX We're not queueing here--
-        			new ZoteroAPITask("NZrpJ7YDnz8U6NPbbonerxlt").execute(APIRequest.update(i));
-        		}
+        	if (!ServerCredentials.check(getApplicationContext())) {
+            	Toast.makeText(getApplicationContext(), "Log in to sync", 
+        				Toast.LENGTH_SHORT).show();
+            	return true;
         	}
-        	
-        	// We should handle collections here too, once they can be modified
-        	
+        	Log.d(TAG, "Preparing sync requests");
+        	new ZoteroAPITask(getBaseContext()).execute();
+        	Toast.makeText(getApplicationContext(), "Started syncing...", 
+    				Toast.LENGTH_SHORT).show();
         	return true;
-        /*
-         * We're being sloppy for now, so we don't have to find menu icons
-         */
-        case R.id.quit:
+        case R.id.do_new:
     		Bundle row = new Bundle();
     		row.putString("tag", null);
     		row.putString("itemKey", this.item.getKey());

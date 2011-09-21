@@ -1,4 +1,4 @@
-package org.zotero.client.data;
+package com.gimranov.zandy.client.data;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,7 +17,7 @@ public class Creator {
 	
 	private int dbId;
 	
-	private static final String TAG = "org.zotero.client.data.Creator";
+	private static final String TAG = "com.gimranov.zandy.client.data.Creator";
 	
 	/**
 	 * A Creator, given type, a single string, and a boolean mode.

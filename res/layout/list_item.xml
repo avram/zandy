@@ -14,7 +14,7 @@
         android:layout_alignParentBottom="true"
         android:layout_marginRight="6dip"
         
-        android:src="@drawable/ic_menu_flag" />
+        android:src="@drawable/page_white" />
 
     <TextView  
         android:id="@+id/item_summary"

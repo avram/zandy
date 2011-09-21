@@ -1,4 +1,4 @@
-package org.zotero.client.data;
+package com.gimranov.zandy.client.data;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -10,13 +10,12 @@ import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
 public class Database {
-	public static final String[] ITEMCOLS = {"item_title", "item_type", "item_content", "etag", "dirty", "_id", "item_key", "item_year", "item_creator"};
-	public static final String[] COLLCOLS = {"collection_name", "collection_parent", "etag", "dirty", "_id", "collection_key, collection_size"};
+	private static final String TAG = "com.gimranov.zandy.client.data.Database";
 	
-	private static final String TAG = "org.zotero.client.data.Database";
-	
+	public static final String[] ITEMCOLS = {"item_title", "item_type", "item_content", "etag", "dirty", "_id", "item_key", "item_year", "item_creator", "timestamp"};
+	public static final String[] COLLCOLS = {"collection_name", "collection_parent", "etag", "dirty", "_id", "collection_key, collection_size", "timestamp"};
 	// the database version; increment to call update
-	private static final int DATABASE_VERSION = 13;
+	private static final int DATABASE_VERSION = 14;
 	
 	private static final String DATABASE_NAME = "Zotero";
 	private final DatabaseOpenHelper mDatabaseOpenHelper;
@@ -96,8 +95,9 @@ public class Database {
 			"collection_type text, " +
 			"collection_size int, " +
 			"etag string, " +
-			"dirty string);";
-		
+			"dirty string, " +
+			"timestamp string);";
+
 		private static final String ITEMS_CREATE =
 			"create table items"+ 
 			" (_id integer primary key autoincrement, " +
@@ -108,13 +108,24 @@ public class Database {
 			"item_content string," +
 			"item_year string," +
 			"item_creator string," +
-			"dirty string);";
+			"dirty string, " +
+			"timestamp string);";
 		
 		private static final String CREATORS_CREATE =
 			"create table creators"+ 
-			" (_id integer primary key autoincrement, "
-			+ "creator_id string not null);";
+			" (_id integer primary key autoincrement, " +
+			"name string, " +
+			"firstName string, " +
+			"lastName string, " +
+			"creatorType string );";
 
+		private static final String CHILDREN_CREATE =
+			"create table children"+ 
+			" (_id integer primary key autoincrement, " +
+			"type string, " +
+			"content string, " +
+			"key string );";
+		
 		private static final String ITEM_TO_CREATORS_CREATE =
 			"create table itemtocreators"+ 
 			" (_id integer primary key autoincrement, "
@@ -137,10 +148,12 @@ public class Database {
 			db.execSQL(COLLECTIONS_CREATE);
 			db.execSQL(ITEMS_CREATE);
 			db.execSQL(CREATORS_CREATE);
+			db.execSQL(CHILDREN_CREATE);
 			db.execSQL(ITEM_TO_CREATORS_CREATE);
 			db.execSQL(ITEM_TO_COLLECTIONS_CREATE);	
 		}
 		
+		/* TODO Upgrade sanely! */
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, 
 				int newVersion) {
@@ -151,6 +164,7 @@ public class Database {
 			db.execSQL("DROP TABLE IF EXISTS collections");
 			db.execSQL("DROP TABLE IF EXISTS items");
 			db.execSQL("DROP TABLE IF EXISTS creators");
+			db.execSQL("DROP TABLE IF EXISTS children");
 			db.execSQL("DROP TABLE IF EXISTS itemtocreators");
 			db.execSQL("DROP TABLE IF EXISTS itemtocollections");
 			onCreate(db);
