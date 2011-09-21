@@ -279,6 +279,9 @@ public class ItemDataActivity extends ListActivity {
         	Toast.makeText(getApplicationContext(), "Sorry, new item creation is not yet possible. Soon!", 
     				Toast.LENGTH_SHORT).show();
             return true;
+        case R.id.do_prefs:
+            startActivity(new Intent(this, SettingsActivity.class));
+            return true;
         default:
             return super.onOptionsItemSelected(item);
         }

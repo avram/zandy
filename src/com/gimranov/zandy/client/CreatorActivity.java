@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
 import android.util.Log;
@@ -333,6 +334,9 @@ public class CreatorActivity extends ListActivity {
     		row.putString("itemKey", this.item.getKey());
 			removeDialog(DIALOG_CREATOR);
     		showDialog(DIALOG_CREATOR, row);
+            return true;
+        case R.id.do_prefs:
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         default:
             return super.onOptionsItemSelected(item);

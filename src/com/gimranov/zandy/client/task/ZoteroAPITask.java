@@ -63,7 +63,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	// things that can't go through cleanly.
 	private ArrayList<String> blackList;
 	
-	public int syncMode;
+	public int syncMode = -1;
 	
 	public static final int AUTO_SYNC_STALE_COLLECTIONS = 1;
 
@@ -79,6 +79,8 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 		SharedPreferences settings = c.getSharedPreferences("zotero_prefs", 0);
 		userID = settings.getString("user_id", null);
 		key = settings.getString("user_key", null);
+		if (settings.getBoolean("sync_aggressively", false))
+			syncMode = AUTO_SYNC_STALE_COLLECTIONS;
 	}
 
 	public ZoteroAPITask(Context c, CursorAdapter adapter)
@@ -87,6 +89,8 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 		SharedPreferences settings = c.getSharedPreferences("zotero_prefs", 0);
 		userID = settings.getString("user_id", null);
 		key = settings.getString("user_key", null);
+		if (settings.getBoolean("sync_aggressively", false))
+			syncMode = AUTO_SYNC_STALE_COLLECTIONS;
 	}
 	
 	public ZoteroAPITask(String key, CursorAdapter adapter)
@@ -155,27 +159,30 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	        		}
 	        	}
 	        	
-	        	ItemCollection.queue();
-	        	for (ItemCollection j : ItemCollection.queue) {
-	        		boolean firstTime = true;
-	        		for (String blackKey : blackList) {
-	        			if (blackKey.equals(j.getKey())) {
-	        				firstTime = false;
-	        				break;
-	        			}
-	        		}
-	        		if (firstTime) {
-	        			Log.d(TAG, "Syncing dirty or stale collection: "+j.getTitle());
-	        			blackList.add(j.getKey());
-	        			this.doInBackground(new APIRequest(ServerCredentials.APIBASE
-								+ ServerCredentials.prep(userID, ServerCredentials.COLLECTIONS)+"/"+j.getKey() + "/items",
-								"get",
-								key));
-	        			break;
-	        		} else {
-	        			Log.d(TAG, "Skipping blacklisted collection: "+j.getTitle());
-	        			continue;
-	        		}
+	        	// We pref this off
+	        	if (syncMode == AUTO_SYNC_STALE_COLLECTIONS) {
+		        	ItemCollection.queue();
+		        	for (ItemCollection j : ItemCollection.queue) {
+		        		boolean firstTime = true;
+		        		for (String blackKey : blackList) {
+		        			if (blackKey.equals(j.getKey())) {
+		        				firstTime = false;
+		        				break;
+		        			}
+		        		}
+		        		if (firstTime) {
+		        			Log.d(TAG, "Syncing dirty or stale collection: "+j.getTitle());
+		        			blackList.add(j.getKey());
+		        			this.doInBackground(new APIRequest(ServerCredentials.APIBASE
+									+ ServerCredentials.prep(userID, ServerCredentials.COLLECTIONS)+"/"+j.getKey() + "/items",
+									"get",
+									key));
+		        			break;
+		        		} else {
+		        			Log.d(TAG, "Skipping blacklisted collection: "+j.getTitle());
+		        			continue;
+		        		}
+		        	}
 	        	}
 	    	}
             publishProgress((int) ((i / (float) count) * 100));

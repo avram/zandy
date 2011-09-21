@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.util.Log;
@@ -230,6 +231,9 @@ public class TagActivity extends ListActivity {
     		row.putInt("type", 0);
 			removeDialog(DIALOG_TAG);
     		showDialog(DIALOG_TAG, row);
+            return true;
+        case R.id.do_prefs:
+            startActivity(new Intent(this, SettingsActivity.class));
             return true;
         default:
             return super.onOptionsItemSelected(item);

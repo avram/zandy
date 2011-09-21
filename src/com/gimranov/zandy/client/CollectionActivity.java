@@ -158,6 +158,9 @@ public class CollectionActivity extends ListActivity {
         	Toast.makeText(getApplicationContext(), "Sorry, new collection creation is not yet possible. Soon!", 
     				Toast.LENGTH_SHORT).show();
             return true;
+        case R.id.do_prefs:
+            startActivity(new Intent(this, SettingsActivity.class));
+            return true;
         default:
             return super.onOptionsItemSelected(item);
         }

@@ -120,8 +120,8 @@ public class ItemActivity extends ListActivity {
         // Handle item selection
         switch (item.getItemId()) {
         case R.id.do_sync:
-        	if (!ServerCredentials.check(getApplicationContext())) {
-            	Toast.makeText(getApplicationContext(), "Log in to sync", 
+        	if (!ServerCredentials.check(getBaseContext())) {
+            	Toast.makeText(getBaseContext(), "Log in to sync", 
         				Toast.LENGTH_SHORT).show();
             	return true;
         	}
@@ -159,9 +159,14 @@ public class ItemActivity extends ListActivity {
             return true;
         case R.id.do_new:
         	Log.d(TAG, "Can't yet make new items");
-        	Toast.makeText(getApplicationContext(), "Sorry, new item creation is not yet possible. Soon!", 
+        	Toast.makeText(getBaseContext(), "Sorry, new item creation is not yet possible. Soon!", 
     				Toast.LENGTH_SHORT).show();
             return true;
+        case R.id.do_prefs:
+	    	Intent i = new Intent(getBaseContext(), SettingsActivity.class);
+	    	Log.d(TAG, "Intent for class:  "+i.getClass().toString());
+	    	startActivity(i);
+	    	return true;
         default:
             return super.onOptionsItemSelected(item);
         }
