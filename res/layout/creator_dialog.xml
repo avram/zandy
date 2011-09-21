@@ -1,0 +1,28 @@
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/layout_root"
+              android:orientation="vertical"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:padding="10dp"
+              >
+    <TableRow android:id="@+id/tableRow1" android:layout_width="wrap_content" android:layout_height="wrap_content">
+    	<Spinner android:id="@+id/creator_type" android:layout_height="wrap_content" android:layout_width="wrap_content" android:layout_weight="0.10"></Spinner>
+    </TableRow>
+    <TableRow android:id="@+id/tableRow2" android:layout_width="wrap_content" android:layout_height="wrap_content">
+		<EditText android:id="@+id/creator_firstName"
+              android:layout_width="wrap_content"
+              android:layout_height="fill_parent"
+              />
+       <EditText android:id="@+id/creator_lastName"
+              android:layout_width="wrap_content"
+              android:layout_height="fill_parent"
+              />
+    </TableRow>
+    <TableRow android:id="@+id/tableRow3" android:layout_width="wrap_content" android:layout_height="wrap_content">
+    	<CheckBox android:id="@+id/creator_mode" android:layout_width="wrap_content" android:layout_weight="0.10" android:layout_height="wrap_content" android:text="Single Field"></CheckBox>
+		<EditText android:id="@+id/creator_name"
+              android:layout_width="wrap_content"
+              android:layout_height="fill_parent"
+              />
+    </TableRow>  
+</TableLayout>

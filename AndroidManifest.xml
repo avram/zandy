@@ -37,5 +37,9 @@
                   android:label="@string/app_name"
                   android:launchMode="standard">
         </activity>
+        <activity android:name=".CreatorActivity"
+                  android:label="@string/app_name"
+                  android:launchMode="standard">
+        </activity>
     </application>
 </manifest>

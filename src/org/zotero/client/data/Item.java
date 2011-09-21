@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import org.zotero.client.R;
 import org.zotero.client.task.APIRequest;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
@@ -38,6 +39,8 @@ public class Item  {
 	
 	/**
 	 * The next two types are arrays of information on items that we need elsewhere
+	 * 
+	 * They exclude "note", since notes are treated rather separately.
 	 */
 	public static final String[] ITEM_TYPES_EN =
 	{"Artwork",
@@ -64,7 +67,6 @@ public class Item  {
 		"Manuscript",
 		"Map",
 		"Newspaper Article",
-		"Note",
 		"Patent",
 		"Podcast",
 		"Presentation",
@@ -101,7 +103,6 @@ public class Item  {
 		"manuscript",
 		"map",
 		"newspaperArticle",
-		"note",
 		"patent",
 		"podcast",
 		"presentation",
@@ -368,6 +369,63 @@ public class Item  {
 	}
 	
 	/**
+	 * Makes ArrayList<Bundle> from the present item's creators
+	 * Primarily for use with CreatorActivity, but who knows?
+	 */
+	public ArrayList<Bundle> creatorsToBundleArray() {
+		JSONObject itemContent = this.content;
+	    /* Here we walk through the data and make Bundles to send to the
+	     * ArrayAdapter. There should be no real risk of JSON exceptions,
+	     * since the JSON was checked when initialized in the Item object.
+	     * 
+	     * Each Bundle has six keys: 	"itemKey",
+	     * 								"name",
+	     * 								"firstName",
+	     * 								"lastName",
+	     * 								"creatorType",
+	     * 								"position"
+	     * 
+	     * Field mode is encoded implicitly -- if either of "firstName"
+	     * and "lastName" is non-empty ("") or non-null, we treat this as
+	     * a two-field name.
+	     * key
+	     * The field "name" is the one-field name if the others are empty,
+	     * otherwise it's a display version of the two-field name.
+	     */
+
+	    ArrayList<Bundle> rows = new ArrayList<Bundle>();
+	    
+	    Bundle b = new Bundle();
+	    
+	    if (!itemContent.has("creators")) {
+	    	return rows;
+	    }
+	    
+	    try {
+		    JSONArray creators = itemContent.getJSONArray("creators");
+	    	Log.d(TAG, creators.toString());
+		    for (int i = 0; i < creators.length(); i++) {
+		    	b = new Bundle();
+		    	Log.d(TAG, creators.getJSONObject(i).toString());
+		    	b.putString("creatorType", creators.getJSONObject(i).getString("creatorType"));
+		    	b.putString("firstName", creators.getJSONObject(i).optString("firstName"));
+		    	b.putString("lastName", creators.getJSONObject(i).optString("lastName"));
+		    	b.putString("name", creators.getJSONObject(i).optString("name"));
+		    	// If name is empty, fill with the others
+		    	if (b.getString("name").equals(""))
+		    		b.putString("name", b.getString("firstName") + " " + b.getString("lastName"));
+		    	b.putString("itemKey", this.key);
+		    	b.putInt("position", i);
+		    	rows.add(b);
+		    }
+	    } catch (JSONException e) {
+	    	Log.e(TAG, "JSON exception caught in creator bundler: ",e);
+	    }
+	    
+	    return rows;
+	}
+	
+	/**
 	 * Saves the item's current state. Marking dirty should happen before this
 	 */
 	public void save() {
@@ -509,6 +567,46 @@ public class Item  {
 	}
 	
 	/**
+	 * Static method for setting creators
+	 * 
+	 * Add, change, or replace a creator.
+	 * If creator is null,
+	 * the old creator is simply deleted.
+	 * 
+	 * If position is -1, the new creator is appended.
+	 */
+	public static void setCreator(String itemKey, Creator c, int position) {
+		// Load the item
+		Item item = load(itemKey);
+		
+		try {
+			JSONArray creators = item.content.getJSONArray("creators");
+			JSONArray newCreators = new JSONArray();
+			Log.d(TAG, "Old: "+creators.toString());
+			// Allow adding a new tag
+			if (position < 0) {
+				newCreators = creators.put(c.toJSON());
+			} else {
+				if (c == null) {
+					// we have a deletion
+					for (int i = 0; i < creators.length(); i++) {
+						if (i == position) continue;	// skip the deleted one
+						newCreators.put(creators.get(i));
+					}
+				} else {
+					newCreators = creators.put(position, c.toJSON());
+				}
+			}
+			item.content.put("creators", newCreators);
+			Log.d(TAG, "New: "+newCreators.toString());
+		} catch (JSONException e) {
+			Log.e(TAG, "Caught JSON exception when we tried to modify the JSON content");
+		}
+		item.dirty = APIRequest.API_DIRTY;
+		item.save();
+	}
+	
+	/**
 	 * Identifies dirty items in the database and queues them for syncing
 	 */
 	public static void queue() {
@@ -542,6 +640,8 @@ public class Item  {
 	 */
 	public static int resourceForType(String type) {
 		if (type == null || type.equals("")) return R.drawable.page_white;
+		
+		// TODO Complete this list
 		
 		if (type.equals("artwork")) return R.drawable.picture;
 //		if (type.equals("audioRecording")) return R.drawable.ic_menu_close_clear_cancel;
@@ -742,8 +842,162 @@ public class Item  {
 		if (s.equals("videoRecording")) return "Video Recording";
 		if (s.equals("webpage")) return "Web Page";
 		
+		// Creator types
+		if (s.equals("artist")) return "Artist";
+		if (s.equals("attorneyAgent")) return "Attorney/Agent";
+		if (s.equals("author")) return "Author";
+		if (s.equals("bookAuthor")) return "Book Author";
+		if (s.equals("cartographer")) return "Cartographer";
+		if (s.equals("castMember")) return "Cast Member";
+		if (s.equals("commenter")) return "Commenter";
+		if (s.equals("composer")) return "Composer";
+		if (s.equals("contributor")) return "Contributor";
+		if (s.equals("cosponsor")) return "Cosponsor";
+		if (s.equals("counsel")) return "Counsel";
+		if (s.equals("director")) return "Director";
+		if (s.equals("editor")) return "Editor";
+		if (s.equals("guest")) return "Guest";
+		if (s.equals("interviewee")) return "Interview With";
+		if (s.equals("interviewer")) return "Interviewer";
+		if (s.equals("inventor")) return "Inventor";
+		if (s.equals("performer")) return "Performer";
+		if (s.equals("podcaster")) return "Podcaster";
+		if (s.equals("presenter")) return "Presenter";
+		if (s.equals("producer")) return "Producer";
+		if (s.equals("programmer")) return "Programmer";
+		if (s.equals("recipient")) return "Recipient";
+		if (s.equals("reviewedAuthor")) return "Reviewed Author";
+		if (s.equals("scriptwriter")) return "Scriptwriter";
+		if (s.equals("seriesEditor")) return "Series Editor";
+		if (s.equals("sponsor")) return "Sponsor";
+		if (s.equals("translator")) return "Translator";
+		if (s.equals("wordsBy")) return "Words By";
+		
 		// Or just leave it the way it is
 		return s;
+	}
+	
+	/**
+	 * Gets creator types, localized, for specified item type.
+	 * @param s
+	 * @return
+	 */
+	public static String[] localizedCreatorTypesForItemType(String s) {
+		String[] types = creatorTypesForItemType(s);
+		String[] local = new String[types.length];
+		
+		for (int i = 0; i < types.length; i++) {
+			local[i] = localizedStringForString(types[i]);
+		}
+		return local;
+	}
+
+	
+	/**
+	 * Gets valid creator types for the specified item type. Would be good to have
+	 * this draw from the API, but probably easier to hard-code the whole mess.
+	 * 
+	 * Remapping of creator types on item type conversion is a separate issue.
+	 * 
+	 * @param s		itemType to provide creatorTypes for
+	 * @return
+	 */
+	public static String[] creatorTypesForItemType(String s) {
+		
+		if (s.equals("artwork")) { String[] str = {"artist","contributor"}; return str; }
+		if (s.equals("audioRecording")) { String[] str = {"performer","composer","contributor","wordsBy"}; return str; }
+		if (s.equals("bill")) { String[] str = {"sponsor","contributor","cosponsor"}; return str; }
+		if (s.equals("blogPost")) { String[] str = {"author","commenter","contributor"}; return str; }
+		if (s.equals("book")) { String[] str = {"author","contributor","editor","seriesEditor","translator"}; return str; }
+		if (s.equals("bookSection")) { String[] str = {"author","bookAuthor","contributor","editor","seriesEditor","translator"}; return str; }
+		if (s.equals("case")) { String[] str = {"author","contributor","counsel"}; return str; }
+		if (s.equals("computerProgram")) { String[] str = {"programmer","contributor"}; return str; }
+		if (s.equals("conferencePaper")) { String[] str = {"author","contributor","editor","seriesEditor","translator"}; return str; }
+		if (s.equals("dictionaryEntry")) { String[] str = {"author","contributor","editor","seriesEditor","translator"}; return str; }
+		if (s.equals("document")) { String[] str = {"author","contributor","editor","reviewedAuthor","translator"}; return str; }
+		if (s.equals("email")) { String[] str = {"author","contributor","recipient"}; return str; }
+		if (s.equals("encyclopediaArticle")) { String[] str = {"author","contributor","editor","seriesEditor","translator"}; return str; }
+		if (s.equals("film")) { String[] str = {"director","contributor","producer","scriptwriter"}; return str; }
+		if (s.equals("forumPost")) { String[] str = {"author","contributor"}; return str; }
+		if (s.equals("hearing")) { String[] str = {"contributor"}; return str; }
+		if (s.equals("instantMessage")) { String[] str = {"author","contributor","recipient"}; return str; }
+		if (s.equals("interview")) { String[] str = {"interviewee","contributor","interviewer","translator"}; return str; }
+		if (s.equals("journalArticle")) { String[] str = {"author","contributor","editor","reviewedAuthor","translator"}; return str; }
+		if (s.equals("letter")) { String[] str = {"author","contributor","recipient"}; return str; }
+		if (s.equals("magazineArticle")) { String[] str = {"author","contributor","reviewedAuthor","translator"}; return str; }
+		if (s.equals("manuscript")) { String[] str = {"author","contributor","translator"}; return str; }
+		if (s.equals("map")) { String[] str = {"cartographer","contributor","seriesEditor"}; return str; }
+		if (s.equals("newspaperArticle")) { String[] str = {"author","contributor","reviewedAuthor","translator"}; return str; }
+		if (s.equals("patent")) { String[] str = {"inventor","attorneyAgent","contributor"}; return str; }
+		if (s.equals("podcast")) { String[] str = {"podcaster","contributor","guest"}; return str; }
+		if (s.equals("presentation")) { String[] str = {"presenter","contributor"}; return str; }
+		if (s.equals("radioBroadcast")) { String[] str = {"director","castMember","contributor","guest","producer","scriptwriter"}; return str; }
+		if (s.equals("report")) { String[] str = {"author","contributor","seriesEditor","translator"}; return str; }
+		if (s.equals("statute")) { String[] str = {"author","contributor"}; return str; }
+		if (s.equals("tvBroadcast")) { String[] str = {"director","castMember","contributor","guest","producer","scriptwriter"}; return str; }
+		if (s.equals("thesis")) { String[] str = {"author","contributor"}; return str; }
+		if (s.equals("videoRecording")) { String[] str = {"director","castMember","contributor","producer","scriptwriter"}; return str; }
+		if (s.equals("webpage")) { String[] str = {"author","contributor","translator"}; return str; }
+		else {
+			return null;
+		}
+	}
+	
+	/**
+	 * Gets JSON template for the specified item type.
+	 * 
+	 * Remapping of fields on item type conversion is a separate issue.
+	 * 
+	 * @param c		Current context, needed to fetch string resources with templates
+	 * @param s		itemType to provide fields for
+	 * @return
+	 */
+	public static JSONObject fieldsForItemType(Context c, String s) {
+		JSONObject template = new JSONObject();
+		String json = "";
+		try {
+			// And item types
+			if (s.equals("artwork")) json = c.getString(R.string.template_artwork);
+			else if (s.equals("audioRecording")) json = c.getString(R.string.template_audioRecording);
+			else if (s.equals("bill")) json = c.getString(R.string.template_bill);
+			else if (s.equals("blogPost")) json = c.getString(R.string.template_blogPost);
+			else if (s.equals("book")) json = c.getString(R.string.template_book);
+			else if (s.equals("bookSection")) json = c.getString(R.string.template_bookSection);
+			else if (s.equals("case")) json = c.getString(R.string.template_case);
+			else if (s.equals("computerProgram")) json = c.getString(R.string.template_computerProgram);
+			else if (s.equals("conferencePaper")) json = c.getString(R.string.template_conferencePaper);
+			else if (s.equals("dictionaryEntry")) json = c.getString(R.string.template_dictionaryEntry);
+			else if (s.equals("document")) json = c.getString(R.string.template_document);
+			else if (s.equals("email")) json = c.getString(R.string.template_email);
+			else if (s.equals("encyclopediaArticle")) json = c.getString(R.string.template_encyclopediaArticle);
+			else if (s.equals("film")) json = c.getString(R.string.template_film);
+			else if (s.equals("forumPost")) json = c.getString(R.string.template_forumPost);
+			else if (s.equals("hearing")) json = c.getString(R.string.template_hearing);
+			else if (s.equals("instantMessage")) json = c.getString(R.string.template_instantMessage);
+			else if (s.equals("interview")) json = c.getString(R.string.template_interview);
+			else if (s.equals("journalArticle")) json = c.getString(R.string.template_journalArticle);
+			else if (s.equals("letter")) json = c.getString(R.string.template_letter);
+			else if (s.equals("magazineArticle")) json = c.getString(R.string.template_magazineArticle);
+			else if (s.equals("manuscript")) json = c.getString(R.string.template_manuscript);
+			else if (s.equals("map")) json = c.getString(R.string.template_map);
+			else if (s.equals("newspaperArticle")) json = c.getString(R.string.template_newspaperArticle);
+			else if (s.equals("note")) json = c.getString(R.string.template_note);
+			else if (s.equals("patent")) json = c.getString(R.string.template_patent);
+			else if (s.equals("podcast")) json = c.getString(R.string.template_podcast);
+			else if (s.equals("presentation")) json = c.getString(R.string.template_presentation);
+			else if (s.equals("radioBroadcast")) json = c.getString(R.string.template_radioBroadcast);
+			else if (s.equals("report")) json = c.getString(R.string.template_report);
+			else if (s.equals("statute")) json = c.getString(R.string.template_statute);
+			else if (s.equals("tvBroadcast")) json = c.getString(R.string.template_tvBroadcast);
+			else if (s.equals("thesis")) json = c.getString(R.string.template_thesis);
+			else if (s.equals("videoRecording")) json = c.getString(R.string.template_videoRecording);
+			else if (s.equals("webpage")) json = c.getString(R.string.template_webpage);
+			template = new JSONObject(json);
+		} catch (JSONException e) {
+			Log.e(TAG, "JSON exception parsing item template", e);
+		}
+		
+		return template;
 	}
 	
 	public static int sortValueForLabel(String s) {

@@ -101,13 +101,23 @@ public class ItemDataActivity extends ListActivity {
         			removeDialog(DIALOG_CONFIRM_NAVIGATE);
         			showDialog(DIALOG_CONFIRM_NAVIGATE, row);
         			return;
-        		}
-        		
-        		if (row.getString("label").equals("DOI")) {
+        		} else if (row.getString("label").equals("DOI")) {
         			String url = "http://dx.doi.org/"+Uri.encode(row.getString("content"));
         			row.putString("url", url);
         			removeDialog(DIALOG_CONFIRM_NAVIGATE);
         			showDialog(DIALOG_CONFIRM_NAVIGATE, row);
+        			return;
+        		}  else if (row.getString("label").equals("creators")) {
+        	    	Log.d(TAG, "Trying to start creators activity");
+        	    	Intent i = new Intent(getBaseContext(), CreatorActivity.class);
+    		    	i.putExtra("org.zotero.client.itemKey", item.getKey());
+        	    	startActivity(i);
+        	    	return;
+        		} else if (row.getString("label").equals("tags")) {
+        	    	Log.d(TAG, "Trying to start tag activity");
+        	    	Intent i = new Intent(getBaseContext(), TagActivity.class);
+        	    	i.putExtra("org.zotero.client.itemKey", item.getKey());
+        	    	startActivity(i);
         			return;
         		}
         		
@@ -135,21 +145,17 @@ public class ItemDataActivity extends ListActivity {
         			return true;
         		} else if (row.getString("label").equals("creators")) {
         	    	Log.d(TAG, "Trying to start creators activity");
-        	    	// XXX This should refer to CreatorActivity when that's written
-        	    	Intent i = new Intent(getBaseContext(), TagActivity.class);
+        	    	Intent i = new Intent(getBaseContext(), CreatorActivity.class);
     		    	i.putExtra("org.zotero.client.itemKey", item.getKey());
         	    	startActivity(i);
-        	    	
         	    	return true;
         		} else if (row.getString("label").equals("tags")) {
         	    	Log.d(TAG, "Trying to start tag activity");
         	    	Intent i = new Intent(getBaseContext(), TagActivity.class);
         	    	i.putExtra("org.zotero.client.itemKey", item.getKey());
         	    	startActivity(i);
-        	    	
         			return true;
         		}
-        		
     			removeDialog(DIALOG_SINGLE_VALUE);
         		showDialog(DIALOG_SINGLE_VALUE, row);
         		return true;

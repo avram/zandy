@@ -31,7 +31,7 @@ public class ItemActivity extends ListActivity {
 	private static final String TAG = "org.zotero.client.ItemActivity";
 	
 	static final int DIALOG_VIEW = 0;
-
+	static final int DIALOG_NEW = 1;	
 	
     /** Called when the activity is first created. */
     @Override
@@ -88,6 +88,9 @@ public class ItemActivity extends ListActivity {
     	super.onResume();
     }
     
+    /*
+     * Need to add dialog for new item. probably starts a new activity to edit item when created
+     */
 	protected Dialog onCreateDialog(int id, Bundle b) {
 		CharSequence value = b.getCharSequence("itemType");
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
