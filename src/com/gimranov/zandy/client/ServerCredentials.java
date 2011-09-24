@@ -2,6 +2,7 @@ package com.gimranov.zandy.client;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 public class ServerCredentials {
 	/** Application key -- available from Zotero */
@@ -37,7 +38,7 @@ public class ServerCredentials {
 	public static final String OAUTHAUTHORIZE = "https://www.zotero.org/oauth/authorize";
 	
 	public static String prep(Context c, String in) {
-		SharedPreferences settings = c.getSharedPreferences("zotero_prefs", 0);
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(c);
 		String userID = settings.getString("user_id", null);
 		return prep(userID, in);
 	}
@@ -47,7 +48,7 @@ public class ServerCredentials {
 	}
 	
 	public static boolean check(Context c) {
-		SharedPreferences settings = c.getSharedPreferences("zotero_prefs", 0);
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(c);
 		if (settings.getString("user_id", null) != null
 				&& settings.getString("user_key", null) != null)
 			return true;

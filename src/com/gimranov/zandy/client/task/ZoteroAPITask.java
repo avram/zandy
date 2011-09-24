@@ -48,6 +48,7 @@ import com.gimranov.zandy.client.data.ItemCollection;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.CursorAdapter;
 
@@ -76,7 +77,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	public ZoteroAPITask(Context c)
 	{
 		blackList = new ArrayList<String>();
-		SharedPreferences settings = c.getSharedPreferences("zotero_prefs", 0);
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(c);
 		userID = settings.getString("user_id", null);
 		key = settings.getString("user_key", null);
 		if (settings.getBoolean("sync_aggressively", false))
@@ -86,7 +87,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	public ZoteroAPITask(Context c, CursorAdapter adapter)
 	{
 		blackList = new ArrayList<String>();
-		SharedPreferences settings = c.getSharedPreferences("zotero_prefs", 0);
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(c);
 		userID = settings.getString("user_id", null);
 		key = settings.getString("user_key", null);
 		if (settings.getBoolean("sync_aggressively", false))

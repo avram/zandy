@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -181,8 +182,7 @@ public class MainActivity extends Activity implements OnClickListener {
 				/*
 				 * These settings live in the Zotero preferences tree.
 				 */
-				SharedPreferences settings = getBaseContext()
-						.getSharedPreferences("zotero_prefs", 0);
+				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 				SharedPreferences.Editor editor = settings.edit();
 				// For Zotero, the key and secret are identical, it seems
 				editor.putString("user_key", userKey);

@@ -11,13 +11,11 @@
         <EditTextPreference
                 android:key="user_id"
                 android:title="User ID"
-                android:summary="This is the user ID for your account at Zotero.org"
-                android:persistent="true" />
+                android:summary="This is the user ID for your account at Zotero.org" />
 
         <EditTextPreference
                 android:key="user_key"
                 android:title="API Key"
-                android:summary="This is the API key to access your account at Zotero.org"
-                android:persistent="true" />
+                android:summary="This is the API key to access your account at Zotero.org" />
 </PreferenceCategory>
 </PreferenceScreen>
