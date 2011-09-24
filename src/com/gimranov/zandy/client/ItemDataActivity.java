@@ -221,16 +221,6 @@ public class ItemDataActivity extends ListActivity {
 	    	        }
 	    	    }).create();
 			return dialog;
-		/* Creators editor
-		 * Since we've mangled the JSON, we'll need to load the item anew
-		 */
-//		case DIALOG_CREATORS:
-//			return null;
-		/* Tags editor
-		 * We'll need to load the item anew from DB to get real tags
-		 */
-//		case DIALOG_TAGS:
-//			return null;
 		case DIALOG_CONFIRM_NAVIGATE:
 			dialog = new AlertDialog.Builder(this)
 		    	    .setTitle("View this online?")

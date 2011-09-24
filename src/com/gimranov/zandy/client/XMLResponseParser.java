@@ -86,10 +86,10 @@ public class XMLResponseParser extends DefaultHandler {
 	            		if (colloc != -1 && itemloc != -1) {
 	            			// The string "/collections/" is thirteen characters long
 	            			String id = href.substring(colloc+13, itemloc);
-	    					Log.e(TAG, id);
+	    					Log.d(TAG, "Collection key: "+id);
 	    					parent = ItemCollection.load(id);
 	    				} else {
-	    					Log.e(TAG, "Key extraction failed from root; maybe this isn't a collection listing?");
+	    					Log.d(TAG, "Key extraction failed from root; maybe this isn't a collection listing?");
 	    				}
 	            	}
 	    			// If there are more items, queue them up to be handled too
@@ -120,14 +120,22 @@ public class XMLResponseParser extends DefaultHandler {
             	}
             	if (items == false) {
             		ItemCollection ic = ItemCollection.load(collection.getKey());
-            		if (ic != null 
-            				&& !ic.getTimestamp()
+            		if (ic != null) {
+            			if (!ic.getTimestamp()
             				.equals(collection.
-            						getTimestamp()))
-            			// In this case, we have data, but we should refresh it
-            			collection.dirty = APIRequest.API_STALE;
-            		else
+            						getTimestamp())) {
+            				// In this case, we have data, but we should refresh it
+            				collection.dirty = APIRequest.API_STALE;
+            			} else {
+            				// Collection hasn't changed!
+            				collection.dirty = ic.dirty;
+            			}
+            		} else {
+            			// This means that we haven't seen the collection before, so it must be
+            			// a new one, and we don't have contents for it.
             			collection.dirty = APIRequest.API_MISSING;
+            		}
+    				Log.d(TAG, "Status: "+collection.dirty+" for "+collection.getTitle());
             		collection.save();
             	}
             	Log.i(TAG, "Done parsing an entry.");

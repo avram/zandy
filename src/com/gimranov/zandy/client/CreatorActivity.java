@@ -63,6 +63,8 @@ public class CreatorActivity extends ListActivity {
         Item item = Item.load(itemKey);
         this.item = item;
         
+        this.setTitle("Creators for "+item.getTitle());
+        
         ArrayList<Bundle> rows = item.creatorsToBundleArray();
         
         /* 
