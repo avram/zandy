@@ -59,24 +59,19 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	private CursorAdapter adapter;
 	private String userID;
 	
-	// Blacklist of keys that we have synced already-- we won't sync
-	// them again on this attempt. Otherwise we'd keep trying to sync
-	// things that can't go through cleanly.
-	private ArrayList<String> blackList;
-	
 	public int syncMode = -1;
 	
 	public static final int AUTO_SYNC_STALE_COLLECTIONS = 1;
 
+	public boolean autoMode = false;
+	
 	public ZoteroAPITask(String key)
 	{
-		blackList = new ArrayList<String>();
 		this.key = key;
 	}
 
 	public ZoteroAPITask(Context c)
 	{
-		blackList = new ArrayList<String>();
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(c);
 		userID = settings.getString("user_id", null);
 		key = settings.getString("user_key", null);
@@ -86,7 +81,6 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 
 	public ZoteroAPITask(Context c, CursorAdapter adapter)
 	{
-		blackList = new ArrayList<String>();
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(c);
 		userID = settings.getString("user_id", null);
 		key = settings.getString("user_key", null);
@@ -96,7 +90,6 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	
 	public ZoteroAPITask(String key, CursorAdapter adapter)
 	{
-		blackList = new ArrayList<String>();
 		this.key = key;
 		this.adapter = adapter;
 	}
@@ -137,54 +130,36 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	        	Log.i(TAG, "Finished call, and parser's request queue is empty");
 	        	
 	        	// Here's where we'd tie in to periodic housekeeping syncs
-	        	// Probably should be controlled by a preference
-	        	
+	        	// If we're already in auto mode (that is, here), just move on
+	        	if (this.autoMode) continue;
 	        	Log.d(TAG, "Preparing item sync");
 	        	Item.queue();
-	        	for (Item item : Item.queue) {
-	        		boolean firstTime = true;
-	        		for (String blackKey : blackList) {
-	        			if (blackKey.equals(item.getKey())) {
-	        				firstTime = false;
-	        				break;
-	        			}
-	        		}
-	        		if (firstTime) {
-	        			Log.d(TAG, "Syncing dirty item: "+item.getTitle());
-	        			blackList.add(item.getKey());
-	        			this.doInBackground(APIRequest.update(item));
-	        			break;
-	        		} else {
-	        			Log.d(TAG, "Skipping blacklisted item: "+item.getTitle());
-	        			continue;
-	        		}
+	        	int length = Item.queue.size();
+	        	// We pref this off
+	        	if (syncMode == AUTO_SYNC_STALE_COLLECTIONS) {
+		        	ItemCollection.queue();
+		        	length += ItemCollection.queue.size();
+	        	}
+	        	APIRequest[] mReqs = new APIRequest[length];
+	        	for (int j = 0; j < Item.queue.size(); j++) {
+	        		Log.d(TAG, "Queueing dirty item: "+Item.queue.get(j).getTitle());
+	        		mReqs[j] = APIRequest.update(Item.queue.get(j));
 	        	}
 	        	
 	        	// We pref this off
 	        	if (syncMode == AUTO_SYNC_STALE_COLLECTIONS) {
-		        	ItemCollection.queue();
-		        	for (ItemCollection j : ItemCollection.queue) {
-		        		boolean firstTime = true;
-		        		for (String blackKey : blackList) {
-		        			if (blackKey.equals(j.getKey())) {
-		        				firstTime = false;
-		        				break;
-		        			}
-		        		}
-		        		if (firstTime) {
-		        			Log.d(TAG, "Syncing dirty or stale collection: "+j.getTitle());
-		        			blackList.add(j.getKey());
-		        			this.doInBackground(new APIRequest(ServerCredentials.APIBASE
-									+ ServerCredentials.prep(userID, ServerCredentials.COLLECTIONS)+"/"+j.getKey() + "/items",
+		        	for (int j = Item.queue.size(); j < ItemCollection.queue.size(); j++) {
+		       			Log.d(TAG, "Syncing dirty or stale collection: "+ItemCollection.queue.get(j).getTitle());
+		        		mReqs[j] = new APIRequest(ServerCredentials.APIBASE
+									+ ServerCredentials.prep(userID, ServerCredentials.COLLECTIONS)
+									+"/"+ItemCollection.queue.get(j).getKey() + "/items",
 									"get",
-									key));
-		        			break;
-		        		} else {
-		        			Log.d(TAG, "Skipping blacklisted collection: "+j.getTitle());
-		        			continue;
-		        		}
+									key);
 		        	}
 	        	}
+	        	// We're in auto mode...
+	        	this.autoMode = true;
+	        	this.doInBackground(mReqs);
 	    	}
             publishProgress((int) ((i / (float) count) * 100));
         }

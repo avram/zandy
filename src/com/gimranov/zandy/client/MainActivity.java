@@ -21,11 +21,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.CursorAdapter;
 import android.widget.Toast;
 
 import com.gimranov.zandy.client.data.Database;
 import com.gimranov.zandy.client.data.Item;
 import com.gimranov.zandy.client.data.ItemCollection;
+import com.gimranov.zandy.client.task.APIRequest;
 import com.gimranov.zandy.client.task.ZoteroAPITask;
 
 public class MainActivity extends Activity implements OnClickListener {
@@ -227,8 +229,12 @@ public class MainActivity extends Activity implements OnClickListener {
 						Toast.LENGTH_SHORT).show();
 				return true;
 			}
-			Log.d(TAG, "Preparing sync requests");
-			new ZoteroAPITask(getBaseContext()).execute();
+        	Log.d(TAG, "Making sync request for all collections");
+        	APIRequest req = new APIRequest(ServerCredentials.APIBASE 
+        			+ ServerCredentials.prep(getBaseContext(), ServerCredentials.COLLECTIONS),
+        			"get", null);
+			req.disposition = "xml";
+			new ZoteroAPITask(getBaseContext()).execute(req);
 			Toast.makeText(getApplicationContext(), "Started syncing...",
 					Toast.LENGTH_SHORT).show();
 			return true;
