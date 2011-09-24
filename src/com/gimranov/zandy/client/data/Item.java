@@ -305,7 +305,8 @@ public class Item  {
 	        				if (creator.has("name")) sb.append(creator.getString("name"));
 	        				else sb.append(creator.getString("firstName") 
 	        						+ " " + creator.getString("lastName")
-	        						+ " (" + creator.getString("creatorType") + ")");
+	        						+ " (" + Item.localizedCreatorTypesForItemType(
+	        									creator.getString("creatorType")) + ")");
 	        			}
 	        			if (j < creatorArray.length() - 1) sb.append(", ");
 	        		}

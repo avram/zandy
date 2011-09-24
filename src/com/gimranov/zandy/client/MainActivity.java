@@ -120,7 +120,25 @@ public class MainActivity extends Activity implements OnClickListener {
     protected void onNewIntent(Intent intent) {
     	super.onNewIntent(intent);
     	
-    	Uri uri = intent.getData();
+    	/* 
+    	 * It's possible we've lost these to garbage collection, so we reinstantiate them
+    	 * if they turn out to be null at this point.
+    	 */
+		if (this.httpOAuthConsumer == null)
+			this.httpOAuthConsumer = new CommonsHttpOAuthConsumer(ServerCredentials.CONSUMERKEY,
+				ServerCredentials.CONSUMERSECRET);
+		if (this.httpOAuthProvider == null)
+			this.httpOAuthProvider = new DefaultOAuthProvider(ServerCredentials.OAUTHREQUEST,
+				ServerCredentials.OAUTHACCESS, ServerCredentials.OAUTHAUTHORIZE);
+
+		/* 
+		 * Also double-check that intent isn't null, because something here caused a
+		 * NullPointerException for a user.
+		 */
+		Uri uri;
+    	if (intent != null)
+    		uri = intent.getData();
+    	else return;
     	
     	if (uri != null) {
     		/* TODO The logic should have cases for the various things coming in

@@ -49,8 +49,11 @@ public class ItemActivity extends ListActivity {
         if (collectionKey != null) {
         	ItemCollection coll = ItemCollection.load(collectionKey);
         	itemAdapter = ItemAdapter.create(getBaseContext(), coll);
+        	this.setTitle(coll.getTitle());
         } else {
         	itemAdapter = ItemAdapter.create(getBaseContext());
+        	// XXX i18n
+        	this.setTitle("All items");
         }
         
         setListAdapter(itemAdapter);
@@ -74,6 +77,7 @@ public class ItemActivity extends ListActivity {
         		} else {
         			// failed to move cursor-- show a toast
             		TextView tvTitle = (TextView)view.findViewById(R.id.item_title);
+            		// XXX i18n
             		Toast.makeText(getApplicationContext(), "Can't open "+tvTitle.getText(), 
             				Toast.LENGTH_SHORT).show();
         		}
@@ -96,6 +100,7 @@ public class ItemActivity extends ListActivity {
 	protected Dialog onCreateDialog(int id, Bundle b) {
 		CharSequence value = b.getCharSequence("itemType");
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		// XXX i18n
 		builder.setMessage("Type: " + value)
 		       .setCancelable(true)
 		       .setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -121,6 +126,7 @@ public class ItemActivity extends ListActivity {
         switch (item.getItemId()) {
         case R.id.do_sync:
         	if (!ServerCredentials.check(getBaseContext())) {
+        		// XXX i18n
             	Toast.makeText(getBaseContext(), "Log in to sync", 
         				Toast.LENGTH_SHORT).show();
             	return true;
@@ -154,11 +160,13 @@ public class ItemActivity extends ListActivity {
         	// This then provides a full queue, with the locally dirty items first, followed
         	// by a scoped sync. Cool!
 			new ZoteroAPITask(getBaseContext(), (CursorAdapter) getListAdapter()).execute(reqs);
+			// XXX i18n
         	Toast.makeText(getApplicationContext(), "Started syncing...", 
     				Toast.LENGTH_SHORT).show();
             return true;
         case R.id.do_new:
         	Log.d(TAG, "Can't yet make new items");
+        	// XXX i18n
         	Toast.makeText(getBaseContext(), "Sorry, new item creation is not yet possible. Soon!", 
     				Toast.LENGTH_SHORT).show();
             return true;

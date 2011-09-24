@@ -39,7 +39,12 @@ public class CollectionActivity extends ListActivity {
         String collectionKey = getIntent().getStringExtra("com.gimranov.zandy.client.collectionKey");
         if (collectionKey != null) {
 	        ItemCollection coll = ItemCollection.load(collectionKey);
+	        // We set the title to the current collection
+	        this.setTitle(coll.getTitle());
 	        collectionAdapter.refresh(coll);
+        } else {
+        	// XXX i18n
+        	this.setTitle("Collections");
         }
         
         setListAdapter(collectionAdapter);

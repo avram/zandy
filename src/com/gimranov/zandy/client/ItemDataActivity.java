@@ -51,6 +51,12 @@ public class ItemDataActivity extends ListActivity {
         String itemKey = getIntent().getStringExtra("com.gimranov.zandy.client.itemKey");
         final Item item = Item.load(itemKey);
         
+        // Set the activity title to the current item's title, if the title works
+        if (item.getTitle() != null && !item.getTitle().equals(""))
+        	this.setTitle(item.getTitle());
+        else
+        	this.setTitle("Item Data");
+        
         ArrayList<Bundle> rows = item.toBundleArray();
         
         /* 
@@ -248,10 +254,6 @@ public class ItemDataActivity extends ListActivity {
 		}
 	}
                
-    /*
-     * I've been just copying-and-pasting the options menu code from activity to activity.
-     * It needs to be reworked for some of these activities.
-     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
