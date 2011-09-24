@@ -53,8 +53,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		XMLResponseParser.db = Item.db;
 		ItemCollection.db = Item.db;
 
-		SharedPreferences settings = getBaseContext().getSharedPreferences(
-				"zotero_prefs", 0);
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		String userID = settings.getString("user_id", null);
 		String userKey = settings.getString("user_key", null);
 
