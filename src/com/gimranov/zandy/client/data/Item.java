@@ -305,7 +305,7 @@ public class Item  {
 	        				if (creator.has("name")) sb.append(creator.getString("name"));
 	        				else sb.append(creator.getString("firstName") 
 	        						+ " " + creator.getString("lastName")
-	        						+ " (" + Item.localizedCreatorTypesForItemType(
+	        						+ " (" + Item.localizedStringForString(
 	        									creator.getString("creatorType")) + ")");
 	        			}
 	        			if (j < creatorArray.length() - 1) sb.append(", ");
@@ -1056,13 +1056,14 @@ public class Item  {
 		if (s.equals("publicationNumber")) return 22;
 		if (s.equals("edition")) return 23;
 		
-		
 		// Locators
 		if (s.equals("DOI")) return 50;
 		if (s.equals("archive")) return 51;
 		if (s.equals("archiveLocation")) return 52;
 		if (s.equals("ISBN")) return 53;
 		if (s.equals("ISSN")) return 54;
+		if (s.equals("libraryCatalog")) return 55;
+		if (s.equals("callNumber")) return 56;
 		
 		return 200;
 	}
