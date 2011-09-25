@@ -263,6 +263,11 @@ public class ItemDataActivity extends ListActivity {
         inflater.inflate(R.menu.zotero_menu, menu);
         // Remove new item-- should be created from context of an item list
         menu.removeItem(R.id.do_new);
+        
+        // Turn on delete item
+        MenuItem del = menu.findItem(R.id.do_delete);
+        del.setEnabled(true);
+        del.setVisible(true);
         return true;
     }
     
@@ -284,6 +289,10 @@ public class ItemDataActivity extends ListActivity {
         case R.id.do_prefs:
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
+        case R.id.do_delete:
+           	Toast.makeText(getApplicationContext(), "Item deletion not yet enabled. Sorry.", 
+    				Toast.LENGTH_SHORT).show();
+        	return true;
         default:
             return super.onOptionsItemSelected(i);
         }

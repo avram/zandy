@@ -11,5 +11,5 @@
 	<!-- What to do if there's no data to show in the list  -->
 	<TextView android:id="@android:id/empty" android:layout_width="fill_parent"
 		android:layout_height="fill_parent" android:textAppearance="?android:attr/textAppearanceMedium"
-		android:text="No item data" />
+		android:text="No items to show. Try syncing, or create some." />
 </RelativeLayout>

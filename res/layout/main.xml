@@ -3,13 +3,12 @@
 	android:orientation="vertical" android:layout_width="fill_parent"
 	android:layout_height="fill_parent"
 	android:id="@+id/main">
-	<TextView android:id="@+id/welcome" android:layout_width="fill_parent"
-		android:textAppearance="?android:attr/textAppearanceLarge"
-		android:text="Welcome to Zandy, the Android client for the Zotero project." android:layout_height="wrap_content"/>
+	<TextView android:id="@+id/welcome" android:textAppearance="?android:attr/textAppearanceLarge"
+		android:text="Zandy: Zotero for Android" android:layout_height="wrap_content" android:padding="3dip" android:textStyle="bold" android:gravity="center_horizontal" android:layout_width="match_parent"/>
 	<Button android:id="@+id/collectionButton" android:layout_height="wrap_content"
-		android:text="View Collections" android:layout_width="match_parent" android:layout_weight="0.10"></Button>
+		android:text="View Collections" android:layout_width="match_parent" android:layout_weight="0.30"></Button>
 	<Button android:id="@+id/itemButton" android:layout_height="wrap_content"
-		android:text="View Items" android:layout_width="match_parent" android:layout_weight="0.21"></Button>
+		android:text="View Items" android:layout_width="match_parent" android:layout_weight="0.30"></Button>
 	<Button android:id="@+id/loginButton" android:layout_height="wrap_content"
-		android:text="Log in" android:layout_width="match_parent" android:layout_weight="0.21"></Button>
+		android:text="Log in" android:layout_width="match_parent" android:layout_weight="0.10"></Button>
 </LinearLayout>

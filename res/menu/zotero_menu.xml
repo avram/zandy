@@ -3,6 +3,11 @@
     <item android:id="@+id/do_sync"
           android:icon="@drawable/glyphish_02_redo"
           android:title="@string/menu_sync" />
+    <item android:id="@+id/do_delete"
+          android:icon="@drawable/glyphish_22_skull_n_bones"
+          android:title="@string/menu_delete"
+          android:enabled="false"
+          android:visible="false" />
     <item android:id="@+id/do_new"
           android:icon="@drawable/glyphish_10_medical"
           android:title="@string/menu_new" />

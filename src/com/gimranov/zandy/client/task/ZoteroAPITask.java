@@ -105,6 +105,11 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 		JSONArray[] ret = new JSONArray[count];
         
         for (int i = 0; i < count; i++) {
+        	if (reqs[i] == null) {
+        		Log.d(TAG, "Skipping null request");
+        		continue;
+        	}
+        	
         	// Just in case we missed something, we fix the user ID right here too
         	if (userID != null) reqs[i] = ServerCredentials.prep(userID, reqs[i]);
         	
@@ -155,7 +160,9 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	        			mReqs[j] = ServerCredentials.prep(userID,
 	        							ItemCollection.additions.get(j
 	        								- Item.queue.size()));
-	        		} else {
+	        		} else if (j < Item.queue.size() 
+	        					+ ItemCollection.additions.size() 
+	        					+ ItemCollection.removals.size()) {
 	        			Log.d(TAG, "Queueing removed collection membership ("+j+")");
 	        			mReqs[j] = ServerCredentials.prep(userID,
 	        						ItemCollection.additions.get(j 

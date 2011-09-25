@@ -62,7 +62,9 @@ public class ServerCredentials {
 	public static boolean check(Context c) {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(c);
 		if (settings.getString("user_id", null) != null
-				&& settings.getString("user_key", null) != null)
+				&& settings.getString("user_key", null) != null
+				&& !settings.getString("user_id", null).equals("")
+				&& !settings.getString("user_key", null).equals(""))
 			return true;
 		else return false;
 	}

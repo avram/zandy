@@ -66,7 +66,8 @@ public class CollectionActivity extends ListActivity {
         		    	startActivity(i);
         			} else {
         				Log.d(TAG, "Failed loading child collections for collection");
-        				Toast.makeText(getApplicationContext(), "No subcollections for collection", 
+        				Toast.makeText(getApplicationContext(), "No subcollections for collection. To view" +
+        						" items in the collection, touch and hold the collection.", 
                 				Toast.LENGTH_SHORT).show();
         			}
         		} else {

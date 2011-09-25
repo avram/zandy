@@ -21,7 +21,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.CursorAdapter;
 import android.widget.Toast;
 
 import com.gimranov.zandy.client.data.Database;
@@ -55,16 +54,23 @@ public class MainActivity extends Activity implements OnClickListener {
 		XMLResponseParser.db = Item.db;
 		ItemCollection.db = Item.db;
 
-		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-		String userID = settings.getString("user_id", null);
-		String userKey = settings.getString("user_key", null);
-
-		if (userID != null && userKey != null) {
+		if (ServerCredentials.check(getBaseContext())) {
 			loginButton.setText("Logged in");
 			loginButton.setClickable(false);
 		}
 	}
 
+	public void onResume() {
+		Button loginButton = (Button) findViewById(R.id.loginButton);
+
+		if (!ServerCredentials.check(getBaseContext())) {
+			loginButton.setText("Log in");
+			loginButton.setClickable(true);
+		}
+		
+		super.onResume();
+	}
+	
 	/**
 	 * Implementation of the OnClickListener interface, to handle button events.
 	 * 

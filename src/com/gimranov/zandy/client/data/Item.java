@@ -257,6 +257,9 @@ public class Item {
 								+ values.getString(i), e);
 						b.putString("content", "");
 					}
+				} else if (fields.getString(i).equals("notes")) {
+					// TODO handle notes
+					continue;
 				} else if (fields.getString(i).equals("creators")) {
 					/*
 					 * Creators should be labeled with role and listed nicely
