@@ -67,8 +67,8 @@ public class ItemAdapter extends ResourceCursorAdapter {
 		if (tvTitle == null) {
 			Log.e(TAG, "tvTitle is null in bindView");
 		}
-		
-		Log.d(TAG, "setting image for item of type: "+item.getType());
+				
+		Log.d(TAG, "setting image for item (" + item.getKey() + ") of type: "+item.getType());
 		tvType.setImageResource(Item.resourceForType(item.getType()));
 
 		tvSummary.setText(item.getCreatorSummary() + " (" + item.getYear() + ")");

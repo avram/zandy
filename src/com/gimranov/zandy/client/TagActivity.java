@@ -27,6 +27,7 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.TextView.BufferType;
 
 import com.gimranov.zandy.client.data.Item;
+import com.gimranov.zandy.client.task.APIRequest;
 import com.gimranov.zandy.client.task.ZoteroAPITask;
 
 /**
@@ -224,7 +225,7 @@ public class TagActivity extends ListActivity {
             	return true;
         	}
         	Log.d(TAG, "Preparing sync requests");
-        	new ZoteroAPITask(getBaseContext()).execute();
+        	new ZoteroAPITask(getBaseContext()).execute(APIRequest.update(this.item));
         	Toast.makeText(getApplicationContext(), "Started syncing...", 
     				Toast.LENGTH_SHORT).show();
         	return true;

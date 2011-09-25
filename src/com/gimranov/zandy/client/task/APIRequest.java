@@ -26,6 +26,7 @@ public class APIRequest {
 
 	
 	public static final String API_DIRTY =	"Unsynced change";
+	public static final String API_NEW =	"New item / collection";
 	public static final String API_MISSING ="Partial data";
 	public static final String API_STALE = "Stale data";
 	public static final String API_WIP  = 	"Sync attempted";
@@ -222,14 +223,13 @@ public class APIRequest {
 	 * @return
 	 */
 	public static APIRequest update(Item item) {
-		// If this looks like a new item (key is longer than 10 characters, so UUID),
-		// then we produce an update request instead.
-		
-		if (item.getKey().length() > 10) {
+		// If we have an item markes as new, update it
+		if (item.getKey().length() > 10) {			
 			ArrayList<Item> mAL = new ArrayList<Item>();
 			mAL.add(item);
 			return add(mAL);
 		}
+		
 		APIRequest templ = new APIRequest(ServerCredentials.APIBASE
 								+ ServerCredentials.ITEMS+"/"+item.getKey(),
 								"PUT",

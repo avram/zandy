@@ -48,10 +48,16 @@ public class ItemDataActivity extends ListActivity {
         super.onCreate(savedInstanceState);
                 
         /* Get the incoming data from the calling activity */
-        // XXX Note that we don't know what to do when there is no key assigned
         String itemKey = getIntent().getStringExtra("com.gimranov.zandy.client.itemKey");
         item = Item.load(itemKey);
         
+        // When an item in the view has been updated via a sync, the temporary key may have
+        // been swapped out, so we fall back on the DB ID
+        if (item == null) {
+            String itemDbId = getIntent().getStringExtra("com.gimranov.zandy.client.itemDbId");
+        	item = Item.loadDbId(itemDbId);
+        }
+        	
         // Set the activity title to the current item's title, if the title works
         if (item.getTitle() != null && !item.getTitle().equals(""))
         	this.setTitle(item.getTitle());
@@ -149,6 +155,7 @@ public class ItemDataActivity extends ListActivity {
         		Bundle row = adapter.getItem(position);
         		// Show the right type of dialog for the row in question
         		if (row.getString("label").equals("itemType")) {
+        			// XXX 
                 	Toast.makeText(getApplicationContext(), "Item type cannot be changed.", 
             				Toast.LENGTH_SHORT).show();
         			//removeDialog(DIALOG_ITEM_TYPE);

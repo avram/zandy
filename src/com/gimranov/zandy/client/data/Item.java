@@ -3,6 +3,7 @@ package com.gimranov.zandy.client.data;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.UUID;
 
 import org.json.JSONArray;
@@ -96,6 +97,7 @@ public class Item {
 		this();
 		content = fieldsForItemType(c, type);
 		key = UUID.randomUUID().toString();
+		dirty = APIRequest.API_NEW;
 		this.type = type;
 	}
 
@@ -440,12 +442,11 @@ public class Item {
 			if (dbId == null)
 				dbId = existing.dbId;
 			String[] args = { title, type, year, creatorSummary,
-					content.toString(), etag, dirty, timestamp, dbId };
-			Log.i(TAG, "Updating existing item, setting JSON to: "
-					+ content.toString());
+					content.toString(), etag, dirty, timestamp, key, dbId };
+			Log.i(TAG, "Updating existing item");
 			Cursor cur = db
 					.rawQuery(
-							"update items set item_title=?, item_type=?, item_year=?, item_creator=?, item_content=?, etag=?, dirty=?, timestamp=? "
+							"update items set item_title=?, item_type=?, item_year=?, item_creator=?, item_content=?, etag=?, dirty=?, timestamp=?, item_key=? "
 									+ " where _id=?", args);
 			if (cur != null)
 				cur.close();
@@ -470,6 +471,24 @@ public class Item {
 		return item;
 	}
 
+	/**
+	 * Loads and returns an Item for the specified item DB ID
+	 * Returns null when no match is found for the specified DB ID
+	 * 
+	 * @param itemDbId
+	 * @return
+	 */
+	public static Item loadDbId(String itemDbId) {
+		String[] cols = Database.ITEMCOLS;
+		String[] args = { itemDbId };
+		Cursor cur = db.query("items", cols, "_id=?", args, null, null,
+				null, null);
+		Item item = load(cur);
+		if (cur != null)
+			cur.close();
+		return item;
+	}
+	
 	/**
 	 * Loads an item from the specified Cursor, where the cursor was created
 	 * using the recommended query in Database.ITEMCOLS
@@ -574,9 +593,7 @@ public class Item {
 			item.content.put("tags", newTags);
 			Log.d(TAG, "JSON is now: " + item.content.toString());
 		} catch (JSONException e) {
-			Log
-					.e(TAG,
-							"Caught JSON exception when we tried to modify the JSON content");
+			Log.e(TAG,"Caught JSON exception when we tried to modify the JSON content");
 		}
 		item.dirty = APIRequest.API_DIRTY;
 		item.save();
@@ -1374,6 +1391,24 @@ public class Item {
 			else if (s.equals("webpage"))
 				json = c.getString(R.string.template_webpage);
 			template = new JSONObject(json);
+			
+			JSONArray names = template.names();
+			for (int i = 0; i < names.length(); i++) {
+				if (names.getString(i).equals("itemType")) continue;
+				if (names.getString(i).equals("tags")) continue;
+				if (names.getString(i).equals("notes")) continue;
+				if (names.getString(i).equals("creators")) {
+					JSONArray roles = template.getJSONArray("creators");
+					for (int j = 0; j < roles.length(); j++) {
+						roles.put(j, roles.getJSONObject(j).put("firstName", "").put("lastName", ""));
+					}
+					template.put("creators", roles);
+					continue;
+				}
+				template.put(names.getString(i), "");
+			}
+			Log.d(TAG, "Got JSON template: "+template.toString(4));
+
 		} catch (JSONException e) {
 			Log.e(TAG, "JSON exception parsing item template", e);
 		}

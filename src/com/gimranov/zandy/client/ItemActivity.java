@@ -73,6 +73,7 @@ public class ItemActivity extends ListActivity {
     				// We create and issue a specified intent with the necessary data
     		    	Intent i = new Intent(getBaseContext(), ItemDataActivity.class);
     		    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
+    		    	i.putExtra("com.gimranov.zandy.client.itemDbId", item.dbId);
     		    	startActivity(i);
         		} else {
         			// failed to move cursor-- show a toast
