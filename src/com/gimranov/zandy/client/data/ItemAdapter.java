@@ -20,13 +20,10 @@ import com.gimranov.zandy.client.R;
 public class ItemAdapter extends ResourceCursorAdapter {
 	private static final String TAG = "com.gimranov.zandy.client.data.ItemAdapter";
 	
-	private Database db;
-	private Context context;
 	private ItemCollection parent;
 
 	public ItemAdapter(Context context, Cursor cursor) {
 		super(context, R.layout.list_item, cursor, false);
-		this.context = context;
 	}
 	
     public View newView(Context context, Cursor cur, ViewGroup parent) {
@@ -86,7 +83,6 @@ public class ItemAdapter extends ResourceCursorAdapter {
 		}
 		Log.e(TAG, "created itemadapter");
 		ItemAdapter adapter = new ItemAdapter(context, cursor);
-		adapter.db = db;
 		return adapter;
 	}
 	
@@ -102,7 +98,6 @@ public class ItemAdapter extends ResourceCursorAdapter {
 		}
 		Log.e(TAG, "created itemadapter");
 		ItemAdapter adapter = new ItemAdapter(context, cursor);
-		adapter.db = db;
 		adapter.parent = parent;
 		return adapter;
 	}
