@@ -457,6 +457,19 @@ public class Item {
 	}
 
 	/**
+	 * Deletes an item from the database, keeping a record of it in the deleteditems table
+	 * We will then send out delete requests via the API to propagate the deletion
+	 */
+	public void delete() {
+		String[] args = { dbId };
+		db.rawQuery("delete from items where _id=?", args);
+		db.rawQuery("delete from itemtocreators where item_id=?", args);
+		db.rawQuery("delete from itemtocollections where item_id=?", args);
+		String[] args2 = { key, etag };
+		db.rawQuery("insert into deleteditems (item_key, etag) values (?, ?)", args2);		
+	}
+	
+	/**
 	 * Loads and returns an Item for the specified item key Returns null when no
 	 * match is found for the specified itemKey
 	 * 

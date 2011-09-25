@@ -100,7 +100,6 @@ public class CollectionActivity extends ListActivity {
                     		req.disposition = "xml";
                     		// TODO Introduce a callback to update UI when ready
                     		new ZoteroAPITask(getBaseContext(), (CursorAdapter) getListAdapter()).execute(req);
-            				return true;
         				}
         				Log.d(TAG, "Loading items for collection with key: "+coll.getKey());
         				// We create and issue a specified intent with the necessary data

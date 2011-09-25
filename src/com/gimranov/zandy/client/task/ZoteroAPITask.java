@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -48,6 +49,7 @@ import android.widget.CursorAdapter;
 
 import com.gimranov.zandy.client.ServerCredentials;
 import com.gimranov.zandy.client.XMLResponseParser;
+import com.gimranov.zandy.client.data.Database;
 import com.gimranov.zandy.client.data.Item;
 import com.gimranov.zandy.client.data.ItemCollection;
 
@@ -58,6 +60,8 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	private CursorAdapter adapter;
 	private String userID;
 	
+	public ArrayList<APIRequest> deletions;
+
 	public int syncMode = -1;
 	
 	public static final int AUTO_SYNC_STALE_COLLECTIONS = 1;
@@ -76,6 +80,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 		key = settings.getString("user_key", null);
 		if (settings.getBoolean("sync_aggressively", false))
 			syncMode = AUTO_SYNC_STALE_COLLECTIONS;
+		deletions = APIRequest.delete(new Database(c));
 	}
 
 	public ZoteroAPITask(Context c, CursorAdapter adapter)
@@ -85,6 +90,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 		key = settings.getString("user_key", null);
 		if (settings.getBoolean("sync_aggressively", false))
 			syncMode = AUTO_SYNC_STALE_COLLECTIONS;
+		deletions = APIRequest.delete(new Database(c));
 	}
 	
 	public ZoteroAPITask(String key, CursorAdapter adapter)
@@ -144,6 +150,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	        	int length = Item.queue.size();
 	        	length += ItemCollection.additions.size();
 	        	length += ItemCollection.removals.size();
+	        	length += deletions.size();
 	        	int basicLength = length;
 	        	// We pref this off
 	        	if (syncMode == AUTO_SYNC_STALE_COLLECTIONS) {
@@ -168,6 +175,16 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	        						ItemCollection.additions.get(j 
 	        								- Item.queue.size() 
 	        								- ItemCollection.additions.size()));
+	        		} else if (j < Item.queue.size() 
+        					+ ItemCollection.additions.size() 
+        					+ ItemCollection.removals.size()
+        					+ deletions.size()) {
+	        			Log.d(TAG, "Queueing deletion ("+j+")");
+	        			mReqs[j] = ServerCredentials.prep(userID,
+        						deletions.get(j 
+        								- Item.queue.size() 
+        								- ItemCollection.additions.size()
+        								- ItemCollection.removals.size()));
 	        		}
 	        		// We'll clear the collection change queues; we may need to re-add failed requests later
 	        		ItemCollection.additions.clear();

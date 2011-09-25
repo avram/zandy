@@ -2,6 +2,7 @@ package com.gimranov.zandy.client;
 
 import java.util.ArrayList;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
@@ -39,6 +40,7 @@ public class ItemDataActivity extends ListActivity {
 	static final int DIALOG_SINGLE_VALUE = 0;
 	static final int DIALOG_ITEM_TYPE = 1;
 	static final int DIALOG_CONFIRM_NAVIGATE = 4;
+	static final int DIALOG_CONFIRM_DELETE = 5;
 	
 	public Item item;
 		
@@ -251,6 +253,20 @@ public class ItemDataActivity extends ListActivity {
 		    	        }
 		    	    }).create();
 			return dialog;
+		case DIALOG_CONFIRM_DELETE:
+			dialog = new AlertDialog.Builder(this)
+		    	    .setTitle("Delete this item")
+		    	    .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int whichButton) {
+							Item i = Item.load(itemKey);
+							i.delete();
+		    	        }
+		    	    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+		    	        public void onClick(DialogInterface dialog, int whichButton) {
+		    	        	// do nothing
+		    	        }
+		    	    }).create();
+			return dialog;
 		default:
 			Log.e(TAG, "Invalid dialog requested");
 			return null;
@@ -290,8 +306,10 @@ public class ItemDataActivity extends ListActivity {
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
         case R.id.do_delete:
-           	Toast.makeText(getApplicationContext(), "Item deletion not yet enabled. Sorry.", 
-    				Toast.LENGTH_SHORT).show();
+        	Bundle b = new Bundle();
+        	b.putString("itemKey",item.getKey());
+			removeDialog(DIALOG_CONFIRM_DELETE);
+    		showDialog(DIALOG_CONFIRM_DELETE, b);
         	return true;
         default:
             return super.onOptionsItemSelected(i);

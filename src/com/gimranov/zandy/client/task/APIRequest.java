@@ -6,9 +6,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.database.Cursor;
 import android.util.Log;
 
 import com.gimranov.zandy.client.ServerCredentials;
+import com.gimranov.zandy.client.data.Database;
 import com.gimranov.zandy.client.data.Item;
 import com.gimranov.zandy.client.data.ItemCollection;
 
@@ -157,7 +159,7 @@ public class APIRequest {
 		templ.disposition = "none";
 		return templ;
 	}
-
+	
 	/**
 	 * Produces an API request to add the specified items to the collection.
 	 * This request always needs a key, but it isn't set automatically and should
@@ -240,5 +242,44 @@ public class APIRequest {
 		templ.disposition = "xml";
 		
 		return templ;
+	}
+	
+	/**
+	 * Produces API requests to delete queued items from the server.
+	 * This request always needs a key.
+	 * 
+	 * From the API docs:
+	 *   DELETE /users/1/items/ABCD2345
+	 *   If-Match: "8e984e9b2a8fb560b0085b40f6c2c2b7"
+	 * 
+	 * @param db
+	 * @return
+	 */
+	public static ArrayList<APIRequest> delete(Database db) {
+		ArrayList<APIRequest> list = new ArrayList<APIRequest>();
+		
+		String[] args = {};
+		Cursor cur = db.rawQuery("select item_key, etag from deleteditems", args);
+		if (cur == null) {
+			Log.d(TAG, "No deleted items found in database");
+			return list;
+		}
+
+		do {
+			APIRequest templ = new APIRequest(ServerCredentials.APIBASE
+					+ ServerCredentials.ITEMS + "/" + cur.getString(0),
+				"DELETE",
+				null);
+			templ.disposition = "none";
+			templ.ifMatch = cur.getString(1);
+			Log.d(TAG, "Adding deleted item: "+cur.getString(0) + " : " + templ.ifMatch);
+			list.add(templ);
+		} while (cur.moveToNext() != false);
+		db.rawQuery("delete from deleteditems", args);
+		cur.close();
+		
+		
+		
+		return list;
 	}
 }

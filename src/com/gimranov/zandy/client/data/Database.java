@@ -15,7 +15,7 @@ public class Database {
 	public static final String[] ITEMCOLS = {"item_title", "item_type", "item_content", "etag", "dirty", "_id", "item_key", "item_year", "item_creator", "timestamp"};
 	public static final String[] COLLCOLS = {"collection_name", "collection_parent", "etag", "dirty", "_id", "collection_key, collection_size", "timestamp"};
 	// the database version; increment to call update
-	private static final int DATABASE_VERSION = 14;
+	private static final int DATABASE_VERSION = 15;
 	
 	private static final String DATABASE_NAME = "Zotero";
 	private final DatabaseOpenHelper mDatabaseOpenHelper;
@@ -82,7 +82,6 @@ public class Database {
 	}
 	
 	private static class DatabaseOpenHelper extends SQLiteOpenHelper {
-		
 		private final Context mHelperContext;
 		private SQLiteDatabase mDatabase;
 		
@@ -137,6 +136,11 @@ public class Database {
 			"create table itemtocollections"+ 
 			" (_id integer primary key autoincrement, "
 			+ "collection_id int not null, item_id int not null);";
+
+		private static final String DELETED_ITEMS_CREATE =
+			"create table deleteditems"+ 
+			" (_id integer primary key autoincrement, "
+			+ "item_key int not null, etag int not null);";
 		
 		DatabaseOpenHelper(Context context) {
 			super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -155,21 +159,28 @@ public class Database {
 			db.execSQL(ITEM_TO_COLLECTIONS_CREATE);	
 		}
 		
-		/* TODO Upgrade sanely! */
+		
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, 
 				int newVersion) {
-			Log.w(TAG, 
-					"Upgrading database from version " + 
-					oldVersion + " to " + newVersion + 
-			", which will destroy all old data.");
-			db.execSQL("DROP TABLE IF EXISTS collections");
-			db.execSQL("DROP TABLE IF EXISTS items");
-			db.execSQL("DROP TABLE IF EXISTS creators");
-			db.execSQL("DROP TABLE IF EXISTS children");
-			db.execSQL("DROP TABLE IF EXISTS itemtocreators");
-			db.execSQL("DROP TABLE IF EXISTS itemtocollections");
-			onCreate(db);
+			if (oldVersion < 14) {
+				Log.w(TAG, 
+						"Upgrading database from version " + 
+						oldVersion + " to " + newVersion + 
+				", which will destroy all old data.");
+				db.execSQL("DROP TABLE IF EXISTS collections");
+				db.execSQL("DROP TABLE IF EXISTS items");
+				db.execSQL("DROP TABLE IF EXISTS creators");
+				db.execSQL("DROP TABLE IF EXISTS children");
+				db.execSQL("DROP TABLE IF EXISTS itemtocreators");
+				db.execSQL("DROP TABLE IF EXISTS itemtocollections");
+				onCreate(db);
+			} else {
+				if (oldVersion == 14 && newVersion == 15) {
+					// here, we just added a table
+					db.execSQL(DELETED_ITEMS_CREATE);
+				}
+			}
 		}
 	}
 }
