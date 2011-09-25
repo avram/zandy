@@ -52,12 +52,14 @@ public class Database {
 	}
 		
 	public Cursor rawQuery(String selection, String[] args) {
+		Log.d(TAG, "Query: "+selection);
 		SQLiteDatabase db = mDatabaseOpenHelper.getWritableDatabase();
 		Cursor cursor = db.rawQuery(selection, args);
-
 		if (cursor == null) {
+			Log.d(TAG, "Null cursor.");
 			return null;
 		} else if (!cursor.moveToFirst()) {
+			Log.d(TAG, "Cursor can't be moved");
 			cursor.close();
 			return null;
 		}

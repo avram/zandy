@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -40,17 +39,17 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 
-import com.gimranov.zandy.client.ServerCredentials;
-import com.gimranov.zandy.client.XMLResponseParser;
-import com.gimranov.zandy.client.data.Item;
-import com.gimranov.zandy.client.data.ItemCollection;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.CursorAdapter;
+
+import com.gimranov.zandy.client.ServerCredentials;
+import com.gimranov.zandy.client.XMLResponseParser;
+import com.gimranov.zandy.client.data.Item;
+import com.gimranov.zandy.client.data.ItemCollection;
 
 public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	private static final String TAG = "com.gimranov.zandy.client.task.ZoteroAPITask";
@@ -106,6 +105,9 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 		JSONArray[] ret = new JSONArray[count];
         
         for (int i = 0; i < count; i++) {
+        	// Just in case we missed something, we fix the user ID right here too
+        	if (userID != null) reqs[i] = ServerCredentials.prep(userID, reqs[i]);
+        	
         	try {
         		Log.i(TAG, "Executing API call: " + reqs[i].query);
         		
@@ -135,22 +137,41 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	        	Log.d(TAG, "Preparing item sync");
 	        	Item.queue();
 	        	int length = Item.queue.size();
+	        	length += ItemCollection.additions.size();
+	        	length += ItemCollection.removals.size();
+	        	int basicLength = length;
 	        	// We pref this off
 	        	if (syncMode == AUTO_SYNC_STALE_COLLECTIONS) {
 		        	ItemCollection.queue();
 		        	length += ItemCollection.queue.size();
 	        	}
 	        	APIRequest[] mReqs = new APIRequest[length];
-	        	for (int j = 0; j < Item.queue.size(); j++) {
-	        		Log.d(TAG, "Queueing dirty item: "+Item.queue.get(j).getTitle());
-	        		mReqs[j] = APIRequest.update(Item.queue.get(j));
+	        	for (int j = 0; j < basicLength; j++) {
+	        		if (j < Item.queue.size()) {
+	        			Log.d(TAG, "Queueing dirty item ("+j+"): "+Item.queue.get(j).getTitle());
+	        			mReqs[j] = ServerCredentials.prep(userID, APIRequest.update(Item.queue.get(j)));
+	        		} else if (j < Item.queue.size() + ItemCollection.additions.size()) {
+	        			Log.d(TAG, "Queueing new collection membership ("+j+")");
+	        			mReqs[j] = ServerCredentials.prep(userID,
+	        							ItemCollection.additions.get(j
+	        								- Item.queue.size()));
+	        		} else {
+	        			Log.d(TAG, "Queueing removed collection membership ("+j+")");
+	        			mReqs[j] = ServerCredentials.prep(userID,
+	        						ItemCollection.additions.get(j 
+	        								- Item.queue.size() 
+	        								- ItemCollection.additions.size()));
+	        		}
+	        		// We'll clear the collection change queues; we may need to re-add failed requests later
+	        		ItemCollection.additions.clear();
+	        		ItemCollection.removals.clear();
 	        	}
 	        	
 	        	// We pref this off
 	        	if (syncMode == AUTO_SYNC_STALE_COLLECTIONS) {
-		        	for (int j = Item.queue.size(); j < ItemCollection.queue.size(); j++) {
+		        	for (int j = 0; j < ItemCollection.queue.size(); j++) {
 		       			Log.d(TAG, "Syncing dirty or stale collection: "+ItemCollection.queue.get(j).getTitle());
-		        		mReqs[j] = new APIRequest(ServerCredentials.APIBASE
+		        		mReqs[basicLength + j] = new APIRequest(ServerCredentials.APIBASE
 									+ ServerCredentials.prep(userID, ServerCredentials.COLLECTIONS)
 									+"/"+ItemCollection.queue.get(j).getKey() + "/items",
 									"get",
@@ -252,15 +273,31 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 					request.setHeader("Content-Type", req.contentType);
 				}
 				if(req.body != null) {
+					Log.d(TAG, "Post body: "+req.body);
 					// Force the encoding here
 					StringEntity entity = new StringEntity(req.body,"UTF-8");
 					request.setEntity(entity);
 				}
 				if (req.disposition.equals("xml")) {
-					InputStream in = client.execute(request).getEntity().getContent();
-					XMLResponseParser parse = new XMLResponseParser(in);
-					parse.parse(XMLResponseParser.MODE_ENTRY, uri.toString());
-					resp = "XML was parsed.";
+					HttpResponse hr = client.execute(request);
+					int code = hr.getStatusLine().getStatusCode();
+					Log.d(TAG, code + " : "+ hr.getStatusLine().getReasonPhrase());
+					if (code < 400) {
+						HttpEntity he = hr.getEntity();
+						InputStream in = he.getContent();
+						XMLResponseParser parse = new XMLResponseParser(in);
+						if (req.updateKey != null && req.updateType != null)
+							parse.update(req.updateType, req.updateKey);
+						// The response on POST in XML mode (new item) is a feed
+						parse.parse(XMLResponseParser.MODE_FEED, uri.toString());
+						resp = "XML was parsed.";
+					} else {
+						Log.e(TAG, "Not parsing non-XML response, code >= 400");
+						ByteArrayOutputStream ostream = new ByteArrayOutputStream();
+						hr.getEntity().writeTo(ostream);
+						Log.e(TAG,"Error Body: "+ ostream.toString());
+						Log.e(TAG,"Post Body:"+ req.body);
+					}
 				} else {
 					resp = client.execute(request, new BasicResponseHandler());
 				}
@@ -295,7 +332,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 						ByteArrayOutputStream ostream = new ByteArrayOutputStream();
 						hr.getEntity().writeTo(ostream);
 						Log.e(TAG,"Error Body: "+ ostream.toString());
-						//Log.e(TAG,"Put Body:"+ req.body);
+						Log.e(TAG,"Put Body:"+ req.body);
 						
 						// "Precondition Failed"
 						// The item changed server-side, so we have a conflict to resolve...
@@ -313,14 +350,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 				if(req.ifMatch != null) {
 					request.setHeader("If-Match", req.ifMatch);
 				}
-				if (req.disposition.equals("xml")) {
-					InputStream in = client.execute(request).getEntity().getContent();
-					XMLResponseParser parse = new XMLResponseParser(in);
-					parse.parse(XMLResponseParser.MODE_ENTRY, uri.toString());
-					resp = "XML was parsed.";
-				} else {
-					resp = client.execute(request, new BasicResponseHandler());
-				}
+				resp = client.execute(request, new BasicResponseHandler());
 			} else {
 				HttpGet request = new HttpGet();
 				request.setURI(uri);

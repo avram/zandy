@@ -28,6 +28,8 @@ public class XMLResponseParser extends DefaultHandler {
 	private Item item;
 	private ItemCollection collection;
 	private ItemCollection parent;
+	private String updateType;
+	private String updateKey;
 	private boolean items = false;
 	
 	public static ArrayList<APIRequest> queue;
@@ -49,6 +51,11 @@ public class XMLResponseParser extends DefaultHandler {
 		input = in;
 		// Initialize the request queue if needed
 		if (queue == null) queue = new ArrayList<APIRequest>();
+	}
+	
+	public void update(String type, String key) {
+		updateType = type;
+		updateKey = key;
 	}
 	
 	public void parse(int mode, String url) {		
@@ -115,10 +122,40 @@ public class XMLResponseParser extends DefaultHandler {
 
             public void end() {
             	if (items == true) {
-            		item.dirty = APIRequest.API_CLEAN;
-            		item.save();
+            		if (updateKey != null && updateType != null && updateType.equals("item")) {
+            			// We have an incoming new version of an item
+            			Item existing = Item.load(updateKey);
+            			if (existing != null) {
+            				Log.d(TAG, "Updating newly created item to replace temporary key: " 
+            							+ updateKey + " => " + item.getKey() + "");
+            				existing.setKey(item.getKey());
+            				existing.dirty = APIRequest.API_CLEAN;
+            				existing.save();
+            			}
+            		} else {
+	            		item.dirty = APIRequest.API_CLEAN;
+	            		item.save();
+            		}
+                	Log.i(TAG, "Done parsing item entry.");
+            		return;
             	}
+            	
             	if (items == false) {
+            		if (updateKey != null && updateType != null && updateType.equals("collection")) {
+            			// We have an incoming new version of a collection
+            			ItemCollection existing = ItemCollection.load(updateKey);
+            			if (existing != null) {
+            				Log.d(TAG, "Updating newly created collection to replace temporary key: " 
+            							+ updateKey + " => " + collection.getKey() + "");
+            				existing.setKey(collection.getKey());
+            				existing.dirty = APIRequest.API_CLEAN;
+            				existing.save();
+            			}
+                    	Log.i(TAG, "Done parsing new collection entry.");            			
+            			// We don't need to load again, since a new collection can't be stale
+            			return;
+            		}
+            		
             		ItemCollection ic = ItemCollection.load(collection.getKey());
             		if (ic != null) {
             			if (!ic.getTimestamp()
@@ -128,7 +165,7 @@ public class XMLResponseParser extends DefaultHandler {
             				collection.dirty = APIRequest.API_STALE;
             			} else {
             				// Collection hasn't changed!
-            				collection.dirty = ic.dirty;
+            				collection = ic;
             			}
             		} else {
             			// This means that we haven't seen the collection before, so it must be
@@ -137,8 +174,9 @@ public class XMLResponseParser extends DefaultHandler {
             		}
     				Log.d(TAG, "Status: "+collection.dirty+" for "+collection.getTitle());
             		collection.save();
+                	Log.i(TAG, "Done parsing a collection entry.");
+                	return;
             	}
-            	Log.i(TAG, "Done parsing an entry.");
             }
         });
         entry.getChild(ATOM_NAMESPACE, "title").setEndTextElementListener(new EndTextElementListener(){

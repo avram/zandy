@@ -94,21 +94,30 @@ public class ItemActivity extends ListActivity {
     	super.onResume();
     }
     
-    /*
-     * Need to add dialog for new item. probably starts a new activity to edit item when created
-     */
 	protected Dialog onCreateDialog(int id, Bundle b) {
-		CharSequence value = b.getCharSequence("itemType");
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		// XXX i18n
-		builder.setMessage("Type: " + value)
-		       .setCancelable(true)
-		       .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-		           public void onClick(DialogInterface dialog, int id) {
-		                dialog.cancel();
-		                removeDialog(0);
-		           }
-		       });
+		builder.setTitle("Item Type")
+	    	    .setItems(Item.ITEM_TYPES_EN, new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int pos) {
+	    	            Item item = new Item(getBaseContext(), Item.ITEM_TYPES[pos]);
+	    	            item.dirty = APIRequest.API_DIRTY;
+	    	            item.save();
+	    	            if (collectionKey != null) {
+	    	            	ItemCollection coll = ItemCollection.load(collectionKey);
+	    	            	if (coll != null) {
+	    	            		coll.loadChildren();
+	    	            		coll.add(item);
+	    	            		coll.saveChildren();
+	    	            	}
+	    	            }
+	        			Log.d(TAG, "Loading item data with key: "+item.getKey());
+	    				// We create and issue a specified intent with the necessary data
+	    		    	Intent i = new Intent(getBaseContext(), ItemDataActivity.class);
+	    		    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
+	    		    	startActivity(i);
+	    	        }
+	    	    });
 		AlertDialog dialog = builder.create();
 		return dialog;
 	}
@@ -136,8 +145,8 @@ public class ItemActivity extends ListActivity {
         	Item.queue();
         	APIRequest[] reqs = new APIRequest[Item.queue.size() + 1];
         	for (int j = 0; j < Item.queue.size(); j++) {
-        		Log.d(TAG, "Adding dirty item to sync: "+item.getTitle());
-        		reqs[j] = APIRequest.update(Item.queue.get(j));
+        		Log.d(TAG, "Adding dirty item to sync: "+Item.queue.get(j).getTitle());
+        		reqs[j] = ServerCredentials.prep(getBaseContext(), APIRequest.update(Item.queue.get(j)));
         	}
         	if (collectionKey == null) {
             	Log.d(TAG, "Adding sync request for all items");
@@ -165,10 +174,8 @@ public class ItemActivity extends ListActivity {
     				Toast.LENGTH_SHORT).show();
             return true;
         case R.id.do_new:
-        	Log.d(TAG, "Can't yet make new items");
-        	// XXX i18n
-        	Toast.makeText(getBaseContext(), "Sorry, new item creation is not yet possible. Soon!", 
-    				Toast.LENGTH_SHORT).show();
+        	removeDialog(DIALOG_NEW);
+        	showDialog(DIALOG_NEW);
             return true;
         case R.id.do_prefs:
 	    	Intent i = new Intent(getBaseContext(), SettingsActivity.class);

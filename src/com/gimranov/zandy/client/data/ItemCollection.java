@@ -70,21 +70,17 @@ public class ItemCollection extends ArrayList<Item> {
 	/**
 	 * APIRequests for changes that need to be propagated to the server. Not sure when these will get done.
 	 */
-	private ArrayList<APIRequest> additions;
-	private ArrayList<APIRequest> removals;
+	public static ArrayList<APIRequest> additions = new ArrayList<APIRequest>();
+	public static ArrayList<APIRequest> removals = new ArrayList<APIRequest>();
 	
 	public static Database db;
 		
 	public ItemCollection(String title) {
 		setTitle(title);
-		additions = new ArrayList<APIRequest>();
-		removals = new ArrayList<APIRequest>();
 		dirty = APIRequest.API_DIRTY;
 	}
 
 	public ItemCollection() {
-		additions = new ArrayList<APIRequest>();
-		removals = new ArrayList<APIRequest>();
 	}
 	
 	/**
@@ -178,8 +174,6 @@ public class ItemCollection extends ArrayList<Item> {
 	 * this should be followed by a save.
 	 */
 	public void markClean() {
-		additions.clear();
-		removals.clear();
 		dirty = APIRequest.API_CLEAN;
 	}
 	
@@ -271,7 +265,7 @@ public class ItemCollection extends ArrayList<Item> {
 	 * itself as well.
 	 * @throws Exception	If we can't save the collection or children
 	 */
-	public void saveChildren() throws Exception {
+	public void saveChildren() {
 		/* The size is about to be the size of the internal ArrayList, so
 		 * set it now so it'll be propagated to the database if the collection
 		 * is new.

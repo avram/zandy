@@ -154,6 +154,10 @@ public class CreatorActivity extends ListActivity {
 		final String creatorType = b.getString("creatorType");
 		final int creatorPosition = b.getInt("position");
 		
+		String name = b.getString("name");
+		String firstName = b.getString("firstName");
+		String lastName = b.getString("lastName");
+		
 		switch (id) {
 		/* Editor for a creator
 		 */
@@ -166,14 +170,16 @@ public class CreatorActivity extends ListActivity {
 			                              (ViewGroup) findViewById(R.id.layout_root));
 
 			TextView textName = (TextView) layout.findViewById(R.id.creator_name);
-			textName.setText(b.getString("name"));
+			textName.setText(name);
 			TextView textFN = (TextView) layout.findViewById(R.id.creator_firstName);
-			textFN.setText(b.getString("firstName"));
+			textFN.setText(firstName);
 			TextView textLN = (TextView) layout.findViewById(R.id.creator_lastName);
-			textLN.setText(b.getString("lastName"));
+			textLN.setText(lastName);
 
 			CheckBox mode = (CheckBox) layout.findViewById(R.id.creator_mode);
-			mode.setChecked(b.getBoolean("singleField"));
+			mode.setChecked((firstName == null || firstName.equals("")) 
+							&& (lastName == null || lastName.equals(""))
+							&& (lastName != null && !name.equals("")));
 			
 			// Set up the adapter to get creator types
 			String[] types = Item.localizedCreatorTypesForItemType(item.getType());
@@ -314,22 +320,12 @@ public class CreatorActivity extends ListActivity {
         				Toast.LENGTH_SHORT).show();
             	return true;
         	}
-        	Log.d(TAG, "Preparing sync requests");
-        	Item.queue();
-        	if (!Item.queue.isEmpty()) {
-        		for (Item i : Item.queue) {
-        			Log.d(TAG, "Syncing dirty item: "+i.getTitle());
-        			// XXX We're not queueing here--
-        			new ZoteroAPITask("NZrpJ7YDnz8U6NPbbonerxlt").execute(APIRequest.update(i));
-        		}
-        	}
-        	
-        	// We should handle collections here too, once they can be modified
+        	Log.d(TAG, "Preparing sync requests, starting with present item");
+        	new ZoteroAPITask(getBaseContext()).execute(APIRequest.update(this.item));
+        	Toast.makeText(getApplicationContext(), "Started syncing...", 
+    				Toast.LENGTH_SHORT).show();
         	
         	return true;
-        /*
-         * We're being sloppy for now, so we don't have to find menu icons
-         */
         case R.id.do_new:
     		Bundle row = new Bundle();
     		row.putInt("position", -1);

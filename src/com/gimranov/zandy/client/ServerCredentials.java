@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.gimranov.zandy.client.task.APIRequest;
+
 public class ServerCredentials {
 	/** Application key -- available from Zotero */
 	public static final String CONSUMERKEY = "93a5aac13612aed2a236";
@@ -45,6 +47,16 @@ public class ServerCredentials {
 	
 	public static String prep(String id, String in) {
 		return in.replace("USERID", id);
+	}
+
+	public static APIRequest prep(Context c, APIRequest req) {
+		req.query = prep(c, req.query);
+		return req;
+	}
+	
+	public static APIRequest prep(String id, APIRequest req) {
+		req.query = prep(id, req.query);
+		return req;
 	}
 	
 	public static boolean check(Context c) {

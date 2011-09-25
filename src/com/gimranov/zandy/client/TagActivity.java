@@ -56,6 +56,8 @@ public class TagActivity extends ListActivity {
         Item item = Item.load(itemKey);
         this.item = item;
         
+        this.setTitle("Tags for "+item.getTitle());
+        
         ArrayList<Bundle> rows = item.tagsToBundleArray();
         
         /* 
@@ -163,8 +165,10 @@ public class TagActivity extends ListActivity {
 	    	        @SuppressWarnings("unchecked")
 					public void onClick(DialogInterface dialog, int whichButton) {
 	    	            Editable value = input.getText();
+	    	            Log.d(TAG, "Got tag: "+value.toString());
 	    	            Item.setTag(itemKey, tag, value.toString(), 0);
 	    	            Item item = Item.load(itemKey);
+	    	            Log.d(TAG, "Have JSON: "+item.getContent().toString());
 	    	            ArrayAdapter<Bundle> la = (ArrayAdapter<Bundle>) getListAdapter();
 	    	            la.clear();
 	    	            for (Bundle b : item.tagsToBundleArray()) {
@@ -226,7 +230,7 @@ public class TagActivity extends ListActivity {
         	return true;
         case R.id.do_new:
     		Bundle row = new Bundle();
-    		row.putString("tag", null);
+    		row.putString("tag", "");
     		row.putString("itemKey", this.item.getKey());
     		row.putInt("type", 0);
 			removeDialog(DIALOG_TAG);

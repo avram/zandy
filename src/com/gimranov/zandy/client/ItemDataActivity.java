@@ -28,6 +28,7 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.TextView.BufferType;
 
 import com.gimranov.zandy.client.data.Item;
+import com.gimranov.zandy.client.task.APIRequest;
 import com.gimranov.zandy.client.task.ZoteroAPITask;
 
 
@@ -37,9 +38,9 @@ public class ItemDataActivity extends ListActivity {
 	
 	static final int DIALOG_SINGLE_VALUE = 0;
 	static final int DIALOG_ITEM_TYPE = 1;
-//	static final int DIALOG_CREATORS = 2;
-//	static final int DIALOG_TAGS = 3;
-	static final int DIALOG_CONFIRM_NAVIGATE = 4;	
+	static final int DIALOG_CONFIRM_NAVIGATE = 4;
+	
+	public Item item;
 		
     /** Called when the activity is first created. */
     @Override
@@ -49,7 +50,7 @@ public class ItemDataActivity extends ListActivity {
         /* Get the incoming data from the calling activity */
         // XXX Note that we don't know what to do when there is no key assigned
         String itemKey = getIntent().getStringExtra("com.gimranov.zandy.client.itemKey");
-        final Item item = Item.load(itemKey);
+        item = Item.load(itemKey);
         
         // Set the activity title to the current item's title, if the title works
         if (item.getTitle() != null && !item.getTitle().equals(""))
@@ -85,7 +86,10 @@ public class ItemDataActivity extends ListActivity {
 	        	 * attempt to get a localized, human-readable version. */
         		tvLabel.setText(Item.localizedStringForString(
         					getItem(position).getString("label")));
-        		tvContent.setText(getItem(position).getString("content"));
+        		
+        		String content = getItem(position).getString("content");
+        		
+        		tvContent.setText(content);
          
         		return row;
         	}
@@ -145,8 +149,10 @@ public class ItemDataActivity extends ListActivity {
         		Bundle row = adapter.getItem(position);
         		// Show the right type of dialog for the row in question
         		if (row.getString("label").equals("itemType")) {
-        			removeDialog(DIALOG_ITEM_TYPE);
-        			showDialog(DIALOG_ITEM_TYPE, row);
+                	Toast.makeText(getApplicationContext(), "Item type cannot be changed.", 
+            				Toast.LENGTH_SHORT).show();
+        			//removeDialog(DIALOG_ITEM_TYPE);
+        			//showDialog(DIALOG_ITEM_TYPE, row);
         			return true;
         		} else if (row.getString("label").equals("creators")) {
         	    	Log.d(TAG, "Trying to start creators activity");
@@ -237,7 +243,7 @@ public class ItemDataActivity extends ListActivity {
 		    	        	// do nothing
 		    	        }
 		    	    }).create();
-		return dialog;
+			return dialog;
 		default:
 			Log.e(TAG, "Invalid dialog requested");
 			return null;
@@ -248,34 +254,31 @@ public class ItemDataActivity extends ListActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.zotero_menu, menu);
+        // Remove new item-- should be created from context of an item list
+        menu.removeItem(R.id.do_new);
         return true;
     }
     
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem i) {
         // Handle item selection
-        switch (item.getItemId()) {
+        switch (i.getItemId()) {
         case R.id.do_sync:
         	if (!ServerCredentials.check(getApplicationContext())) {
             	Toast.makeText(getApplicationContext(), "Log in to sync", 
         				Toast.LENGTH_SHORT).show();
             	return true;
         	}
-        	Log.d(TAG, "Preparing sync requests");
-        	new ZoteroAPITask(getBaseContext()).execute();
+        	Log.d(TAG, "Preparing sync requests, starting with present item");
+        	new ZoteroAPITask(getBaseContext()).execute(APIRequest.update(item));
         	Toast.makeText(getApplicationContext(), "Started syncing...", 
     				Toast.LENGTH_SHORT).show();
         	return true;
-        case R.id.do_new:
-        	Log.d(TAG, "Can't yet make new items");
-        	Toast.makeText(getApplicationContext(), "Sorry, new item creation is not yet possible. Soon!", 
-    				Toast.LENGTH_SHORT).show();
-            return true;
         case R.id.do_prefs:
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
         default:
-            return super.onOptionsItemSelected(item);
+            return super.onOptionsItemSelected(i);
         }
     }
 }

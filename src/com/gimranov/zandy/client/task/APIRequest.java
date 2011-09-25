@@ -2,14 +2,15 @@ package com.gimranov.zandy.client.task;
 
 import java.util.ArrayList;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import android.util.Log;
 
 import com.gimranov.zandy.client.ServerCredentials;
 import com.gimranov.zandy.client.data.Item;
 import com.gimranov.zandy.client.data.ItemCollection;
-
-import android.util.Log;
 
 /**
  * Represents a request to the Zotero API. These can be consumed by
@@ -70,6 +71,17 @@ public class APIRequest {
 	public String body;
 	
 	/**
+	 * The temporary key (UUID) that the request is based on.
+	 */
+	public String updateKey;
+	
+	/**
+	 * Type of object we expect to get. This and the updateKey are used to update
+	 * the UUIDs / local keys of locally-created items. I know, it's a hack.
+	 */
+	public String updateType;
+	
+	/**
 	 * Creates a basic APIRequest item. Augment the item using instance methods for more complex
 	 * requests, or pass it to ZoteroAPITask for simpler ones.
 	 * 
@@ -97,7 +109,7 @@ public class APIRequest {
 		try {
 			body = item.getContent().toString(4);
 		} catch (JSONException e) {
-			Log.e("com.gimranov.zandy.client.task.APIRequest", "Error setting body for item", e);
+			Log.e(TAG, "Error setting body for item", e);
 		}
 	}
 	
@@ -111,10 +123,12 @@ public class APIRequest {
 	 */
 	public void setBody(ArrayList<Item> items) {
 		try {
-			JSONObject obj = new JSONObject();
+			JSONArray array = new JSONArray();
 			for (Item i : items) {
-				obj.accumulate("items", i.getContent());
+				array.put(i.getContent());
 			}
+			JSONObject obj = new JSONObject();
+			obj.put("items", array);
 			body = obj.toString(4);
 		} catch (JSONException e) {
 			Log.e(TAG, "Error setting body for items", e);
@@ -134,10 +148,12 @@ public class APIRequest {
 	 * @return
 	 */
 	public static APIRequest remove(Item item, ItemCollection collection) {
-		APIRequest templ = new APIRequest(ServerCredentials.COLLECTIONS + "/"
+		APIRequest templ = new APIRequest(ServerCredentials.APIBASE
+									+ ServerCredentials.COLLECTIONS + "/"
 									+ collection.getKey() + "/items/" + item.getKey(),
 								"DELETE",
 								null);
+		templ.disposition = "none";
 		return templ;
 	}
 
@@ -156,14 +172,16 @@ public class APIRequest {
 	 * @return
 	 */
 	public static APIRequest add(ArrayList<Item> items, ItemCollection collection) {
-		APIRequest templ = new APIRequest(ServerCredentials.COLLECTIONS + "/"
+		APIRequest templ = new APIRequest(ServerCredentials.APIBASE
+									+ ServerCredentials.COLLECTIONS
+									+ "/"
 									+ collection.getKey() + "/items",
 								"POST",
 								null);
 		for (Item i : items) {
 			templ.body += i.getKey() + " ";
 		}
-		
+		templ.disposition = "none";
 		return templ;
 	}
 	
@@ -181,11 +199,17 @@ public class APIRequest {
 	 * @return
 	 */
 	public static APIRequest add(ArrayList<Item> items) {
-		APIRequest templ = new APIRequest(ServerCredentials.ITEMS,
+		APIRequest templ = new APIRequest(ServerCredentials.APIBASE
+								+ ServerCredentials.ITEMS,
 								"POST",
 								null);
 		templ.setBody(items);
 		templ.disposition = "xml";
+		templ.updateType = "item";
+		// TODO this needs to be reworked to send all the keys. Or the whole system
+		// needs to be reworked.
+		Log.d(TAG, "Using the templ key of the first new item for now...");
+		templ.updateKey = items.get(0).getKey();
 		
 		return templ;
 	}
@@ -198,6 +222,14 @@ public class APIRequest {
 	 * @return
 	 */
 	public static APIRequest update(Item item) {
+		// If this looks like a new item (key is longer than 10 characters, so UUID),
+		// then we produce an update request instead.
+		
+		if (item.getKey().length() > 10) {
+			ArrayList<Item> mAL = new ArrayList<Item>();
+			mAL.add(item);
+			return add(mAL);
+		}
 		APIRequest templ = new APIRequest(ServerCredentials.APIBASE
 								+ ServerCredentials.ITEMS+"/"+item.getKey(),
 								"PUT",
