@@ -157,6 +157,7 @@ public class Database {
 			db.execSQL(CHILDREN_CREATE);
 			db.execSQL(ITEM_TO_CREATORS_CREATE);
 			db.execSQL(ITEM_TO_COLLECTIONS_CREATE);	
+			db.execSQL(DELETED_ITEMS_CREATE);
 		}
 		
 		
