@@ -1,11 +1,10 @@
-Zotero for Android
+Zandy: Zotero for Android
 by Avram Lyon (ajlyon@gmail.com)
 
 This is based in part on the code by Martin Paul Eve (University of Sussex) to create an Android client for Mendeley, hosted at <https://code.google.com/p/mendeley-for-android/>. That code is GPL-licensed, and the present code is licensed under the GPL-compatible Affero GPL.
 
 License:
 GNU Affero General Public License, Version 3 or later.
-Full declaration to come later.
 
 Icons from FamFamFam's Silk icon set (http://www.famfamfam.com/lab/icons/silk/) are used for item types and elsewhere. These icons are licensed under the  Creative Commons Attribution 2.5 License. 
 Icons from Glyphish's free icon set (http://glyphish.com/) are used for some buttons. They are licensed under the Creative Commons Attribution 3.0 United States License. To view a copy of this license, visit http://creativecommons.org/licenses/by/3.0/us/ or send a letter to Creative Commons, 171 Second Street, Suite 300, San Francisco, California, 94105, USA.

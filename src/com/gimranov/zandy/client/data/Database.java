@@ -15,7 +15,7 @@ public class Database {
 	public static final String[] ITEMCOLS = {"item_title", "item_type", "item_content", "etag", "dirty", "_id", "item_key", "item_year", "item_creator", "timestamp"};
 	public static final String[] COLLCOLS = {"collection_name", "collection_parent", "etag", "dirty", "_id", "collection_key, collection_size", "timestamp"};
 	// the database version; increment to call update
-	private static final int DATABASE_VERSION = 15;
+	private static final int DATABASE_VERSION = 16;
 	
 	private static final String DATABASE_NAME = "Zotero";
 	private final DatabaseOpenHelper mDatabaseOpenHelper;
@@ -181,6 +181,13 @@ public class Database {
 					// here, we just added a table
 					db.execSQL(DELETED_ITEMS_CREATE);
 				}
+				if (oldVersion == 15 && newVersion == 16) {
+					// here, we just added a table
+					db.execSQL("create table if not exists deleteditems"+ 
+							" (_id integer primary key autoincrement, "
+							+ "item_key int not null, etag int not null);");
+				}
+
 			}
 		}
 	}
