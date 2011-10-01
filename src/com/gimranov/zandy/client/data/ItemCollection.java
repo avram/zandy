@@ -363,6 +363,12 @@ public class ItemCollection extends ArrayList<Item> {
 		
 		do {
 			ItemCollection collection = load(cur);
+			/* XXX Someone experienced a NullPointerException in this method,
+			 * maybe here? Seems to point to cursor issues in general. */
+			if (collection == null) {
+				Log.w(TAG, "Got a null collection when loading from cursor, in getSubcollections");
+				continue;
+			}
 			Log.d(TAG,"Found subcollection: " + collection.title);
 			this.subcollections.add(collection);
 		} while (cur.moveToNext() != false);
