@@ -220,7 +220,7 @@ public class ItemActivity extends ListActivity {
 		if (cursor == null) {
 			Log.e(TAG, "cursor is null");
 		}
-		startManagingCursor(cursor);
+
 		ItemAdapter adapter = new ItemAdapter(this, cursor);
 		return adapter;
 	}
@@ -235,7 +235,7 @@ public class ItemActivity extends ListActivity {
 			Log.e(TAG, "cursor is null");
 		}
 		ItemAdapter adapter = new ItemAdapter(this, cursor);
-		startManagingCursor(cursor);
+
 		return adapter;
 	}
 }

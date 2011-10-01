@@ -22,6 +22,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
 
@@ -268,15 +269,16 @@ public class APIRequest {
 	 *   DELETE /users/1/items/ABCD2345
 	 *   If-Match: "8e984e9b2a8fb560b0085b40f6c2c2b7"
 	 * 
-	 * @param db
+	 * @param c
 	 * @return
 	 */
-	public static ArrayList<APIRequest> delete(Database db) {
+	public static ArrayList<APIRequest> delete(Context c) {
 		ArrayList<APIRequest> list = new ArrayList<APIRequest>();
-		
+		Database db = new Database(c);
 		String[] args = {};
 		Cursor cur = db.rawQuery("select item_key, etag from deleteditems", args);
 		if (cur == null) {
+			db.close();
 			Log.d(TAG, "No deleted items found in database");
 			return list;
 		}
@@ -291,11 +293,10 @@ public class APIRequest {
 			Log.d(TAG, "Adding deleted item: "+cur.getString(0) + " : " + templ.ifMatch);
 			list.add(templ);
 		} while (cur.moveToNext() != false);
-		db.rawQuery("delete from deleteditems", args);
 		cur.close();
 		
-		
-		
+		db.rawQuery("delete from deleteditems", args);
+		db.close();
 		return list;
 	}
 }

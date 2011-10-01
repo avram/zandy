@@ -212,7 +212,7 @@ public class CollectionActivity extends ListActivity {
 		if (cursor == null) {
 			Log.e(TAG, "cursor is null");
 		}
-		startManagingCursor(cursor);
+
 		return cursor;
 	}
 
@@ -227,7 +227,7 @@ public class CollectionActivity extends ListActivity {
 		if (cursor == null) {
 			Log.e(TAG, "cursor is null");
 		}
-		startManagingCursor(cursor);
+
 		return cursor;
 	}
     

@@ -80,7 +80,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 		key = settings.getString("user_key", null);
 		if (settings.getBoolean("sync_aggressively", false))
 			syncMode = AUTO_SYNC_STALE_COLLECTIONS;
-		deletions = APIRequest.delete(new Database(c));
+		deletions = APIRequest.delete(c);
 	}
 
 	public ZoteroAPITask(Context c, CursorAdapter adapter)
@@ -90,7 +90,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 		key = settings.getString("user_key", null);
 		if (settings.getBoolean("sync_aggressively", false))
 			syncMode = AUTO_SYNC_STALE_COLLECTIONS;
-		deletions = APIRequest.delete(new Database(c));
+		deletions = APIRequest.delete(c);
 	}
 	
 	public ZoteroAPITask(String key, CursorAdapter adapter)
