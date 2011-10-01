@@ -150,7 +150,6 @@ public class Database {
 		@Override
 		public void onCreate(SQLiteDatabase db) 
 		{
-			mDatabase = db;
 			db.execSQL(COLLECTIONS_CREATE);
 			db.execSQL(ITEMS_CREATE);
 			db.execSQL(CREATORS_CREATE);

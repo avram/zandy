@@ -36,9 +36,7 @@ import com.gimranov.zandy.client.task.APIRequest;
 public class CollectionAdapter extends ResourceCursorAdapter {
 	private static final String TAG = "com.gimranov.zandy.client.data.CollectionAdapter";
 
-	private Database db;
 	public Context context;
-	private ItemCollection parent;
 		
 	public CollectionAdapter(Context context, Cursor cursor) {
 		super(context, R.layout.list_collection, cursor, false);
@@ -59,20 +57,10 @@ public class CollectionAdapter extends ResourceCursorAdapter {
     
 	@Override
 	public void bindView(View view, Context context, Cursor cursor) {
-		//Log.d(TAG, "bindView view is: " + view.getId());
 		TextView tvTitle = (TextView)view.findViewById(R.id.collection_title);
 		TextView tvInfo = (TextView)view.findViewById(R.id.collection_info);
 	
-		if (cursor == null) {
-			Log.e(TAG, "cursor is null in bindView");
-		}
 		ItemCollection collection = ItemCollection.load(cursor);
-		if (collection == null) {
-			Log.e(TAG, "collection is null in bindView");
-		}
-		if (tvTitle == null) {
-			Log.e(TAG, "tvTitle is null in bindView");
-		}
 		tvTitle.setText(collection.getTitle());
 		StringBuilder sb = new StringBuilder();
 		sb.append(collection.getSize() + " items");
@@ -80,90 +68,6 @@ public class CollectionAdapter extends ResourceCursorAdapter {
 		if(!collection.dirty.equals(APIRequest.API_CLEAN))
 			sb.append("; "+collection.dirty);
 		tvInfo.setText(sb.toString());
-	}
-
-	/**
-	 * Requeries the database for top-level collections
-	 */
-	public void refresh() {
-		if (this.getCursor() != null)
-			this.getCursor().close();
-		String[] args = { "false" };			
-		Cursor cursor = db.query("collections", Database.COLLCOLS, "collection_parent=?", args, null, null, "collection_name", null);
-		if (cursor == null) {
-			Log.e(TAG, "cursor is null");
-		}
-		this.changeCursor(cursor);
-	}
-	
-	/**
-	 * Requeries the database for the specified collection
-	 */
-	public void refresh(ItemCollection parent) {
-		this.parent = parent;
-		if (this.getCursor() != null)
-			this.getCursor().close();
-		String[] args = { parent.getKey() };
-		Cursor cursor = db.query("collections", Database.COLLCOLS, "collection_parent=?", args, null, null, "collection_name", null);
-		if (cursor == null) {
-			Log.e(TAG, "cursor is null");
-		}
-		this.changeCursor(cursor);
-	}
-	
-	/**
-	 * Requery/refresh one level up
-	 */
-	public void goUp() {
-		if (this.parent == null) {
-			// do nothing
-		} else {
-			ItemCollection grandparent = this.parent.getParent();
-			if (grandparent == null) {
-				this.parent = null;
-				refresh();
-			} else {
-				refresh(grandparent);
-			}
-		}
-	}
-	
-	/**
-	 * Gives an adapter for top-level collections
-	 * @param context
-	 * @return
-	 */
-	public static CollectionAdapter create(Context context) {
-		Database db = new Database(context);
-		String[] args = { "false" };
-		Cursor cursor = db.query("collections", Database.COLLCOLS, "collection_parent=?", args, null, null, "collection_name", null);
-		if (cursor == null) {
-			Log.e(TAG, "cursor is null");
-		}
-		Log.e(TAG, "created collectionadapter");
-		CollectionAdapter adapter = new CollectionAdapter(context, cursor);
-		adapter.db = db;
-		return adapter;
-	}
-
-	/**
-	 * Gives an adapter for child collections of a given parent
-	 * @param context
-	 * @param parent
-	 * @return
-	 */
-	public static CollectionAdapter create(Context context, ItemCollection parent) {
-		Database db = new Database(context);
-		String[] args = { parent.getKey() };
-		Cursor cursor = db.query("collections", Database.COLLCOLS, "collection_parent=?", args, null, null, "collection_name", null);
-		if (cursor == null) {
-			Log.e(TAG, "cursor is null");
-		}
-		Log.e(TAG, "created collectionadapter for child");
-		CollectionAdapter adapter = new CollectionAdapter(context, cursor);
-		adapter.parent = parent;
-		adapter.db = db;
-		return adapter;
 	}
 
 }

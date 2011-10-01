@@ -26,14 +26,15 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemLongClickListener;
 
 import com.gimranov.zandy.client.data.CollectionAdapter;
+import com.gimranov.zandy.client.data.Database;
 import com.gimranov.zandy.client.data.ItemCollection;
 import com.gimranov.zandy.client.task.APIRequest;
 import com.gimranov.zandy.client.task.ZoteroAPITask;
@@ -42,25 +43,31 @@ import com.gimranov.zandy.client.task.ZoteroAPITask;
 public class CollectionActivity extends ListActivity {
 
 	private static final String TAG = "com.gimranov.zandy.client.CollectionActivity";
-		
+	private ItemCollection collection;
+	private Database db;
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
+        db = new Database(this);
+        
         setContentView(R.layout.collections);
 
-        CollectionAdapter collectionAdapter = CollectionAdapter.create(getBaseContext());
-
+        CollectionAdapter collectionAdapter;
+        
         String collectionKey = getIntent().getStringExtra("com.gimranov.zandy.client.collectionKey");
         if (collectionKey != null) {
 	        ItemCollection coll = ItemCollection.load(collectionKey);
 	        // We set the title to the current collection
+	        this.collection = coll;
 	        this.setTitle(coll.getTitle());
-	        collectionAdapter.refresh(coll);
+	        collectionAdapter = new CollectionAdapter(this, create(coll));
         } else {
         	// XXX i18n
         	this.setTitle("Collections");
+	        collectionAdapter = new CollectionAdapter(this, create());
         }
         
         setListAdapter(collectionAdapter);
@@ -142,10 +149,18 @@ public class CollectionActivity extends ListActivity {
     protected void onResume() {
 		CollectionAdapter adapter = (CollectionAdapter) getListAdapter();
 		// XXX This may be too agressive-- fix if causes issues
-		Cursor cur = adapter.getCursor();
-		if (cur != null) cur.requery();
+		Cursor newCursor = (collection == null) ? create() : create(collection);
+		adapter.changeCursor(newCursor);
 		adapter.notifyDataSetChanged();
     	super.onResume();
+    }
+    
+    public void onDestroy() {
+		CollectionAdapter adapter = (CollectionAdapter) getListAdapter();
+		Cursor cur = adapter.getCursor();
+		if(cur != null) cur.close();
+		if (db != null) db.close();
+		super.onDestroy();
     }
     
     @Override
@@ -186,4 +201,34 @@ public class CollectionActivity extends ListActivity {
             return super.onOptionsItemSelected(item);
         }
     }
+    
+	/**
+	 * Gives a cursor for top-level collections
+	 * @return
+	 */
+	public Cursor create() {
+		String[] args = { "false" };
+		Cursor cursor = db.query("collections", Database.COLLCOLS, "collection_parent=?", args, null, null, "collection_name", null);
+		if (cursor == null) {
+			Log.e(TAG, "cursor is null");
+		}
+		startManagingCursor(cursor);
+		return cursor;
+	}
+
+	/**
+	 * Gives a cursor for child collections of a given parent
+	 * @param parent
+	 * @return
+	 */
+	public Cursor create(ItemCollection parent) {
+		String[] args = { parent.getKey() };
+		Cursor cursor = db.query("collections", Database.COLLCOLS, "collection_parent=?", args, null, null, "collection_name", null);
+		if (cursor == null) {
+			Log.e(TAG, "cursor is null");
+		}
+		startManagingCursor(cursor);
+		return cursor;
+	}
+    
 }

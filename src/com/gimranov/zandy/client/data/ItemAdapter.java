@@ -36,8 +36,6 @@ import com.gimranov.zandy.client.R;
 public class ItemAdapter extends ResourceCursorAdapter {
 	private static final String TAG = "com.gimranov.zandy.client.data.ItemAdapter";
 	
-	private ItemCollection parent;
-
 	public ItemAdapter(Context context, Cursor cursor) {
 		super(context, R.layout.list_item, cursor, false);
 	}
@@ -45,15 +43,6 @@ public class ItemAdapter extends ResourceCursorAdapter {
     public View newView(Context context, Cursor cur, ViewGroup parent) {
         LayoutInflater li = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         return li.inflate(R.layout.list_item, parent, false);
-    }
-
-    /**
-     * Utility function to return parent collection, or null
-     * if there is no parent collection being shown.
-     * @return
-     */
-    public ItemCollection getParent() {
-    	return parent;
     }
     
     /**
@@ -89,32 +78,5 @@ public class ItemAdapter extends ResourceCursorAdapter {
 		
 		tvTitle.setText(item.getTitle());
 		
-	}
-
-	public static ItemAdapter create(Context context) {
-		Database db = new Database(context);
-		Cursor cursor = db.query("items", Database.ITEMCOLS, null, null, null, null, "item_year, item_title", null);
-		if (cursor == null) {
-			Log.e(TAG, "cursor is null");
-		}
-		Log.e(TAG, "created itemadapter");
-		ItemAdapter adapter = new ItemAdapter(context, cursor);
-		return adapter;
-	}
-	
-	public static ItemAdapter create(Context context, ItemCollection parent) {
-		Database db = new Database(context);
-		String[] args = { parent.dbId };
-		Cursor cursor = db.rawQuery("SELECT item_title, item_type, item_content, etag, dirty, " +
-				"items._id, item_key, item_year, item_creator, timestamp " +
-				" FROM items, itemtocollections WHERE items._id = item_id AND collection_id=? ORDER BY item_year, item_title",
-				args);
-		if (cursor == null) {
-			Log.e(TAG, "cursor is null");
-		}
-		Log.e(TAG, "created itemadapter");
-		ItemAdapter adapter = new ItemAdapter(context, cursor);
-		adapter.parent = parent;
-		return adapter;
 	}
 }

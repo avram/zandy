@@ -29,12 +29,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
 
+import com.gimranov.zandy.client.data.Database;
 import com.gimranov.zandy.client.data.Item;
 import com.gimranov.zandy.client.data.ItemAdapter;
 import com.gimranov.zandy.client.data.ItemCollection;
@@ -50,6 +51,7 @@ public class ItemActivity extends ListActivity {
 	static final int DIALOG_NEW = 1;
 	
 	private String collectionKey;
+	private Database db;
 	
     /** Called when the activity is first created. */
     @Override
@@ -57,6 +59,7 @@ public class ItemActivity extends ListActivity {
         super.onCreate(savedInstanceState);
         
         ItemAdapter itemAdapter;
+        db = new Database(this);
         
         setContentView(R.layout.items);
         
@@ -64,10 +67,10 @@ public class ItemActivity extends ListActivity {
         // TODO Figure out how we'll address other views that aren't collections
         if (collectionKey != null) {
         	ItemCollection coll = ItemCollection.load(collectionKey);
-        	itemAdapter = ItemAdapter.create(getBaseContext(), coll);
+        	itemAdapter = create(coll);
         	this.setTitle(coll.getTitle());
         } else {
-        	itemAdapter = ItemAdapter.create(getBaseContext());
+        	itemAdapter = create();
         	// XXX i18n
         	this.setTitle("All items");
         }
@@ -109,6 +112,14 @@ public class ItemActivity extends ListActivity {
 		if (cur != null) cur.requery();
 		adapter.notifyDataSetChanged();
     	super.onResume();
+    }
+    
+    public void onDestroy() {
+		ItemAdapter adapter = (ItemAdapter) getListAdapter();
+		Cursor cur = adapter.getCursor();
+		if(cur != null) cur.close();
+		if (db != null) db.close();
+		super.onDestroy();
     }
     
 	protected Dialog onCreateDialog(int id, Bundle b) {
@@ -203,4 +214,28 @@ public class ItemActivity extends ListActivity {
             return super.onOptionsItemSelected(item);
         }
     }
+    
+	public ItemAdapter create() {
+		Cursor cursor = db.query("items", Database.ITEMCOLS, null, null, null, null, "item_year, item_title", null);
+		if (cursor == null) {
+			Log.e(TAG, "cursor is null");
+		}
+		startManagingCursor(cursor);
+		ItemAdapter adapter = new ItemAdapter(this, cursor);
+		return adapter;
+	}
+	
+	public ItemAdapter create(ItemCollection parent) {
+		String[] args = { parent.dbId };
+		Cursor cursor = db.rawQuery("SELECT item_title, item_type, item_content, etag, dirty, " +
+				"items._id, item_key, item_year, item_creator, timestamp " +
+				" FROM items, itemtocollections WHERE items._id = item_id AND collection_id=? ORDER BY item_year, item_title",
+				args);
+		if (cursor == null) {
+			Log.e(TAG, "cursor is null");
+		}
+		ItemAdapter adapter = new ItemAdapter(this, cursor);
+		startManagingCursor(cursor);
+		return adapter;
+	}
 }
