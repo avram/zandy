@@ -40,9 +40,8 @@ public class Item {
 	private String owner;
 	private String key;
 	private String etag;
-	// TODO We don't know how to update this either
 	private String year;
-	// TODO We don't know how to update creatorSummary
+	private String children;
 	private String creatorSummary;
 	private JSONObject content;
 
@@ -105,6 +104,7 @@ public class Item {
 		id = "";
 		etag = "";
 		timestamp = "";
+		children = "";
 		dirty = APIRequest.API_CLEAN;
 	}
 
@@ -197,6 +197,10 @@ public class Item {
 		this.type = type;
 	}
 
+	public void setChildren(String children) {
+		this.children = children;
+	}
+	
 	public String getType() {
 		return type;
 	}
@@ -230,7 +234,7 @@ public class Item {
 	}
 
 	/**
-	 * Makes ArrayList<Bundle> from the present item This was moved from
+	 * Makes ArrayList<Bundle> from the present item. This was moved from
 	 * ItemDataActivity, but it's most likely to be used by such display
 	 * activities
 	 */
@@ -319,6 +323,11 @@ public class Item {
 				b.putString("itemKey", getKey());
 				rows.add(b);
 			}
+			b = new Bundle();
+			b.putString("children", children);
+			b.putString("label", "Attachments");
+			b.putString("itemKey", getKey());
+			rows.add(b);
 		} catch (JSONException e) {
 			/*
 			 * We could die here, but I'd rather not, since this shouldn't be
@@ -331,8 +340,15 @@ public class Item {
 		Collections.sort(rows, new Comparator<Bundle>() {
 			@Override
 			public int compare(Bundle b1, Bundle b2) {
-				return Item.sortValueForLabel(b1.getString("label"))
-						- Item.sortValueForLabel(b2.getString("label"));
+				boolean mt1 = (b1.containsKey("content") && b1.getString("content").equals(""));
+				boolean mt2 = (b2.containsKey("content") && b2.getString("content").equals(""));
+				/* Put the empty fields at the bottom, same order */
+
+				return (
+							Item.sortValueForLabel(b1.getString("label"))
+							- Item.sortValueForLabel(b2.getString("label"))
+					- 	(mt2 ? 300 : 0)
+					+ 	(mt1 ? 300 : 0));
 			}
 		});
 		return rows;
@@ -446,11 +462,11 @@ public class Item {
 		Item existing = load(key);
 		if (dbId == null && existing == null) {
 			String[] args = { title, key, type, year, creatorSummary,
-					content.toString(), etag, dirty, timestamp };
+					content.toString(), etag, dirty, timestamp, children };
 			Cursor cur = db
 					.rawQuery(
-							"insert into items (item_title, item_key, item_type, item_year, item_creator, item_content, etag, dirty, timestamp) "
-									+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+							"insert into items (item_title, item_key, item_type, item_year, item_creator, item_content, etag, dirty, timestamp, children) "
+									+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 							args);
 			if (cur != null)
 				cur.close();
@@ -460,11 +476,13 @@ public class Item {
 			if (dbId == null)
 				dbId = existing.dbId;
 			String[] args = { title, type, year, creatorSummary,
-					content.toString(), etag, dirty, timestamp, key, dbId };
+					content.toString(), etag, dirty, timestamp, key, children, dbId };
 			Log.i(TAG, "Updating existing item");
 			Cursor cur = db
 					.rawQuery(
-							"update items set item_title=?, item_type=?, item_year=?, item_creator=?, item_content=?, etag=?, dirty=?, timestamp=?, item_key=? "
+							"update items set item_title=?, item_type=?, item_year=?," +
+							" item_creator=?, item_content=?, etag=?, dirty=?," +
+							" timestamp=?, item_key=?, children=? "
 									+ " where _id=?", args);
 			if (cur != null)
 				cur.close();
@@ -536,7 +554,7 @@ public class Item {
 			return null;
 		}
 		// {"item_title", "item_type", "item_content", "etag", "dirty", "_id",
-		// "item_key", "item_year", "item_creator", "timestamp"};
+		// "item_key", "item_year", "item_creator", "timestamp", "children"};
 
 		item.setTitle(cur.getString(0));
 		item.setType(cur.getString(1));
@@ -552,6 +570,8 @@ public class Item {
 		item.setYear(cur.getString(7));
 		item.setCreatorSummary(cur.getString(8));
 		item.setTimestamp(cur.getString(9));
+		item.children = cur.getString(10);
+		if (item.children == null) item.children = "";
 		return item;
 	}
 
@@ -567,6 +587,10 @@ public class Item {
 
 		if (label.equals("itemType")) {
 			item.type = content;
+		}
+		
+		if (label.equals("date")) {
+			item.year = content.replaceAll("^.*?(\\d{4}).*$","$1");
 		}
 
 		try {
@@ -638,6 +662,7 @@ public class Item {
 	public static void setCreator(String itemKey, Creator c, int position) {
 		// Load the item
 		Item item = load(itemKey);
+		
 
 		try {
 			JSONArray creators = item.content.getJSONArray("creators");
@@ -658,6 +683,12 @@ public class Item {
 					newCreators = creators.put(position, c.toJSON());
 				}
 			}
+			StringBuilder sb = new StringBuilder();
+			for (int j = 0; j < creators.length(); j++) {
+				if (j > 0) sb.append(", ");
+				sb.append(( (JSONObject) creators.get(j) ).optString("lastName", ""));
+			}
+			item.creatorSummary = sb.toString();
 			item.content.put("creators", newCreators);
 			Log.d(TAG, "New: " + newCreators.toString());
 		} catch (JSONException e) {

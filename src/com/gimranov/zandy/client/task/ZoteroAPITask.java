@@ -49,7 +49,6 @@ import android.widget.CursorAdapter;
 
 import com.gimranov.zandy.client.ServerCredentials;
 import com.gimranov.zandy.client.XMLResponseParser;
-import com.gimranov.zandy.client.data.Database;
 import com.gimranov.zandy.client.data.Item;
 import com.gimranov.zandy.client.data.ItemCollection;
 
@@ -61,7 +60,8 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	private String userID;
 	
 	public ArrayList<APIRequest> deletions;
-
+	public ArrayList<APIRequest> queue;
+	
 	public int syncMode = -1;
 	
 	public static final int AUTO_SYNC_STALE_COLLECTIONS = 1;
@@ -70,11 +70,13 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	
 	public ZoteroAPITask(String key)
 	{
+		this.queue = new ArrayList<APIRequest>();
 		this.key = key;
 	}
 
 	public ZoteroAPITask(Context c)
 	{
+		this.queue = new ArrayList<APIRequest>();
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(c);
 		userID = settings.getString("user_id", null);
 		key = settings.getString("user_key", null);
@@ -85,6 +87,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 
 	public ZoteroAPITask(Context c, CursorAdapter adapter)
 	{
+		this.queue = new ArrayList<APIRequest>();
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(c);
 		userID = settings.getString("user_id", null);
 		key = settings.getString("user_key", null);
@@ -95,6 +98,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	
 	public ZoteroAPITask(String key, CursorAdapter adapter)
 	{
+		this.queue = new ArrayList<APIRequest>();
 		this.key = key;
 		this.adapter = adapter;
 	}
@@ -133,82 +137,91 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 				Log.e(TAG, "Failed to execute API call: " + reqs[i].query, e);
 				return null;
 			}
+			
 	    	if (XMLResponseParser.queue != null && !XMLResponseParser.queue.isEmpty()) {
-	        	Log.i(TAG, "Finished call, but trying to add from parser's request queue");
-	    		APIRequest[] templ = { };
-	    		APIRequest[] queue = XMLResponseParser.queue.toArray(templ); 
+	        	Log.i(TAG, "Finished call, but adding " +
+	        				XMLResponseParser.queue.size() +
+	        				" items to queue.");
+	    		queue.addAll(XMLResponseParser.queue); 
 	    		XMLResponseParser.queue.clear();
-	    		this.doInBackground(queue);
 	    	} else {
 	        	Log.i(TAG, "Finished call, and parser's request queue is empty");
-	        	
-	        	// Here's where we'd tie in to periodic housekeeping syncs
-	        	// If we're already in auto mode (that is, here), just move on
-	        	if (this.autoMode) continue;
-	        	Log.d(TAG, "Preparing item sync");
-	        	Item.queue();
-	        	int length = Item.queue.size();
-	        	length += ItemCollection.additions.size();
-	        	length += ItemCollection.removals.size();
-	        	length += deletions.size();
-	        	int basicLength = length;
-	        	// We pref this off
-	        	if (syncMode == AUTO_SYNC_STALE_COLLECTIONS) {
-		        	ItemCollection.queue();
-		        	length += ItemCollection.queue.size();
-	        	}
-	        	APIRequest[] mReqs = new APIRequest[length];
-	        	for (int j = 0; j < basicLength; j++) {
-	        		if (j < Item.queue.size()) {
-	        			Log.d(TAG, "Queueing dirty item ("+j+"): "+Item.queue.get(j).getTitle());
-	        			mReqs[j] = ServerCredentials.prep(userID, APIRequest.update(Item.queue.get(j)));
-	        		} else if (j < Item.queue.size() + ItemCollection.additions.size()) {
-	        			Log.d(TAG, "Queueing new collection membership ("+j+")");
-	        			mReqs[j] = ServerCredentials.prep(userID,
-	        							ItemCollection.additions.get(j
-	        								- Item.queue.size()));
-	        		} else if (j < Item.queue.size() 
-	        					+ ItemCollection.additions.size() 
-	        					+ ItemCollection.removals.size()) {
-	        			Log.d(TAG, "Queueing removed collection membership ("+j+")");
-	        			mReqs[j] = ServerCredentials.prep(userID,
-	        						ItemCollection.additions.get(j 
-	        								- Item.queue.size() 
-	        								- ItemCollection.additions.size()));
-	        		} else if (j < Item.queue.size() 
-        					+ ItemCollection.additions.size() 
-        					+ ItemCollection.removals.size()
-        					+ deletions.size()) {
-	        			Log.d(TAG, "Queueing deletion ("+j+")");
-	        			mReqs[j] = ServerCredentials.prep(userID,
-        						deletions.get(j 
-        								- Item.queue.size() 
-        								- ItemCollection.additions.size()
-        								- ItemCollection.removals.size()));
-	        		}
-	        		// We'll clear the collection change queues; we may need to re-add failed requests later
-	        		ItemCollection.additions.clear();
-	        		ItemCollection.removals.clear();
-	        	}
-	        	
-	        	// We pref this off
-	        	if (syncMode == AUTO_SYNC_STALE_COLLECTIONS) {
-		        	for (int j = 0; j < ItemCollection.queue.size(); j++) {
-		       			Log.d(TAG, "Syncing dirty or stale collection: "+ItemCollection.queue.get(j).getTitle());
-		        		mReqs[basicLength + j] = new APIRequest(ServerCredentials.APIBASE
-									+ ServerCredentials.prep(userID, ServerCredentials.COLLECTIONS)
-									+"/"+ItemCollection.queue.get(j).getKey() + "/items",
-									"get",
-									key);
-		        	}
-	        	}
-	        	// We're in auto mode...
-	        	this.autoMode = true;
-	        	this.doInBackground(mReqs);
 	    	}
-            publishProgress((int) ((i / (float) count) * 100));
         }
-             
+        
+        // 
+        if (queue.size() > 0) {
+        	Log.i(TAG, "Starting queued requests: " + queue.size() + " requests");
+    		APIRequest[] templ = { };
+        	this.doInBackground(queue.toArray(templ));
+        }
+
+        
+    	// Here's where we tie in to periodic housekeeping syncs        
+    	// If we're already in auto mode (that is, here), just move on
+    	if (this.autoMode) return ret;
+    	
+    	Log.d(TAG, "Preparing item sync");
+    	Item.queue();
+    	int length = Item.queue.size();
+    	length += ItemCollection.additions.size();
+    	length += ItemCollection.removals.size();
+    	length += deletions.size();
+    	int basicLength = length;
+    	// We pref this off
+    	if (syncMode == AUTO_SYNC_STALE_COLLECTIONS) {
+        	ItemCollection.queue();
+        	length += ItemCollection.queue.size();
+    	}
+    	APIRequest[] mReqs = new APIRequest[length];
+    	for (int j = 0; j < basicLength; j++) {
+    		if (j < Item.queue.size()) {
+    			Log.d(TAG, "Queueing dirty item ("+j+"): "+Item.queue.get(j).getTitle());
+    			mReqs[j] = ServerCredentials.prep(userID, APIRequest.update(Item.queue.get(j)));
+    		} else if (j < Item.queue.size() + ItemCollection.additions.size()) {
+    			Log.d(TAG, "Queueing new collection membership ("+j+")");
+    			mReqs[j] = ServerCredentials.prep(userID,
+    							ItemCollection.additions.get(j
+    								- Item.queue.size()));
+    		} else if (j < Item.queue.size() 
+    					+ ItemCollection.additions.size() 
+    					+ ItemCollection.removals.size()) {
+    			Log.d(TAG, "Queueing removed collection membership ("+j+")");
+    			mReqs[j] = ServerCredentials.prep(userID,
+    						ItemCollection.additions.get(j 
+    								- Item.queue.size() 
+    								- ItemCollection.additions.size()));
+    		} else if (j < Item.queue.size() 
+					+ ItemCollection.additions.size() 
+					+ ItemCollection.removals.size()
+					+ deletions.size()) {
+    			Log.d(TAG, "Queueing deletion ("+j+")");
+    			mReqs[j] = ServerCredentials.prep(userID,
+						deletions.get(j 
+								- Item.queue.size() 
+								- ItemCollection.additions.size()
+								- ItemCollection.removals.size()));
+    		}
+    		// We'll clear the collection change queues; we may need to re-add failed requests later
+    		ItemCollection.additions.clear();
+    		ItemCollection.removals.clear();
+    	}
+    	
+    	// We pref this off
+    	if (syncMode == AUTO_SYNC_STALE_COLLECTIONS) {
+        	for (int j = 0; j < ItemCollection.queue.size(); j++) {
+       			Log.d(TAG, "Syncing dirty or stale collection: "+ItemCollection.queue.get(j).getTitle());
+        		mReqs[basicLength + j] = new APIRequest(ServerCredentials.APIBASE
+							+ ServerCredentials.prep(userID, ServerCredentials.COLLECTIONS)
+							+"/"+ItemCollection.queue.get(j).getKey() + "/items",
+							"get",
+							key);
+        	}
+    	}
+    	// We're in auto mode...
+    	this.autoMode = true;
+    	this.doInBackground(mReqs);
+         
         return ret;
 	}
 	
@@ -216,7 +229,6 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	@Override
 	protected void onPostExecute(JSONArray[] result) {
 		// invoked on the UI thread
-
     		if (result == null) {
 	        	Log.e(TAG, "Returned NULL; looks like a problem communicating with server; review stack trace.");
 	        	// there was an error

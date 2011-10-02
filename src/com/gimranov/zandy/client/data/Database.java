@@ -12,10 +12,10 @@ import android.util.Log;
 public class Database {
 	private static final String TAG = "com.gimranov.zandy.client.data.Database";
 	
-	public static final String[] ITEMCOLS = {"item_title", "item_type", "item_content", "etag", "dirty", "_id", "item_key", "item_year", "item_creator", "timestamp"};
+	public static final String[] ITEMCOLS = {"item_title", "item_type", "item_content", "etag", "dirty", "_id", "item_key", "item_year", "item_creator", "timestamp", "children"};
 	public static final String[] COLLCOLS = {"collection_name", "collection_parent", "etag", "dirty", "_id", "collection_key, collection_size", "timestamp"};
 	// the database version; increment to call update
-	private static final int DATABASE_VERSION = 16;
+	private static final int DATABASE_VERSION = 17;
 	
 	private static final String DATABASE_NAME = "Zotero";
 	private final DatabaseOpenHelper mDatabaseOpenHelper;
@@ -109,6 +109,7 @@ public class Database {
 			"item_content string," +
 			"item_year string," +
 			"item_creator string," +
+			"item_children string," +
 			"dirty string, " +
 			"timestamp string);";
 		
@@ -140,7 +141,27 @@ public class Database {
 		private static final String DELETED_ITEMS_CREATE =
 			"create table deleteditems"+ 
 			" (_id integer primary key autoincrement, "
-			+ "item_key int not null, etag int not null);";
+			+ "item_key string not null, etag string not null);";
+
+		private static final String ATTACHMENTS_CREATE =
+			"create table attachments"+ 
+			" (_id integer primary key autoincrement, "
+			+ "item_key string not null, "
+			+ "attachment_key string not null, "
+			+ "title string, "
+			+ "filename string, "
+			+ "url string, "
+			+ "status string);";
+
+		private static final String NOTES_CREATE =
+			"create table notes"+ 
+			" (_id integer primary key autoincrement, "
+			+ "item_key string, "
+			+ "note_key string not null, "
+			+ "title string, "
+			+ "filename string, "
+			+ "url string, "
+			+ "status string);";
 		
 		DatabaseOpenHelper(Context context) {
 			super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -157,6 +178,8 @@ public class Database {
 			db.execSQL(ITEM_TO_CREATORS_CREATE);
 			db.execSQL(ITEM_TO_COLLECTIONS_CREATE);	
 			db.execSQL(DELETED_ITEMS_CREATE);
+			db.execSQL(ATTACHMENTS_CREATE);
+			db.execSQL(NOTES_CREATE);
 		}
 		
 		
@@ -180,13 +203,18 @@ public class Database {
 					// here, we just added a table
 					db.execSQL(DELETED_ITEMS_CREATE);
 				}
-				if (oldVersion == 15 && newVersion == 16) {
+				if (oldVersion == 15 && newVersion > 15) {
 					// here, we just added a table
 					db.execSQL("create table if not exists deleteditems"+ 
 							" (_id integer primary key autoincrement, "
 							+ "item_key int not null, etag int not null);");
 				}
-
+				if (oldVersion < 17 && newVersion == 17) {
+					db.execSQL(ATTACHMENTS_CREATE);
+					db.execSQL(NOTES_CREATE);
+					db.execSQL("alter table items "+ 
+							" add column children string;");
+				}
 			}
 		}
 	}

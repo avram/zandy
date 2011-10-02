@@ -333,7 +333,7 @@ public class ItemCollection extends ArrayList<Item> {
 		Log.d(TAG, "Looking for the kids of a collection with id: "+dbId);
 		
 		String[] args = { dbId };
-		Cursor cursor = db.rawQuery("SELECT item_title, item_type, item_content, etag, dirty, items._id, item_key, item_year, item_creator, items.timestamp" +
+		Cursor cursor = db.rawQuery("SELECT item_title, item_type, item_content, etag, dirty, items._id, item_key, item_year, item_creator, items.timestamp, items.children" +
 				" FROM items, itemtocollections WHERE items._id = item_id AND collection_id=? ORDER BY item_title",
 				args);
 		if (cursor != null) {

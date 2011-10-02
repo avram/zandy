@@ -223,6 +223,12 @@ public class XMLResponseParser extends DefaultHandler {
             	Log.i(TAG, body);
             }
         });
+        entry.getChild(Z_NAMESPACE, "numChildren").setEndTextElementListener(new EndTextElementListener(){
+            public void end(String body) {
+            	item.setChildren(body);
+            	Log.i(TAG, body);
+            }
+        });
         entry.getChild(Z_NAMESPACE, "year").setEndTextElementListener(new EndTextElementListener(){
             public void end(String body) {
             	item.setYear(body);
