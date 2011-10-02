@@ -288,8 +288,8 @@ public class ItemCollection extends ArrayList<Item> {
 		 * 
 		 * Save it now-- to fix the size, and to make sure we have a database ID.
 		 */
-		size = this.size();
-		save();
+		
+		loadChildren();
 		
 		Log.d(TAG,"Collection has dbid: "+dbId);
 
@@ -312,7 +312,16 @@ public class ItemCollection extends ArrayList<Item> {
 		} catch (Exception e) {
 			Log.e(TAG, "Exception caught on saving collection children", e);
 		}
-		db.close();
+		
+		// We can now get a proper and total count
+		String[] args = { this.dbId };
+		Cursor cur = db.rawQuery(
+				"select count(distinct item_id) from itemtocollections where collection_id=?", args);
+		cur.moveToFirst();
+		if(!cur.isAfterLast()) this.size = cur.getInt(0);
+		if (cur != null) cur.close();
+
+		save();
 	}
 	
 	/**

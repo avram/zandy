@@ -579,7 +579,6 @@ public class Item {
 		item.dirty = APIRequest.API_DIRTY;
 		item.save();
 		item = load(itemKey);
-		Log.d(TAG, "Set&Load gives: " + item.content.toString());
 	}
 
 	/**
@@ -620,11 +619,9 @@ public class Item {
 					}
 				}
 			}
-			Log.d(TAG, "New: " + newTags.toString());
 			item.content.put("tags", newTags);
-			Log.d(TAG, "JSON is now: " + item.content.toString());
 		} catch (JSONException e) {
-			Log.e(TAG,"Caught JSON exception when we tried to modify the JSON content");
+			Log.e(TAG,"Caught JSON exception when we tried to modify the JSON content",e);
 		}
 		item.dirty = APIRequest.API_DIRTY;
 		item.save();
