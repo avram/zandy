@@ -1,13 +1,21 @@
-Zandy: Zotero for Android
+Zandy: a Zotero client for Android
 by Avram Lyon (ajlyon@gmail.com)
 
-This is based in part on the code by Martin Paul Eve (University of Sussex) to create an Android client for Mendeley, hosted at <https://code.google.com/p/mendeley-for-android/>. That code is GPL-licensed, and the present code is licensed under the GPL-compatible Affero GPL.
+Installation:
+A built and signed version of Zandy is available for purchase on the Android Market (https://market.android.com/details?id=com.gimranov.zandy.client). You can also check out this project and built an APK yourself using Eclipse with the ADT plugin, or another alternate toolchain. Note that you will need to add the oauth-signpost libraries to your classpath to build the application.
+
+Requirements:
+Android 2.2 or later, although there are plans to support earlier versions of Android.
+
+Support:
+See the Zandy User Guide (http://www.gimranov.com/avram/w/zandy-user-guide) for basic documentation. Feature requests and bug reports are highly encouraged-- please post to the issue tracker on GitHub, or post comments to the user guide. Also feel free to write to zandy@gimranov.com with questions.
 
 License:
 GNU Affero General Public License, Version 3 or later.
 
+This is based in part on the code by Martin Paul Eve (University of Sussex) to create an Android client for Mendeley, hosted at (https://code.google.com/p/mendeley-for-android/). That code is GPL-licensed, and the present code is licensed under the GPL-compatible Affero GPL.
 Icons from FamFamFam's Silk icon set (http://www.famfamfam.com/lab/icons/silk/) are used for item types and elsewhere. These icons are licensed under the  Creative Commons Attribution 2.5 License. 
 Icons from Glyphish's free icon set (http://glyphish.com/) are used for some buttons. They are licensed under the Creative Commons Attribution 3.0 United States License. To view a copy of this license, visit http://creativecommons.org/licenses/by/3.0/us/ or send a letter to Creative Commons, 171 Second Street, Suite 300, San Francisco, California, 94105, USA.
 
 Dependencies:
-Requires signpost for OAuth support.
+Requires oauth-signpost (http://code.google.com/p/oauth-signpost/) for OAuth support, licensed under the Apache license, version 2.
