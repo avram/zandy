@@ -154,6 +154,8 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
         	Log.i(TAG, "Starting queued requests: " + queue.size() + " requests");
     		APIRequest[] templ = { };
         	this.doInBackground(queue.toArray(templ));
+        	// XXX FOR TESTING FOR NOW
+        	return null;
         }
 
         

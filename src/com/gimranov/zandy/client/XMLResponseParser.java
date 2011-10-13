@@ -52,8 +52,9 @@ public class XMLResponseParser extends DefaultHandler {
 	
 	public static Database db;
 
-	public static final int MODE_ITEMS = 1;
+	public static final int MODE_ITEMS = 1; 
 	public static final int MODE_ITEM = 2;
+	public static final int MODE_ITEM_CHILDREN = 8;
 	public static final int MODE_COLLECTIONS = 3;
 	public static final int MODE_COLLECTION = 4;
 	public static final int MODE_COLLECTION_ITEMS = 5;	

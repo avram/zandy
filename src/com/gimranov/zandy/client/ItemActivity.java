@@ -228,7 +228,7 @@ public class ItemActivity extends ListActivity {
 	public ItemAdapter create(ItemCollection parent) {
 		String[] args = { parent.dbId };
 		Cursor cursor = db.rawQuery("SELECT item_title, item_type, item_content, etag, dirty, " +
-				"items._id, item_key, item_year, item_creator, timestamp, children " +
+				"items._id, item_key, item_year, item_creator, timestamp, item_children " +
 				" FROM items, itemtocollections WHERE items._id = item_id AND collection_id=? ORDER BY item_year, item_title",
 				args);
 		if (cursor == null) {

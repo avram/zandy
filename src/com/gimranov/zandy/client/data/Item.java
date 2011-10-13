@@ -324,8 +324,8 @@ public class Item {
 				rows.add(b);
 			}
 			b = new Bundle();
-			b.putString("children", children);
-			b.putString("label", "Attachments");
+			b.putString("content", children);
+			b.putString("label", "children");
 			b.putString("itemKey", getKey());
 			rows.add(b);
 		} catch (JSONException e) {
@@ -465,7 +465,7 @@ public class Item {
 					content.toString(), etag, dirty, timestamp, children };
 			Cursor cur = db
 					.rawQuery(
-							"insert into items (item_title, item_key, item_type, item_year, item_creator, item_content, etag, dirty, timestamp, children) "
+							"insert into items (item_title, item_key, item_type, item_year, item_creator, item_content, etag, dirty, timestamp, item_children) "
 									+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 							args);
 			if (cur != null)
@@ -482,7 +482,7 @@ public class Item {
 					.rawQuery(
 							"update items set item_title=?, item_type=?, item_year=?," +
 							" item_creator=?, item_content=?, etag=?, dirty=?," +
-							" timestamp=?, item_key=?, children=? "
+							" timestamp=?, item_key=?, item_children=? "
 									+ " where _id=?", args);
 			if (cur != null)
 				cur.close();
@@ -554,7 +554,7 @@ public class Item {
 			return null;
 		}
 		// {"item_title", "item_type", "item_content", "etag", "dirty", "_id",
-		// "item_key", "item_year", "item_creator", "timestamp", "children"};
+		// "item_key", "item_year", "item_creator", "timestamp", "item_children"};
 
 		item.setTitle(cur.getString(0));
 		item.setType(cur.getString(1));
@@ -587,6 +587,10 @@ public class Item {
 
 		if (label.equals("itemType")) {
 			item.type = content;
+		}
+
+		if (label.equals("children")) {
+			item.children = content;
 		}
 		
 		if (label.equals("date")) {
@@ -1041,7 +1045,9 @@ public class Item {
 			return "Tags";
 		if (s.equals("itemType"))
 			return "Item Type";
-
+		if (s.equals("children"))
+			return "Attachments";
+		
 		// And item types
 		if (s.equals("artwork"))
 			return "Artwork";
@@ -1557,7 +1563,15 @@ public class Item {
 			return 55;
 		if (s.equals("callNumber"))
 			return 56;
-
+		
+		// Housekeeping and navigation, at the very end
+		if (s.equals("attachments"))
+			return 250;
+		if (s.equals("tags"))
+			return 251;
+		if (s.equals("related"))
+			return 252;
+		
 		return 200;
 	}
 }

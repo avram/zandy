@@ -12,7 +12,7 @@ import android.util.Log;
 public class Database {
 	private static final String TAG = "com.gimranov.zandy.client.data.Database";
 	
-	public static final String[] ITEMCOLS = {"item_title", "item_type", "item_content", "etag", "dirty", "_id", "item_key", "item_year", "item_creator", "timestamp", "children"};
+	public static final String[] ITEMCOLS = {"item_title", "item_type", "item_content", "etag", "dirty", "_id", "item_key", "item_year", "item_creator", "timestamp", "item_children"};
 	public static final String[] COLLCOLS = {"collection_name", "collection_parent", "etag", "dirty", "_id", "collection_key, collection_size", "timestamp"};
 	// the database version; increment to call update
 	private static final int DATABASE_VERSION = 17;
@@ -213,7 +213,7 @@ public class Database {
 					db.execSQL(ATTACHMENTS_CREATE);
 					db.execSQL(NOTES_CREATE);
 					db.execSQL("alter table items "+ 
-							" add column children string;");
+							" add column item_children string;");
 				}
 			}
 		}
