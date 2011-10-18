@@ -117,6 +117,14 @@ public class Item {
 		this.type = type;
 	}
 
+	public boolean equals(Item b) {
+		Log.d(TAG,"Comparing myself ("+key+") to "+b.key);
+		if (b == null) return false;
+		if (b.key == null || key == null) return false;
+		if (b.key.equals(key)) return true;
+		return false;
+	}
+	
 	public String getId() {
 		return id;
 	}
@@ -819,7 +827,10 @@ public class Item {
 		// Not item types, but still something
 		if (type.equals("collection"))
 			return R.drawable.folder;
-		// if (type.equals("pdf")) return R.drawable.ic_menu_close_clear_cancel;
+		 if (type.equals("application/pdf"))
+			 return R.drawable.page_white_acrobat;
+		 if (type.equals("note"))
+			 return R.drawable.note;
 		// if (type.equals("snapshot")) return
 		// R.drawable.ic_menu_close_clear_cancel;
 		// if (type.equals("link")) return

@@ -157,20 +157,24 @@ public class XMLResponseParser extends DefaultHandler {
             			if (existing != null) {
             				Log.d(TAG, "Updating newly created attachment to replace temporary key: " 
             							+ updateKey + " => " + attachment.key + "");
+            				if (!existing.status.equals(Attachment.ZFS_LOCAL)) 
+    	            			attachment.status = Attachment.ZFS_AVAILABLE;
             				existing.key = attachment.key;
-            				existing.status = APIRequest.API_CLEAN;
             				existing.save();
             			}
             		} else {
 	            		item.dirty = APIRequest.API_CLEAN;
-	            		attachment.status = APIRequest.API_CLEAN;
-            			if (!item.getType().equals("attachment"))
+	            		if (attachment.url != null && attachment.url != "")
+	            			attachment.status = Attachment.ZFS_AVAILABLE;
+            			if (!item.getType().equals("attachment")
+            					&& !item.getType().equals("note"))
             				item.save();
             			else
             				attachment.save();
             		}
             		
             		if (!item.getType().equals("attachment")
+            				&& !item.getType().equals("note")
             				&& item.getChildren() != null
             				&& !item.getChildren().equals("0")) {
             			queue.add(APIRequest.children(item));

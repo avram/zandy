@@ -33,9 +33,24 @@ public class Attachment {
 		content = new JSONObject();
 	}
 	
+	public String getType () {
+		String type = "";
+		try {
+			type = content.getString("itemType");
+			if (type.equals("attachment"))
+				type = content.getString("mimeType");
+			if (type.equals("note"))
+				type = "note";
+		} catch (JSONException e) {
+			Log.e(TAG, "JSON exception parsing attachment content",e);
+		}
+		return type;
+	}
+	
 	public void save() {
 		Attachment existing = load(key);
 		if (dbId == null && existing == null) {
+			Log.d(TAG, "Saving new, with status: "+status);
 			String[] args = { key, parentKey, title, filename, url, status, etag, content.toString() };
 			Cursor cur = db
 					.rawQuery(
@@ -47,6 +62,8 @@ public class Attachment {
 			Attachment fromDB = load(key);
 			dbId = fromDB.dbId;
 		} else {
+			Log.d(TAG, "Saving new, with status: "+status);
+			Log.d(TAG, "Old status: "+existing.status);
 			if (dbId == null)
 				dbId = existing.dbId;
 			String[] args = { key, parentKey, title, filename, url, status, etag, content.toString(), dbId };

@@ -16,8 +16,11 @@
  ******************************************************************************/
 package com.gimranov.zandy.client;
 
+import java.io.File;
+
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 
 import com.gimranov.zandy.client.task.APIRequest;
@@ -54,6 +57,11 @@ public class ServerCredentials {
 	public static final String OAUTHREQUEST = "https://www.zotero.org/oauth/request";
 	public static final String OAUTHACCESS = "https://www.zotero.org/oauth/access";
 	public static final String OAUTHAUTHORIZE = "https://www.zotero.org/oauth/authorize";
+	
+	/* More constants */
+    public static final File sBaseStorageDir = new File(Environment.getExternalStorageDirectory(), "zandy");
+    public static final File sDocumentStorageDir = new File(sBaseStorageDir, "documents");
+    public static final File sCacheDir = new File(sBaseStorageDir, "cache");
 	
 	public static String prep(Context c, String in) {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(c);

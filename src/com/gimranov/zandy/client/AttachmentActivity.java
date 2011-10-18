@@ -46,6 +46,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,7 +55,6 @@ import com.gimranov.zandy.client.data.Attachment;
 import com.gimranov.zandy.client.data.Item;
 import com.gimranov.zandy.client.task.APIRequest;
 import com.gimranov.zandy.client.task.ZoteroAPITask;
-import com.gimranov.zandy.lib.Constants;
 
 /**
  * This Activity handles displaying and editing attachments. It works almost the same as
@@ -96,7 +96,7 @@ public class AttachmentActivity extends ListActivity {
          * Since it's no longer a simple TextView, we need to override getView, but
          * we can do that anonymously.
          */
-        setListAdapter(new ArrayAdapter<Attachment>(this, R.layout.list_data, rows) {
+        setListAdapter(new ArrayAdapter<Attachment>(this, R.layout.list_attach, rows) {
         	@Override
         	public View getView(int position, View convertView, ViewGroup parent) {
         		View row;
@@ -104,18 +104,23 @@ public class AttachmentActivity extends ListActivity {
                 // We are reusing views, but we need to initialize it if null
         		if (null == convertView) {
                     LayoutInflater inflater = getLayoutInflater();
-        			row = inflater.inflate(R.layout.list_data, null);
+        			row = inflater.inflate(R.layout.list_attach, null);
         		} else {
         			row = convertView;
         		}
-         
-        		/* Our layout has just two fields */
-        		TextView tvLabel = (TextView) row.findViewById(R.id.data_label);
-        		TextView tvContent = (TextView) row.findViewById(R.id.data_content);
+
+        		//TextView tvTitle = (TextView)row.findViewById(R.id.attachment_title);
+        		ImageView tvType = (ImageView)row.findViewById(R.id.attachment_type);
+        		TextView tvSummary = (TextView)row.findViewById(R.id.attachment_summary);
         		
-        		tvLabel.setText(Item.localizedStringForString(
-        				getItem(position).status));
-        		tvContent.setText(getItem(position).title);
+        		Attachment att = getItem(position);
+        		Log.d(TAG, "Have an attachment: "+att.title);
+        		
+        		tvType.setImageResource(Item.resourceForType(att.getType()));
+        		
+        		//tvSummary.setText(Item.localizedStringForString(
+        		//		att.status));
+        		tvSummary.setText(att.title + " Status: " + att.status);
          
         		return row;
         	}
@@ -131,10 +136,7 @@ public class AttachmentActivity extends ListActivity {
         		// If we have a click on an entry, do something...
         		ArrayAdapter<Attachment> adapter = (ArrayAdapter<Attachment>) parent.getAdapter();
         		Attachment row = adapter.getItem(position);
-        		
-				Toast.makeText(getApplicationContext(), row.etag, 
-        				Toast.LENGTH_SHORT).show();
-				
+        						
 				if (row.url != null && row.url.length() > 0) {
         			Bundle b = new Bundle();
         			b.putString("title", row.title);
@@ -151,9 +153,20 @@ public class AttachmentActivity extends ListActivity {
 			return null;
 		case DIALOG_FILE_PROGRESS:
 			Attachment att = Attachment.load(b.getString("key"));
-			File file = new File(Constants.sDocumentStorageDir.getPath(),att.title);
+			
+			if (!ServerCredentials.sBaseStorageDir.exists())
+				ServerCredentials.sBaseStorageDir.mkdir();
+			if (!ServerCredentials.sDocumentStorageDir.exists())
+				ServerCredentials.sDocumentStorageDir.mkdir();
+			//File keyDir = new File(ServerCredentials.sBaseStorageDir,att.key);
+			//if (!keyDir.exists())
+			//	keyDir.mkdir();
+			
 			Log.d(TAG, att.status);
 			if (att.status.equals(Attachment.ZFS_AVAILABLE)) {
+				String sanitized = att.title.replace(' ', '_');
+				File file = new File(ServerCredentials.sDocumentStorageDir,sanitized);
+				
 				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 				
 				Log.d(TAG,"Starting to try and download ZFS-available attachment");
@@ -165,13 +178,14 @@ public class AttachmentActivity extends ListActivity {
 				mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 				mProgressDialog.show();
 				try {
-					if (!Constants.sBaseStorageDir.exists())
-						Constants.sBaseStorageDir.mkdir();
-					if (!Constants.sDocumentStorageDir.exists())
-						Constants.sDocumentStorageDir.mkdir();
+					if (!ServerCredentials.sBaseStorageDir.exists())
+						ServerCredentials.sBaseStorageDir.mkdir();
+					if (!ServerCredentials.sDocumentStorageDir.exists())
+						ServerCredentials.sDocumentStorageDir.mkdir();
 					
 					download(new URL(att.url+"?key="+settings.getString("user_key","")),
 							file);
+					att.filename = file.getPath();
 					att.status = Attachment.ZFS_LOCAL;
 					att.save();
 					Log.d(TAG,"File downloaded, I think");
@@ -183,7 +197,7 @@ public class AttachmentActivity extends ListActivity {
 			if (att.status.equals(Attachment.ZFS_LOCAL)) {
 				Log.d(TAG,"Starting to display local attachment");
 
-				Uri uri = Uri.fromFile(file);
+				Uri uri = Uri.fromFile(new File(att.filename));
 				try {
 					String mimeType = att.content.optString("mimeType",null);
 					startActivity(new Intent(Intent.ACTION_VIEW)

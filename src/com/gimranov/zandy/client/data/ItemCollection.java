@@ -17,13 +17,14 @@
 package com.gimranov.zandy.client.data;
 
 import java.util.ArrayList;
-
-import com.gimranov.zandy.client.task.APIRequest;
+import java.util.HashSet;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
+
+import com.gimranov.zandy.client.task.APIRequest;
 
 /**
  * Represents a Zotero collection of Item objects. Collections can
@@ -36,7 +37,7 @@ import android.util.Log;
  * @author ajlyon
  *
  */
-public class ItemCollection extends ArrayList<Item> {
+public class ItemCollection extends HashSet<Item> {
 	/**
 	 * What is this for?
 	 */
@@ -108,7 +109,7 @@ public class ItemCollection extends ArrayList<Item> {
 		removals.add(APIRequest.remove(item, this));
 		return true;
 	}
-	
+		
 	/* Getters and setters */
 	public String getId() {
 		return id;
@@ -297,14 +298,18 @@ public class ItemCollection extends ArrayList<Item> {
 		 * and saving them anew. This is a risky way to do things. One approach is to
 		 * wrap the operation in a transaction, or we could try to keep track of changes.
 		 */
+		
+		HashSet<String> keys = new HashSet<String>();
+		for (Item i : this) {
+			if (i.dbId == null) i.save();
+			keys.add(i.dbId);
+		}
+			
 		try {
 			String[] cid = { this.dbId };
 			db.rawQuery("delete from itemtocollections where collection_id=?", cid);
-			for (Item i : this) {
-				if (i.dbId == null) i.save();
-				Log.d(TAG,"Item has dbid: "+i.dbId);
-				Log.d(TAG, "saving a child item into the collection");
-				String[] args = { this.dbId, i.dbId };
+			for (String i : keys) {
+				String[] args = { this.dbId, i };
 				Cursor cur = db.rawQuery(
 						"insert into itemtocollections (collection_id, item_id) values (?, ?)", args);
 				if (cur != null) cur.close();
