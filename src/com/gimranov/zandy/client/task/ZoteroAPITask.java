@@ -153,7 +153,11 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
         if (queue.size() > 0) {
         	Log.i(TAG, "Starting queued requests: " + queue.size() + " requests");
     		APIRequest[] templ = { };
-        	this.doInBackground(queue.toArray(templ));
+    		APIRequest[] requests = queue.toArray(templ);
+        	queue.clear();
+        	Log.i(TAG, "Now: "+queue.size());
+
+    		this.doFetch(requests);
         	// XXX FOR TESTING FOR NOW
         	return null;
         }
@@ -181,7 +185,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
     			Log.d(TAG, "Queueing dirty item ("+j+"): "+Item.queue.get(j).getTitle());
     			mReqs[j] = ServerCredentials.prep(userID, APIRequest.update(Item.queue.get(j)));
     		} else if (j < Item.queue.size() + ItemCollection.additions.size()) {
-    			Log.d(TAG, "Queueing new collection membership ("+j+")");
+    			Log.d(TAG, "Queueing new collection membership ("+j+")"+ItemCollection.additions.size()+":"+Item.queue.size());
     			mReqs[j] = ServerCredentials.prep(userID,
     							ItemCollection.additions.get(j
     								- Item.queue.size()));
@@ -397,16 +401,34 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 				}
 				if (req.disposition.equals("xml")) {
 					HttpResponse hr = client.execute(request);
-					HttpEntity en = hr.getEntity();
-					InputStream in = en.getContent();
-					XMLResponseParser parse = new XMLResponseParser(in);
-					// We can tell from the URL whether we have a single item or a feed
-					int mode = (uri.toString().indexOf("/items?") == -1
-									&& uri.toString().indexOf("/top?") == -1
-									&& uri.toString().indexOf("/collections?") == -1) ?
-										XMLResponseParser.MODE_ENTRY : XMLResponseParser.MODE_FEED;
-					parse.parse(mode, uri.toString());
-					resp = "XML was parsed.";
+					int code = hr.getStatusLine().getStatusCode();
+					Log.d(TAG, code + " : "+ hr.getStatusLine().getReasonPhrase());
+					if (code < 400) {
+						HttpEntity he = hr.getEntity();
+						InputStream in = he.getContent();
+						XMLResponseParser parse = new XMLResponseParser(in);
+						// We can tell from the URL whether we have a single item or a feed
+						int mode = (uri.toString().indexOf("/items?") == -1
+										&& uri.toString().indexOf("/top?") == -1
+										&& uri.toString().indexOf("/collections?") == -1
+										&& uri.toString().indexOf("/children?") == -1) ?
+											XMLResponseParser.MODE_ENTRY : XMLResponseParser.MODE_FEED;
+						parse.parse(mode, uri.toString());
+						resp = "XML was parsed.";
+					} else {
+						Log.e(TAG, "Not parsing non-XML response, code >= 400");
+						ByteArrayOutputStream ostream = new ByteArrayOutputStream();
+						hr.getEntity().writeTo(ostream);
+						Log.e(TAG,"Error Body: "+ ostream.toString());
+						Log.e(TAG,"Put Body:"+ req.body);
+						
+						// "Precondition Failed"
+						// The item changed server-side, so we have a conflict to resolve...
+						// XXX This is a hard problem.
+						if (code == 412) {
+							Log.e(TAG, "Skipping dirtied item with server-side changes as well");
+						}
+					}
 				} else {
 					resp = client.execute(request, new BasicResponseHandler());
 				}

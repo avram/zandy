@@ -49,7 +49,7 @@ public class APIRequest {
 	public static final String API_MISSING ="Partial data";
 	public static final String API_STALE = "Stale data";
 	public static final String API_WIP  = 	"Sync attempted";
-	public static final String API_CLEAN =	"No unsynced change";
+	public static final String API_CLEAN =	"No unsynced change";	
 	
 	/**
 	 * Base query to send.
@@ -198,6 +198,7 @@ public class APIRequest {
 									+ collection.getKey() + "/items",
 								"POST",
 								null);
+		templ.body = "";
 		for (Item i : items) {
 			templ.body += i.getKey() + " ";
 		}
@@ -231,6 +232,20 @@ public class APIRequest {
 		Log.d(TAG, "Using the templ key of the first new item for now...");
 		templ.updateKey = items.get(0).getKey();
 		
+		return templ;
+	}
+
+	/**
+	 * Craft a request for the children of the specified item
+	 * @param item
+	 * @return
+	 */
+	public static APIRequest children(Item item) {
+		APIRequest templ = new APIRequest(ServerCredentials.APIBASE
+								+ ServerCredentials.ITEMS+"/"+item.getKey()+"/children",
+								"GET",
+								null);
+		templ.disposition = "xml";
 		return templ;
 	}
 	

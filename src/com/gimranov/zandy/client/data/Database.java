@@ -15,7 +15,7 @@ public class Database {
 	public static final String[] ITEMCOLS = {"item_title", "item_type", "item_content", "etag", "dirty", "_id", "item_key", "item_year", "item_creator", "timestamp", "item_children"};
 	public static final String[] COLLCOLS = {"collection_name", "collection_parent", "etag", "dirty", "_id", "collection_key, collection_size", "timestamp"};
 	// the database version; increment to call update
-	private static final int DATABASE_VERSION = 17;
+	private static final int DATABASE_VERSION = 18;
 	
 	private static final String DATABASE_NAME = "Zotero";
 	private final DatabaseOpenHelper mDatabaseOpenHelper;
@@ -24,19 +24,6 @@ public class Database {
 		mDatabaseOpenHelper = new DatabaseOpenHelper(context);
 	}
 	
-	public Cursor query(String selection, String[] selectionArgs, String[] columns) {
-		SQLiteQueryBuilder builder = new SQLiteQueryBuilder();
-		Cursor cursor = builder.query(mDatabaseOpenHelper.getWritableDatabase(),
-					columns, selection, selectionArgs, null, null, null);
-
-		if (cursor == null) {
-			return null;
-		} else if (!cursor.moveToFirst()) {
-			cursor.close();
-			return null;
-		}
-		return cursor;
-	}
 	
 	public Cursor query(String table, String[] columns, String selection,
 			String[] selectionArgs, String groupBy, String having, String orderBy, String limit) {
@@ -120,13 +107,6 @@ public class Database {
 			"firstName string, " +
 			"lastName string, " +
 			"creatorType string );";
-
-		private static final String CHILDREN_CREATE =
-			"create table children"+ 
-			" (_id integer primary key autoincrement, " +
-			"type string, " +
-			"content string, " +
-			"key string );";
 		
 		private static final String ITEM_TO_CREATORS_CREATE =
 			"create table itemtocreators"+ 
@@ -151,7 +131,9 @@ public class Database {
 			+ "title string, "
 			+ "filename string, "
 			+ "url string, "
-			+ "status string);";
+			+ "status string, "
+			+ "content string, "
+			+ "etag string);";
 
 		private static final String NOTES_CREATE =
 			"create table notes"+ 
@@ -161,7 +143,9 @@ public class Database {
 			+ "title string, "
 			+ "filename string, "
 			+ "url string, "
-			+ "status string);";
+			+ "status string, "
+			+ "content string, "
+			+ "etag string);";
 		
 		DatabaseOpenHelper(Context context) {
 			super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -174,7 +158,6 @@ public class Database {
 			db.execSQL(COLLECTIONS_CREATE);
 			db.execSQL(ITEMS_CREATE);
 			db.execSQL(CREATORS_CREATE);
-			db.execSQL(CHILDREN_CREATE);
 			db.execSQL(ITEM_TO_CREATORS_CREATE);
 			db.execSQL(ITEM_TO_COLLECTIONS_CREATE);	
 			db.execSQL(DELETED_ITEMS_CREATE);
@@ -214,6 +197,16 @@ public class Database {
 					db.execSQL(NOTES_CREATE);
 					db.execSQL("alter table items "+ 
 							" add column item_children string;");
+				}
+				if (oldVersion == 17 && newVersion == 18) {
+					db.execSQL("alter table attachments "+ 
+							" add column etag string;");
+					db.execSQL("alter table attachments "+ 
+							" add column content string;");
+					db.execSQL("alter table notes "+ 
+							" add column etag string;");
+					db.execSQL("alter table notes "+ 
+							" add column content string;");
 				}
 			}
 		}

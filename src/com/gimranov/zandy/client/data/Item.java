@@ -42,6 +42,7 @@ public class Item {
 	private String etag;
 	private String year;
 	private String children;
+
 	private String creatorSummary;
 	private JSONObject content;
 
@@ -199,6 +200,10 @@ public class Item {
 
 	public void setChildren(String children) {
 		this.children = children;
+	}
+	
+	public String getChildren() {
+		return children;
 	}
 	
 	public String getType() {

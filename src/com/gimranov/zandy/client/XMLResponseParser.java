@@ -24,11 +24,7 @@ import org.json.JSONObject;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.gimranov.zandy.client.data.Database;
-import com.gimranov.zandy.client.data.Item;
-import com.gimranov.zandy.client.data.ItemCollection;
-import com.gimranov.zandy.client.task.APIRequest;
-
+import android.os.Bundle;
 import android.sax.Element;
 import android.sax.ElementListener;
 import android.sax.EndTextElementListener;
@@ -37,11 +33,18 @@ import android.sax.StartElementListener;
 import android.util.Log;
 import android.util.Xml;
 
+import com.gimranov.zandy.client.data.Attachment;
+import com.gimranov.zandy.client.data.Database;
+import com.gimranov.zandy.client.data.Item;
+import com.gimranov.zandy.client.data.ItemCollection;
+import com.gimranov.zandy.client.task.APIRequest;
+
 public class XMLResponseParser extends DefaultHandler {
 	private static final String TAG = "com.gimranov.zandy.client.XMLResponseParser";
 	
 	private InputStream input;
 	private Item item;
+	private Attachment attachment;
 	private ItemCollection collection;
 	private ItemCollection parent;
 	private String updateType;
@@ -75,7 +78,7 @@ public class XMLResponseParser extends DefaultHandler {
 		updateKey = key;
 	}
 	
-	public void parse(int mode, String url) {		
+	public void parse(int mode, String url) {
 		Element entry;
 		RootElement root;
 		// we have a different root for indiv. items
@@ -123,8 +126,6 @@ public class XMLResponseParser extends DefaultHandler {
 	        			req.disposition = "xml";
 	        			queue.add(req);
 	            	}
-	            	
-	            	Log.i(TAG, "link-tag-parsed: rel: "+rel+" => "+href);
 	            }
 	        });
 		}
@@ -133,7 +134,7 @@ public class XMLResponseParser extends DefaultHandler {
             public void start(Attributes attributes) {
             	item = new Item();
             	collection = new ItemCollection();
-            	if (parent != null) parent.add(item);
+            	attachment = new Attachment();
             	Log.i(TAG, "new entry");
             }
 
@@ -147,12 +148,38 @@ public class XMLResponseParser extends DefaultHandler {
             							+ updateKey + " => " + item.getKey() + "");
             				existing.setKey(item.getKey());
             				existing.dirty = APIRequest.API_CLEAN;
+                			if (!existing.getType().equals("attachment"))
+                				existing.save();
+            			}
+            		} else if (updateKey != null && updateType != null && updateType.equals("attachment")) {
+            			// We have an incoming new version of an item
+            			Attachment existing = Attachment.load(updateKey);
+            			if (existing != null) {
+            				Log.d(TAG, "Updating newly created attachment to replace temporary key: " 
+            							+ updateKey + " => " + attachment.key + "");
+            				existing.key = attachment.key;
+            				existing.status = APIRequest.API_CLEAN;
             				existing.save();
             			}
             		} else {
 	            		item.dirty = APIRequest.API_CLEAN;
-	            		item.save();
+	            		attachment.status = APIRequest.API_CLEAN;
+            			if (!item.getType().equals("attachment"))
+            				item.save();
+            			else
+            				attachment.save();
             		}
+            		
+            		if (!item.getType().equals("attachment")
+            				&& item.getChildren() != null
+            				&& !item.getChildren().equals("0")) {
+            			queue.add(APIRequest.children(item));
+                		Log.d(TAG, "Queued children request for item: "+item.getTitle() + " " + item.getKey());
+                		Log.d(TAG, "Item has children: "+item.getChildren());
+            		}
+            		
+                	if (!item.getType().equals("attachment") && parent != null) parent.add(item);
+            		
                 	Log.i(TAG, "Done parsing item entry.");
             		return;
             	}
@@ -200,6 +227,7 @@ public class XMLResponseParser extends DefaultHandler {
             public void end(String body) {
             	item.setTitle(body);
             	collection.setTitle(body);
+            	attachment.title = body;
             	Log.i(TAG, body);
             }
         });
@@ -207,6 +235,7 @@ public class XMLResponseParser extends DefaultHandler {
             public void end(String body) {
             	item.setKey(body);
             	collection.setKey(body);
+            	attachment.key = body;
             	Log.i(TAG, body);
             }
         });
@@ -249,11 +278,33 @@ public class XMLResponseParser extends DefaultHandler {
             	Log.i(TAG, body);
             }
         });
+        entry.getChild(ATOM_NAMESPACE, "link").setStartElementListener(new StartElementListener(){
+            public void start(Attributes attributes) {
+            	String rel = "";
+            	String href = "";
+            	int length = attributes.getLength();
+            	// I shouldn't have to walk through, but the namespacing isn't working here
+            	for (int i = 0; i < length; i++) {
+            		if (attributes.getQName(i) == "rel") rel = attributes.getValue(i);
+            		if (attributes.getQName(i) == "href") href = attributes.getValue(i);
+            	}
+            	if (rel != null && rel.equals("up")) {
+                	int start = href.indexOf("/items/");
+                	// Trying to pull out the key of attachment parent
+                	attachment.parentKey = href.substring(start+7, start+7+8);
+                	Log.d(TAG, "Setting parentKey to: "+attachment.parentKey);
+            	} else if (rel != null && rel.equals("enclosure")) {
+            		attachment.url = href;
+            		attachment.status = Attachment.ZFS_AVAILABLE;
+            	} else if (rel != null) Log.d(TAG, "rel="+rel+"href="+href);
+            }
+        });
         entry.getChild(ATOM_NAMESPACE, "content").setStartElementListener(new StartElementListener(){
             public void start(Attributes attributes) {
             	String etag = attributes.getValue(Z_NAMESPACE, "etag");
             	item.setEtag(etag);
             	collection.setEtag(etag);
+            	attachment.etag = etag;
             	Log.i(TAG, etag);
             }
         });
@@ -267,6 +318,7 @@ public class XMLResponseParser extends DefaultHandler {
                 		Log.e(TAG, "collection parent not found in JSON; not a collection?");
             		}
             		item.setContent(obj);
+            		attachment.content = obj;
             	} catch (JSONException e) {
             		Log.e(TAG, "content", e);
             	}

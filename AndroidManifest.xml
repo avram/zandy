@@ -5,6 +5,7 @@
       android:versionName="1.0.2">
     <uses-sdk android:minSdkVersion="8" />
     <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
     
     <application android:icon="@drawable/zandy72" android:label="@string/app_name">
         <activity android:name=".MainActivity"
@@ -42,6 +43,10 @@
                   android:launchMode="standard">
         </activity>
         <activity android:name=".SettingsActivity"
+                  android:label="@string/app_name"
+                  android:launchMode="standard">
+        </activity>
+        <activity android:name=".AttachmentActivity"
                   android:label="@string/app_name"
                   android:launchMode="standard">
         </activity>

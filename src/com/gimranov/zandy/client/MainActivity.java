@@ -39,6 +39,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.gimranov.zandy.client.data.Attachment;
 import com.gimranov.zandy.client.data.Database;
 import com.gimranov.zandy.client.data.Item;
 import com.gimranov.zandy.client.data.ItemCollection;
@@ -69,6 +70,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		Item.db = new Database(getBaseContext());
 		XMLResponseParser.db = Item.db;
 		ItemCollection.db = Item.db;
+		Attachment.db = Item.db;
 
 		if (ServerCredentials.check(getBaseContext())) {
 			loginButton.setText("Logged in");

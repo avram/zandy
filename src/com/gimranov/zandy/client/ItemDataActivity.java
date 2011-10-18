@@ -151,7 +151,13 @@ public class ItemDataActivity extends ListActivity {
         	    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
         	    	startActivity(i);
         			return;
-        		}
+	    		} else if (row.getString("label").equals("children")) {
+	    	    	Log.d(TAG, "Trying to start attachment activity");
+	    	    	Intent i = new Intent(getBaseContext(), AttachmentActivity.class);
+	    	    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
+	    	    	startActivity(i);
+	    			return;
+	    		}
         		
 				Toast.makeText(getApplicationContext(), row.getString("content"), 
         				Toast.LENGTH_SHORT).show();
