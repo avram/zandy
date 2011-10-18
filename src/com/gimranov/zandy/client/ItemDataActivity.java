@@ -184,6 +184,9 @@ public class ItemDataActivity extends ListActivity {
         			//removeDialog(DIALOG_ITEM_TYPE);
         			//showDialog(DIALOG_ITEM_TYPE, row);
         			return true;
+        		} else if (row.getString("label").equals("children")) {
+        	    	Log.d(TAG, "Not starting children activity on click-and-hold");
+        	    	return true;
         		} else if (row.getString("label").equals("creators")) {
         	    	Log.d(TAG, "Trying to start creators activity");
         	    	Intent i = new Intent(getBaseContext(), CreatorActivity.class);

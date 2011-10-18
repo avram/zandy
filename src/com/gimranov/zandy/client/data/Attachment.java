@@ -22,7 +22,7 @@ public class Attachment {
 	
 	public static Database db;
 	
-	private static final String TAG = "com.gimranov.zandy.client.data.Child";
+	private static final String TAG = "com.gimranov.zandy.client.data.Attachment";
 	
 	public static final String ZFS_AVAILABLE = "Available for download";
 	public static final String ZFS_LOCAL = "Downloaded";	

@@ -114,7 +114,7 @@ public class AttachmentActivity extends ListActivity {
         		TextView tvContent = (TextView) row.findViewById(R.id.data_content);
         		
         		tvLabel.setText(Item.localizedStringForString(
-        				getItem(position).parentKey));
+        				getItem(position).status));
         		tvContent.setText(getItem(position).title);
          
         		return row;
@@ -155,6 +155,9 @@ public class AttachmentActivity extends ListActivity {
 			Log.d(TAG, att.status);
 			if (att.status.equals(Attachment.ZFS_AVAILABLE)) {
 				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+				
+				Log.d(TAG,"Starting to try and download ZFS-available attachment");
+				
 				mProgressDialog = new ProgressDialog(this);
 				mProgressDialog.setMessage("Downloading file for "+b.getString("title"));
 				mProgressDialog.setIndeterminate(true);
@@ -178,10 +181,13 @@ public class AttachmentActivity extends ListActivity {
 				}
 			}
 			if (att.status.equals(Attachment.ZFS_LOCAL)) {
-				Uri uri = Uri.parse(file.getPath());
+				Log.d(TAG,"Starting to display local attachment");
+
+				Uri uri = Uri.fromFile(file);
 				try {
+					String mimeType = att.content.optString("mimeType",null);
 					startActivity(new Intent(Intent.ACTION_VIEW)
-								.setDataAndType(uri,"application/pdf"));
+								.setDataAndType(uri,mimeType));
 				} catch (ActivityNotFoundException e) {
 					Log.e(TAG, "No activity for intent", e);
 					Toast.makeText(getApplicationContext(), "No application for files of this type", 
