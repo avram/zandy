@@ -27,15 +27,18 @@ import java.util.ArrayList;
 
 import org.apache.http.util.ByteArrayBuffer;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.Editable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -45,7 +48,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.TextView.BufferType;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -72,6 +77,7 @@ public class AttachmentActivity extends ListActivity {
 	static final int DIALOG_CONFIRM_NAVIGATE = 4;	
 	static final int DIALOG_FILE_PROGRESS = 6;	
 	static final int DIALOG_CONFIRM_DELETE = 5;	
+	static final int DIALOG_NOTE = 3;	
 	
 	public Item item;
 	private ProgressDialog mProgressDialog;
@@ -137,20 +143,52 @@ public class AttachmentActivity extends ListActivity {
         		ArrayAdapter<Attachment> adapter = (ArrayAdapter<Attachment>) parent.getAdapter();
         		Attachment row = adapter.getItem(position);
         						
-				if (row.url != null && row.url.length() > 0) {
+				if (!row.getType().equals("note") 
+						&& row.url != null && row.url.length() > 0) {
         			Bundle b = new Bundle();
         			b.putString("title", row.title);
         			b.putString("key", row.key);
         			showDialog(DIALOG_FILE_PROGRESS, b);
+				}
+				
+				if (row.getType().equals("note")) {
+					Bundle b = new Bundle();
+					b.putString("attachmentKey", row.key);
+					b.putString("content", row.content.optString("note", ""));
+					showDialog(DIALOG_NOTE, b);
 				}
         	}
         });
     }
     
 	protected Dialog onCreateDialog(int id, Bundle b) {
+		final String label = b.getString("label");
+		final String attachmentKey = b.getString("attachmentKey");
+		final String content = b.getString("content");
+		
 		switch (id) {			
 		case DIALOG_CONFIRM_NAVIGATE:
 			return null;
+		case DIALOG_NOTE:
+			final EditText input = new EditText(this);
+			input.setText(content, BufferType.EDITABLE);
+			
+			AlertDialog dialog = new AlertDialog.Builder(this)
+	    	    .setTitle("Note")
+	    	    .setView(input)
+	    	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+	    	            Editable value = input.getText();
+	    	            Attachment att = Attachment.load(attachmentKey);
+	    	            att.setNoteText(value.toString());
+	    	            att.save();
+	    	        }
+	    	    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+	    	        public void onClick(DialogInterface dialog, int whichButton) {
+	    	        	// do nothing
+	    	        }
+	    	    }).create();
+			return dialog;
 		case DIALOG_FILE_PROGRESS:
 			Attachment att = Attachment.load(b.getString("key"));
 			
@@ -161,22 +199,25 @@ public class AttachmentActivity extends ListActivity {
 			//File keyDir = new File(ServerCredentials.sBaseStorageDir,att.key);
 			//if (!keyDir.exists())
 			//	keyDir.mkdir();
+			String sanitized = att.title.replace(' ', '_');
+			File file = new File(ServerCredentials.sDocumentStorageDir,sanitized);
 			
-			Log.d(TAG, att.status);
-			if (att.status.equals(Attachment.ZFS_AVAILABLE)) {
-				String sanitized = att.title.replace(' ', '_');
-				File file = new File(ServerCredentials.sDocumentStorageDir,sanitized);
+			if (att.status.equals(Attachment.ZFS_AVAILABLE)
+					&& !file.exists()) {
 				
 				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 				
 				Log.d(TAG,"Starting to try and download ZFS-available attachment");
 				
 				mProgressDialog = new ProgressDialog(this);
+
 				mProgressDialog.setMessage("Downloading file for "+b.getString("title"));
 				mProgressDialog.setIndeterminate(true);
 				mProgressDialog.setMax(100);
 				mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 				mProgressDialog.show();
+				Toast.makeText(getApplicationContext(), "File download initiated.", 
+        				Toast.LENGTH_SHORT).show();	
 				try {
 					if (!ServerCredentials.sBaseStorageDir.exists())
 						ServerCredentials.sBaseStorageDir.mkdir();
@@ -187,14 +228,20 @@ public class AttachmentActivity extends ListActivity {
 							file);
 					att.filename = file.getPath();
 					att.status = Attachment.ZFS_LOCAL;
+					if (file.exists())
+						Log.d(TAG,"File downloaded, I think");
+					else {
+						att.status = Attachment.ZFS_AVAILABLE;
+						Toast.makeText(getApplicationContext(), "File download may have failed.", 
+		        				Toast.LENGTH_SHORT).show();						
+					}
 					att.save();
-					Log.d(TAG,"File downloaded, I think");
 					mProgressDialog.dismiss();
 				} catch (IOException e) {
 					Log.e(TAG,"DownloadManager exception on: "+att.key,e);
 				}
 			}
-			if (att.status.equals(Attachment.ZFS_LOCAL)) {
+			if (att.status.equals(Attachment.ZFS_LOCAL) || file.exists()) {
 				Log.d(TAG,"Starting to display local attachment");
 
 				Uri uri = Uri.fromFile(new File(att.filename));
@@ -215,10 +262,6 @@ public class AttachmentActivity extends ListActivity {
 		}
 	}
                
-    /*
-     * I've been just copying-and-pasting the options menu code from activity to activity.
-     * It needs to be reworked for some of these activities.
-     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();

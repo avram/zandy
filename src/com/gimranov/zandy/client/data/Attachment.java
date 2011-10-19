@@ -47,6 +47,17 @@ public class Attachment {
 		return type;
 	}
 	
+	public void setNoteText (String text) {
+		if (getType().equals("note")) {
+			try {
+				content.put("note", text);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public void save() {
 		Attachment existing = load(key);
 		if (dbId == null && existing == null) {
