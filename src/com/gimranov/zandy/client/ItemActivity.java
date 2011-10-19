@@ -49,9 +49,24 @@ public class ItemActivity extends ListActivity {
 	
 	static final int DIALOG_VIEW = 0;
 	static final int DIALOG_NEW = 1;
+	static final int DIALOG_SORT = 2;
+	
+	static final String[] SORTS = {
+		"item_year, item_title",
+		"item_creator, item_year",
+		"item_title, item_year"
+	};
+
+	static final String[] SORTS_EN = {
+		"Year, then title",
+		"Creator, then year",
+		"Title, then year"
+	};	
 	
 	private String collectionKey;
 	private Database db;
+	
+	public String sortBy = "item_year, item_title";
 	
     /** Called when the activity is first created. */
     @Override
@@ -123,37 +138,66 @@ public class ItemActivity extends ListActivity {
     }
     
 	protected Dialog onCreateDialog(int id, Bundle b) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		// XXX i18n
-		builder.setTitle("Item Type")
-	    	    .setItems(Item.ITEM_TYPES_EN, new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int pos) {
-	    	            Item item = new Item(getBaseContext(), Item.ITEM_TYPES[pos]);
-	    	            item.dirty = APIRequest.API_DIRTY;
-	    	            item.save();
-	    	            if (collectionKey != null) {
-	    	            	ItemCollection coll = ItemCollection.load(collectionKey);
-	    	            	if (coll != null) {
-	    	            		coll.loadChildren();
-	    	            		coll.add(item);
-	    	            		coll.saveChildren();
-	    	            	}
-	    	            }
-	        			Log.d(TAG, "Loading item data with key: "+item.getKey());
-	    				// We create and issue a specified intent with the necessary data
-	    		    	Intent i = new Intent(getBaseContext(), ItemDataActivity.class);
-	    		    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
-	    		    	startActivity(i);
-	    	        }
-	    	    });
-		AlertDialog dialog = builder.create();
-		return dialog;
+		switch (id) {
+		case DIALOG_NEW:
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			// XXX i18n
+			builder.setTitle("Item Type")
+		    	    .setItems(Item.ITEM_TYPES_EN, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int pos) {
+		    	            Item item = new Item(getBaseContext(), Item.ITEM_TYPES[pos]);
+		    	            item.dirty = APIRequest.API_DIRTY;
+		    	            item.save();
+		    	            if (collectionKey != null) {
+		    	            	ItemCollection coll = ItemCollection.load(collectionKey);
+		    	            	if (coll != null) {
+		    	            		coll.loadChildren();
+		    	            		coll.add(item);
+		    	            		coll.saveChildren();
+		    	            	}
+		    	            }
+		        			Log.d(TAG, "Loading item data with key: "+item.getKey());
+		    				// We create and issue a specified intent with the necessary data
+		    		    	Intent i = new Intent(getBaseContext(), ItemDataActivity.class);
+		    		    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
+		    		    	startActivity(i);
+		    	        }
+		    	    });
+			AlertDialog dialog = builder.create();
+			return dialog;
+		case DIALOG_SORT:
+			AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
+			// XXX i18n
+			builder2.setTitle("Set Sort Order")
+		    	    .setItems(SORTS_EN, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int pos) {
+							Cursor cursor;
+							setSortBy(SORTS[pos]);
+							if (collectionKey != null)
+								cursor = getCursor(ItemCollection.load(collectionKey));
+							else
+								cursor = getCursor();
+							ItemAdapter adapter = (ItemAdapter) getListAdapter();
+							adapter.changeCursor(cursor);
+		        			Log.d(TAG, "Re-sorting by: "+SORTS[pos]);
+		    	        }
+		    	    });
+			AlertDialog dialog2 = builder2.create();
+			return dialog2;
+		default:
+			return null;
+		}
 	}
            
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.zotero_menu, menu);
+
+        // Turn on sort item
+        MenuItem sort = menu.findItem(R.id.do_sort);
+        sort.setEnabled(true);
+        sort.setVisible(true);
         return true;
     }
     
@@ -210,32 +254,48 @@ public class ItemActivity extends ListActivity {
 	    	Log.d(TAG, "Intent for class:  "+i.getClass().toString());
 	    	startActivity(i);
 	    	return true;
+        case R.id.do_sort:
+        	removeDialog(DIALOG_SORT);
+        	showDialog(DIALOG_SORT);
+        	return true;
         default:
             return super.onOptionsItemSelected(item);
         }
     }
     
 	public ItemAdapter create() {
-		Cursor cursor = db.query("items", Database.ITEMCOLS, null, null, null, null, "item_year, item_title", null);
-		if (cursor == null) {
-			Log.e(TAG, "cursor is null");
-		}
-
+		Cursor cursor = getCursor();
 		ItemAdapter adapter = new ItemAdapter(this, cursor);
 		return adapter;
 	}
 	
 	public ItemAdapter create(ItemCollection parent) {
+		Cursor cursor = getCursor(parent);
+		ItemAdapter adapter = new ItemAdapter(this, cursor);
+		return adapter;
+	}
+	
+	public void setSortBy(String sort) {
+		this.sortBy = sort;
+	}
+	
+	public Cursor getCursor() {
+		Cursor cursor = db.query("items", Database.ITEMCOLS, null, null, null, null, this.sortBy, null);
+		if (cursor == null) {
+			Log.e(TAG, "cursor is null");
+		}
+		return cursor;
+	}
+
+	public Cursor getCursor(ItemCollection parent) {
 		String[] args = { parent.dbId };
 		Cursor cursor = db.rawQuery("SELECT item_title, item_type, item_content, etag, dirty, " +
 				"items._id, item_key, item_year, item_creator, timestamp, item_children " +
-				" FROM items, itemtocollections WHERE items._id = item_id AND collection_id=? ORDER BY item_year, item_title",
+				" FROM items, itemtocollections WHERE items._id = item_id AND collection_id=? ORDER BY "+this.sortBy,
 				args);
 		if (cursor == null) {
 			Log.e(TAG, "cursor is null");
 		}
-		ItemAdapter adapter = new ItemAdapter(this, cursor);
-
-		return adapter;
+		return cursor;
 	}
 }

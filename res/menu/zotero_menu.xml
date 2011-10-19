@@ -24,6 +24,11 @@
           android:title="@string/menu_delete"
           android:enabled="false"
           android:visible="false" />
+    <item android:id="@+id/do_sort"
+          android:icon="@drawable/glyphish_104_index_cards"
+          android:title="@string/menu_sort"
+          android:enabled="false"
+          android:visible="false" />
     <item android:id="@+id/do_new"
           android:icon="@drawable/glyphish_10_medical"
           android:title="@string/menu_new" />
