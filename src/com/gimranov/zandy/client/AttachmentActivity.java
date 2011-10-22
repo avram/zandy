@@ -26,6 +26,7 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 
 import org.apache.http.util.ByteArrayBuffer;
+import org.json.JSONException;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -124,6 +125,13 @@ public class AttachmentActivity extends ListActivity {
         		
         		tvType.setImageResource(Item.resourceForType(att.getType()));
         		
+        		try {
+					Log.d(TAG, att.content.toString(4));
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        		
         		if (att.getType().equals("note")) {
         			String note = att.content.optString("note","");
         			if (note.length() > 40) {
@@ -147,15 +155,23 @@ public class AttachmentActivity extends ListActivity {
         		// If we have a click on an entry, do something...
         		ArrayAdapter<Attachment> adapter = (ArrayAdapter<Attachment>) parent.getAdapter();
         		Attachment row = adapter.getItem(position);
-        						
+        		String url = (row.url != null && !row.url.equals("")) ?
+        				row.url : row.content.optString("url");
 				if (!row.getType().equals("note") 
-						&& row.url != null && row.url.length() > 0) {
-        			Bundle b = new Bundle();
+						&& url != null
+						&& url.length() > 0) {
+					Bundle b = new Bundle();
         			b.putString("title", row.title);
         			b.putString("key", row.key);
-        			showDialog(DIALOG_FILE_PROGRESS, b);
+        			b.putString("content", url);
+        			// 0 means download from ZFS. 1 is everything else (?)
+        			String linkMode = row.content.optString("linkMode","0");
+        			if (linkMode.equals("0"))
+        				showDialog(DIALOG_FILE_PROGRESS, b);
+        			else
+        				showDialog(DIALOG_CONFIRM_NAVIGATE, b);
 				}
-				
+								
 				if (row.getType().equals("note")) {
 					Bundle b = new Bundle();
 					b.putString("attachmentKey", row.key);
@@ -172,15 +188,30 @@ public class AttachmentActivity extends ListActivity {
 		final String itemKey = b.getString("itemKey");
 		final String content = b.getString("content");
 		final String mode = b.getString("mode");
-		
+		AlertDialog dialog;
 		switch (id) {			
 		case DIALOG_CONFIRM_NAVIGATE:
-			return null;
+			dialog = new AlertDialog.Builder(this)
+		    	    .setTitle("View this online?")
+		    	    .setPositiveButton("View", new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int whichButton) {
+		        			// The behavior for invalid URIs might be nasty, but
+		        			// we'll cross that bridge if we come to it.
+		        			Uri uri = Uri.parse(content);
+		        			startActivity(new Intent(Intent.ACTION_VIEW)
+		        							.setData(uri));
+		    	        }
+		    	    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+		    	        public void onClick(DialogInterface dialog, int whichButton) {
+		    	        	// do nothing
+		    	        }
+		    	    }).create();
+			return dialog;
 		case DIALOG_NOTE:
 			final EditText input = new EditText(this);
 			input.setText(content, BufferType.EDITABLE);
 			
-			AlertDialog dialog = new AlertDialog.Builder(this)
+			dialog = new AlertDialog.Builder(this)
 	    	    .setTitle("Note")
 	    	    .setView(input)
 	    	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {

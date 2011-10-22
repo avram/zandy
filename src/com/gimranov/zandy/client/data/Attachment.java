@@ -32,6 +32,13 @@ public class Attachment {
 	 * APIRequest.API_DIRTY means that we'll try to push this version up to the server
 	 */
 	public String dirty;
+	
+	/**
+	 * Zotero's JSON format for attachment / child information
+	 * 
+	 * linkMode:	O = file attachment, in ZFS?
+	 * 				1 = link attachment?
+	 */
 	public JSONObject content;
 	
 	public static Database db;
