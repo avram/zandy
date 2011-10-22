@@ -49,6 +49,7 @@ import android.widget.CursorAdapter;
 
 import com.gimranov.zandy.client.ServerCredentials;
 import com.gimranov.zandy.client.XMLResponseParser;
+import com.gimranov.zandy.client.data.Attachment;
 import com.gimranov.zandy.client.data.Item;
 import com.gimranov.zandy.client.data.ItemCollection;
 
@@ -167,10 +168,16 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
     	// If we're already in auto mode (that is, here), just move on
     	if (this.autoMode) return ret;
     	
-    	Log.d(TAG, "Preparing item sync");
+    	Log.d(TAG, "Sending local changes");
     	Item.queue();
+    	Attachment.queue();
+    	Log.d(TAG, Item.queue.size() + " items");
     	int length = Item.queue.size();
+    	Log.d(TAG, Attachment.queue.size() + " attachments");
+    	length += Attachment.queue.size();
+    	Log.d(TAG, ItemCollection.additions.size() + " new memberships");
     	length += ItemCollection.additions.size();
+    	Log.d(TAG, ItemCollection.removals.size() + " removed membership");
     	length += ItemCollection.removals.size();
     	length += deletions.size();
     	int basicLength = length;
@@ -184,12 +191,19 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
     		if (j < Item.queue.size()) {
     			Log.d(TAG, "Queueing dirty item ("+j+"): "+Item.queue.get(j).getTitle());
     			mReqs[j] = ServerCredentials.prep(userID, APIRequest.update(Item.queue.get(j)));
-    		} else if (j < Item.queue.size() + ItemCollection.additions.size()) {
+    		} else if (j < Item.queue.size()
+    					+ Attachment.queue.size()) {
+        			Log.d(TAG, "Queueing dirty attachment ("+j+"): "+Attachment.queue.get(j).key);
+        			mReqs[j] = ServerCredentials.prep(userID, APIRequest.update(Attachment.queue.get(j)));
+    		} else if (j < Item.queue.size()
+    					+ Attachment.queue.size()
+    					+ ItemCollection.additions.size()) {
     			Log.d(TAG, "Queueing new collection membership ("+j+")"+ItemCollection.additions.size()+":"+Item.queue.size());
     			mReqs[j] = ServerCredentials.prep(userID,
     							ItemCollection.additions.get(j
     								- Item.queue.size()));
     		} else if (j < Item.queue.size() 
+    					+ Attachment.queue.size()
     					+ ItemCollection.additions.size() 
     					+ ItemCollection.removals.size()) {
     			Log.d(TAG, "Queueing removed collection membership ("+j+")");
@@ -198,9 +212,10 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
     								- Item.queue.size() 
     								- ItemCollection.additions.size()));
     		} else if (j < Item.queue.size() 
-					+ ItemCollection.additions.size() 
-					+ ItemCollection.removals.size()
-					+ deletions.size()) {
+    					+ Attachment.queue.size()
+    					+ ItemCollection.additions.size() 
+    					+ ItemCollection.removals.size()
+    					+ deletions.size()) {
     			Log.d(TAG, "Queueing deletion ("+j+")");
     			mReqs[j] = ServerCredentials.prep(userID,
 						deletions.get(j 

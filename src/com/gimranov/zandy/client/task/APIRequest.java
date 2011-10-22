@@ -27,6 +27,7 @@ import android.database.Cursor;
 import android.util.Log;
 
 import com.gimranov.zandy.client.ServerCredentials;
+import com.gimranov.zandy.client.data.Attachment;
 import com.gimranov.zandy.client.data.Database;
 import com.gimranov.zandy.client.data.Item;
 import com.gimranov.zandy.client.data.ItemCollection;
@@ -145,13 +146,29 @@ public class APIRequest {
 		try {
 			JSONArray array = new JSONArray();
 			for (Item i : items) {
-				array.put(i.getContent());
+				JSONObject jItem = i.getContent();
+				array.put(jItem);
 			}
 			JSONObject obj = new JSONObject();
 			obj.put("items", array);
 			body = obj.toString(4);
 		} catch (JSONException e) {
 			Log.e(TAG, "Error setting body for items", e);
+		}
+	}
+	
+	public void setBodyWithNotes(ArrayList<Attachment> attachments) {
+		try {
+			JSONArray array = new JSONArray();
+			for (Attachment a : attachments) {
+				JSONObject jAtt = a.content;
+				array.put(jAtt);
+			}
+			JSONObject obj = new JSONObject();
+			obj.put("items", array);
+			body = obj.toString(4);
+		} catch (JSONException e) {
+			Log.e(TAG, "Error setting body for attachments", e);
 		}
 	}
 	
@@ -234,6 +251,31 @@ public class APIRequest {
 		
 		return templ;
 	}
+	
+	/**
+	 * Craft a request to add child items (notes, attachments) to the server
+	 * This does not attempt to update them, just add them.
+	 * 
+	 * @param item The parent item of the attachments
+	 * @param attachments
+	 * @return
+	 */
+	public static APIRequest add(Item item, ArrayList<Attachment> attachments) {
+		APIRequest templ = new APIRequest(ServerCredentials.APIBASE
+								+ ServerCredentials.ITEMS
+								+ "/" + item.getKey() + "/children",
+								"POST",
+								null);
+		templ.setBodyWithNotes(attachments);
+		templ.disposition = "xml";
+		templ.updateType = "attachment";
+		// TODO this needs to be reworked to send all the keys. Or the whole system
+		// needs to be reworked.
+		Log.d(TAG, "Using the templ key of the first new attachment for now...");
+		templ.updateKey = attachments.get(0).key;
+		
+		return templ;
+	}	
 
 	/**
 	 * Craft a request for the children of the specified item
@@ -250,7 +292,39 @@ public class APIRequest {
 	}
 	
 	/**
-	 * Craft a request to update an item on the server
+	 * Craft a request to update an attachment on the server
+	 * Does not refresh eTag
+	 * 
+	 * @param attachment
+	 * @return
+	 */
+	public static APIRequest update(Attachment attachment) {
+		Log.d(TAG, "Attachment key pre-update: "+attachment.key);
+		// If we have an attachment marked as new, update it
+		if (attachment.key.length() > 10) {	
+			Item item = Item.load(attachment.parentKey);
+			ArrayList<Attachment> aL = new ArrayList<Attachment>();
+			aL.add(attachment);
+			return add(item, aL);
+		}
+		
+		APIRequest templ = new APIRequest(ServerCredentials.APIBASE
+								+ ServerCredentials.ITEMS+"/" + attachment.key,
+								"PUT",
+								null);
+		try {
+			templ.body = attachment.content.toString(4);
+		} catch (JSONException e) {
+			Log.e(TAG, "JSON exception setting body for attachment update: "+attachment.key,e);
+		}
+		templ.ifMatch = '"' + attachment.etag + '"';
+		templ.disposition = "xml";
+		
+		return templ;
+	}
+
+	/**
+	 * Craft a request to update an attachment on the server
 	 * Does not refresh eTag
 	 * 
 	 * @param item

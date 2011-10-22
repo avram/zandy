@@ -5,7 +5,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
@@ -14,8 +13,10 @@ public class Database {
 	
 	public static final String[] ITEMCOLS = {"item_title", "item_type", "item_content", "etag", "dirty", "_id", "item_key", "item_year", "item_creator", "timestamp", "item_children"};
 	public static final String[] COLLCOLS = {"collection_name", "collection_parent", "etag", "dirty", "_id", "collection_key, collection_size", "timestamp"};
+	public static final String[] ATTCOLS = { "_id", "attachment_key", "item_key", "title", "filename", "url", "status", "etag", "dirty", "content" };
+
 	// the database version; increment to call update
-	private static final int DATABASE_VERSION = 18;
+	private static final int DATABASE_VERSION = 19;
 	
 	private static final String DATABASE_NAME = "Zotero";
 	private final DatabaseOpenHelper mDatabaseOpenHelper;
@@ -69,7 +70,9 @@ public class Database {
 	}
 	
 	private static class DatabaseOpenHelper extends SQLiteOpenHelper {
+		@SuppressWarnings("unused")
 		private final Context mHelperContext;
+		@SuppressWarnings("unused")
 		private SQLiteDatabase mDatabase;
 		
 		// table creation statements
@@ -133,8 +136,10 @@ public class Database {
 			+ "url string, "
 			+ "status string, "
 			+ "content string, "
-			+ "etag string);";
+			+ "etag string, "
+		    + "dirty string);";
 
+		/* We don't use this table right now */
 		private static final String NOTES_CREATE =
 			"create table notes"+ 
 			" (_id integer primary key autoincrement, "
@@ -207,6 +212,10 @@ public class Database {
 							" add column etag string;");
 					db.execSQL("alter table notes "+ 
 							" add column content string;");
+				}
+				if (oldVersion == 18 && newVersion == 19) {
+					db.execSQL("alter table attachments "+ 
+							" add column dirty string;");
 				}
 			}
 		}

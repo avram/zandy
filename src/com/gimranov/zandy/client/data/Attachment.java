@@ -1,10 +1,14 @@
 package com.gimranov.zandy.client.data;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.gimranov.zandy.client.task.APIRequest;
+
+import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
 
@@ -18,6 +22,16 @@ public class Attachment {
 	public String title;
 	public String filename;
 	public String url;
+	
+	/**
+	 * Queue of attachments that need to be synced, because they're dirty
+	 */
+	public static ArrayList<Attachment> queue;
+	
+	/**
+	 * APIRequest.API_DIRTY means that we'll try to push this version up to the server
+	 */
+	public String dirty;
 	public JSONObject content;
 	
 	public static Database db;
@@ -29,8 +43,22 @@ public class Attachment {
 	public static final String UNKNOWN = "Status unknown";	
 
 	public Attachment () {
-		parentKey = title = filename = url = status = etag = "";
+		if (queue == null) queue = new ArrayList<Attachment>();
+		parentKey = title = filename = url = status = etag = dirty = "";
 		content = new JSONObject();
+	}
+	
+	public Attachment(Context c, String type, String parentKey) {
+		this();
+		content = new JSONObject();
+		try {
+			content.put("itemType", type);
+		} catch (JSONException e) {
+			Log.d(TAG,"JSON exception caught setting itemType in Attachment constructor", e);
+		}
+		key = UUID.randomUUID().toString();
+		this.parentKey = parentKey;
+		dirty = APIRequest.API_NEW;
 	}
 	
 	public String getType () {
@@ -52,8 +80,7 @@ public class Attachment {
 			try {
 				content.put("note", text);
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Log.e(TAG, "JSON exception setting note text",e);
 			}
 		}
 	}
@@ -62,11 +89,11 @@ public class Attachment {
 		Attachment existing = load(key);
 		if (dbId == null && existing == null) {
 			Log.d(TAG, "Saving new, with status: "+status);
-			String[] args = { key, parentKey, title, filename, url, status, etag, content.toString() };
+			String[] args = { key, parentKey, title, filename, url, status, etag, dirty, content.toString() };
 			Cursor cur = db
 					.rawQuery(
-							"insert into attachments (attachment_key, item_key, title, filename, url, status, etag, content) "
-									+ "values (?, ?, ?, ?, ?, ?, ?, ?)",
+							"insert into attachments (attachment_key, item_key, title, filename, url, status, etag, dirty, content) "
+									+ "values (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 							args);
 			if (cur != null)
 				cur.close();
@@ -74,22 +101,57 @@ public class Attachment {
 			dbId = fromDB.dbId;
 		} else {
 			Log.d(TAG, "Saving new, with status: "+status);
-			Log.d(TAG, "Old status: "+existing.status);
 			if (dbId == null)
 				dbId = existing.dbId;
-			String[] args = { key, parentKey, title, filename, url, status, etag, content.toString(), dbId };
+			String[] args = { key, parentKey, title, filename, url, status, etag, dirty, content.toString(), dbId };
 			Log.i(TAG, "Updating existing attachment");
 			Cursor cur = db
 					.rawQuery(
 							"update attachments set attachment_key=?, item_key=?, title=?," +
-							" filename=?, url=?, status=?, etag=?," +
+							" filename=?, url=?, status=?, etag=?, dirty=?, " +
 							" content=? "
 									+ " where _id=?", args);
 			if (cur != null)
 				cur.close();
 		}
 	}
+	
+	/**
+	 * Identifies dirty items in the database and queues them for syncing
+	 */
+	public static void queue() {
+		Log.d(TAG, "Clearing attachment dirty queue before repopulation");
+		queue.clear();
+		Attachment attachment;
+		String[] cols = Database.ATTCOLS;
+		String[] args = { APIRequest.API_CLEAN };
+		Cursor cur = db.query("attachments", cols, "dirty != ?", args, null, null,
+				null, null);
 
+		if (cur == null) {
+			Log.d(TAG, "No dirty attachments found in database");
+			queue.clear();
+			return;
+		}
+
+		do {
+			Log.d(TAG, "Adding attachment to dirty queue");
+			attachment = load(cur);
+			queue.add(attachment);
+		} while (cur.moveToNext() != false);
+
+		if (cur != null)
+			cur.close();
+	}
+
+	/**
+	 * Get an Attachment from the current cursor position.
+	 * 
+	 * Does not close cursor.
+	 * 
+	 * @param cur
+	 * @return
+	 */
 	public static Attachment load(Cursor cur) {
 		if (cur == null) return null;
 		
@@ -102,8 +164,9 @@ public class Attachment {
 		a.url = cur.getString(5);
 		a.status = cur.getString(6);
 		a.etag = cur.getString(7);
+		a.dirty = cur.getString(8);
 		try {
-			a.content = new JSONObject(cur.getString(8));
+			a.content = new JSONObject(cur.getString(9));
 		} catch (JSONException e) {
 			Log.e(TAG, "Caught JSON exception loading attachment from db", e);
 		}
@@ -111,7 +174,7 @@ public class Attachment {
 	}
 	
 	public static Attachment load(String key) {
-		String[] cols = { "_id", "attachment_key", "item_key", "title", "filename", "url", "status", "etag", "content" };
+		String[] cols = Database.ATTCOLS;
 		String[] args = { key };
 		Cursor cur = db.query("attachments", cols, "attachment_key=?", args, null, null, null, null);
 		Attachment a = load(cur);
@@ -134,7 +197,7 @@ public class Attachment {
 		if (item.dbId == null) item.save();
 		Log.d(TAG, "Looking for the kids of an item with key: "+item.getKey());
 			
-		String[] cols = { "_id", "attachment_key", "item_key", "title", "filename", "url", "status", "etag", "content" };
+		String[] cols = { "_id", "attachment_key", "item_key", "title", "filename", "url", "status", "etag", "dirty", "content" };
 		String[] args = { item.getKey() };
 		Cursor cursor = db.query("attachments", cols, "item_key=?", args, null, null, null, null);
 		

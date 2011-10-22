@@ -157,13 +157,17 @@ public class XMLResponseParser extends DefaultHandler {
             			if (existing != null) {
             				Log.d(TAG, "Updating newly created attachment to replace temporary key: " 
             							+ updateKey + " => " + attachment.key + "");
-            				if (!existing.status.equals(Attachment.ZFS_LOCAL)) 
+            				existing.dirty = APIRequest.API_CLEAN;
+            				// Set as downloadable if we don't know otherwise
+            				if (!existing.status.equals(Attachment.ZFS_LOCAL)
+            						&& !attachment.getType().equals("note")) 
     	            			attachment.status = Attachment.ZFS_AVAILABLE;
             				existing.key = attachment.key;
             				existing.save();
             			}
             		} else {
 	            		item.dirty = APIRequest.API_CLEAN;
+        				attachment.dirty = APIRequest.API_CLEAN;
 	            		if (attachment.url != null && attachment.url != "")
 	            			attachment.status = Attachment.ZFS_AVAILABLE;
             			if (!item.getType().equals("attachment")

@@ -48,12 +48,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.TextView.BufferType;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.TextView.BufferType;
 import android.widget.Toast;
 
 import com.gimranov.zandy.client.data.Attachment;
@@ -77,7 +77,8 @@ public class AttachmentActivity extends ListActivity {
 	static final int DIALOG_CONFIRM_NAVIGATE = 4;	
 	static final int DIALOG_FILE_PROGRESS = 6;	
 	static final int DIALOG_CONFIRM_DELETE = 5;	
-	static final int DIALOG_NOTE = 3;	
+	static final int DIALOG_NOTE = 3;
+	static final int DIALOG_NEW = 1;
 	
 	public Item item;
 	private ProgressDialog mProgressDialog;
@@ -89,7 +90,7 @@ public class AttachmentActivity extends ListActivity {
                 
         /* Get the incoming data from the calling activity */
         // XXX Note that we don't know what to do when there is no key assigned
-        String itemKey = getIntent().getStringExtra("com.gimranov.zandy.client.itemKey");
+        final String itemKey = getIntent().getStringExtra("com.gimranov.zandy.client.itemKey");
         Item item = Item.load(itemKey);
         this.item = item;
         
@@ -115,7 +116,6 @@ public class AttachmentActivity extends ListActivity {
         			row = convertView;
         		}
 
-        		//TextView tvTitle = (TextView)row.findViewById(R.id.attachment_title);
         		ImageView tvType = (ImageView)row.findViewById(R.id.attachment_type);
         		TextView tvSummary = (TextView)row.findViewById(R.id.attachment_summary);
         		
@@ -124,9 +124,14 @@ public class AttachmentActivity extends ListActivity {
         		
         		tvType.setImageResource(Item.resourceForType(att.getType()));
         		
-        		//tvSummary.setText(Item.localizedStringForString(
-        		//		att.status));
-        		tvSummary.setText(att.title + " Status: " + att.status);
+        		if (att.getType().equals("note")) {
+        			String note = att.content.optString("note","");
+        			if (note.length() > 40) {
+        				note = note.substring(0,40);
+        			}
+        			tvSummary.setText(att.title + " " + note);
+        		} else
+        			tvSummary.setText(att.title + " Status: " + att.status);
          
         		return row;
         	}
@@ -154,6 +159,7 @@ public class AttachmentActivity extends ListActivity {
 				if (row.getType().equals("note")) {
 					Bundle b = new Bundle();
 					b.putString("attachmentKey", row.key);
+					b.putString("itemKey", itemKey);
 					b.putString("content", row.content.optString("note", ""));
 					showDialog(DIALOG_NOTE, b);
 				}
@@ -162,9 +168,10 @@ public class AttachmentActivity extends ListActivity {
     }
     
 	protected Dialog onCreateDialog(int id, Bundle b) {
-		final String label = b.getString("label");
 		final String attachmentKey = b.getString("attachmentKey");
+		final String itemKey = b.getString("itemKey");
 		final String content = b.getString("content");
+		final String mode = b.getString("mode");
 		
 		switch (id) {			
 		case DIALOG_CONFIRM_NAVIGATE:
@@ -177,11 +184,25 @@ public class AttachmentActivity extends ListActivity {
 	    	    .setTitle("Note")
 	    	    .setView(input)
 	    	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+					@SuppressWarnings("unchecked")
 					public void onClick(DialogInterface dialog, int whichButton) {
 	    	            Editable value = input.getText();
-	    	            Attachment att = Attachment.load(attachmentKey);
-	    	            att.setNoteText(value.toString());
-	    	            att.save();
+						if (mode != null && mode.equals("new")) {
+							Attachment att = new Attachment(getBaseContext(), "note", itemKey);
+		    	            att.setNoteText(value.toString());
+		    	            att.save();
+						} else {
+							Attachment att = Attachment.load(attachmentKey);
+		    	            att.setNoteText(value.toString());
+		    	            att.dirty = APIRequest.API_DIRTY;
+		    	            att.save();
+						}
+	    	            ArrayAdapter<Attachment> la = (ArrayAdapter<Attachment>) getListAdapter();
+	    	            la.clear();
+	    	            for (Attachment a : Attachment.forItem(Item.load(itemKey))) {
+	    	            	la.add(a);
+	    	            }
+	    	            la.notifyDataSetChanged();
 	    	        }
 	    	    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 	    	        public void onClick(DialogInterface dialog, int whichButton) {
@@ -196,9 +217,7 @@ public class AttachmentActivity extends ListActivity {
 				ServerCredentials.sBaseStorageDir.mkdir();
 			if (!ServerCredentials.sDocumentStorageDir.exists())
 				ServerCredentials.sDocumentStorageDir.mkdir();
-			//File keyDir = new File(ServerCredentials.sBaseStorageDir,att.key);
-			//if (!keyDir.exists())
-			//	keyDir.mkdir();
+
 			String sanitized = att.title.replace(' ', '_');
 			File file = new File(ServerCredentials.sDocumentStorageDir,sanitized);
 			
@@ -285,6 +304,13 @@ public class AttachmentActivity extends ListActivity {
     				Toast.LENGTH_SHORT).show();
         	
         	return true;
+        case R.id.do_new:
+			Bundle b = new Bundle();
+			b.putString("itemKey", this.item.getKey());
+			b.putString("mode", "new");
+        	removeDialog(DIALOG_NOTE);
+        	showDialog(DIALOG_NOTE, b);
+            return true;
         case R.id.do_prefs:
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
@@ -294,6 +320,12 @@ public class AttachmentActivity extends ListActivity {
     }
     
 
+    /**
+     * Saves a file from specified URL to specified destination.
+     * TODO This should be made asynchronous, and spun out into its own routine
+     * @param url
+     * @param destination
+     */
     public void download(URL url, File destination) {  
     	//this is the downloader method
         try {
