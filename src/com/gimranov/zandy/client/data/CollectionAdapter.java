@@ -18,7 +18,6 @@ package com.gimranov.zandy.client.data;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,7 +33,7 @@ import com.gimranov.zandy.client.task.APIRequest;
  *
  */
 public class CollectionAdapter extends ResourceCursorAdapter {
-	private static final String TAG = "com.gimranov.zandy.client.data.CollectionAdapter";
+	public static final String TAG = "com.gimranov.zandy.client.data.CollectionAdapter";
 
 	public Context context;
 		

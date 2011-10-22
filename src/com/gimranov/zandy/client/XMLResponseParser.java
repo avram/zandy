@@ -24,7 +24,6 @@ import org.json.JSONObject;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
-import android.os.Bundle;
 import android.sax.Element;
 import android.sax.ElementListener;
 import android.sax.EndTextElementListener;

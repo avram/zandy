@@ -33,7 +33,7 @@ public class Creator {
 	
 	private int dbId;
 	
-	private static final String TAG = "com.gimranov.zandy.client.data.Creator";
+	public static final String TAG = "com.gimranov.zandy.client.data.Creator";
 	
 	/**
 	 * A Creator, given type, a single string, and a boolean mode.

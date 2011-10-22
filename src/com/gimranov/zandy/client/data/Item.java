@@ -118,8 +118,8 @@ public class Item {
 	}
 
 	public boolean equals(Item b) {
-		Log.d(TAG,"Comparing myself ("+key+") to "+b.key);
 		if (b == null) return false;
+		Log.d(TAG,"Comparing myself ("+key+") to "+b.key);
 		if (b.key == null || key == null) return false;
 		if (b.key.equals(key)) return true;
 		return false;

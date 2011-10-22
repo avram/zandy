@@ -62,7 +62,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		if (action != null
 				&& action.equals("android.intent.action.SEND")
 				&& intent.getExtras() != null) {
-			// Browser sends us no data
+			// Browser sends us no data, just extras
 			Bundle extras = intent.getExtras();
 			for (String s : extras.keySet()) {
 				try {
