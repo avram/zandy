@@ -16,6 +16,8 @@
  ******************************************************************************/
 package com.gimranov.zandy.client;
 
+import java.util.ArrayList;
+
 import oauth.signpost.OAuthProvider;
 import oauth.signpost.basic.DefaultOAuthProvider;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
@@ -25,6 +27,9 @@ import oauth.signpost.exception.OAuthMessageSignerException;
 import oauth.signpost.exception.OAuthNotAuthorizedException;
 import oauth.signpost.http.HttpParameters;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -52,10 +57,21 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	private static final String TAG = "com.gimranov.zandy.client.MainActivity";
 
+	static final int DIALOG_CHOOSE_COLLECTION = 1;
+	
+	public static String[] collectionNames;
+	public static String[] collectionKeys;
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		// Let items in on the fun
+		Item.db = new Database(getBaseContext());
+		XMLResponseParser.db = Item.db;
+		ItemCollection.db = Item.db;
+		Attachment.db = Item.db;
 		
 		Intent intent = getIntent();
 		String action = intent.getAction();
@@ -75,18 +91,20 @@ public class MainActivity extends Activity implements OnClickListener {
 			// Now we're dealing with share link, it seems.
 			// For now, just add it to the main library-- we'd like to let the person choose a library,
 			// but not yet.
+			ArrayList<ItemCollection> collections = ItemCollection.getCollections();
+			int size = collections.size();
+			collectionNames = new String[size];
+			collectionKeys = new String[size];
+			for (int i = 0; i < size; i++) {
+				collectionNames[i] = collections.get(i).getTitle();
+				collectionKeys[i] = collections.get(i).getKey();
+			}
 			
-			Item item = new Item(this, "webpage");
-			item.save();
-			Item.set(item.getKey(), "url", extras.getString("android.intent.extra.TEXT"));
-			Item.set(item.getKey(), "title", extras.getString("android.intent.extra.SUBJECT"));
-			Item.setTag(item.getKey(), null, "#added-by-zandy", 0);
-			Log.d(TAG, "Loading item data with key: "+item.getKey());
-			// We create and issue a specified intent with the necessary data
-	    	Intent i = new Intent(this, ItemDataActivity.class);
-	    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
-	    	i.putExtra("com.gimranov.zandy.client.itemDbId", item.dbId);
-	    	startActivity(i);
+			Bundle b = new Bundle();
+			b.putString("url", extras.getString("android.intent.extra.TEXT"));
+			b.putString("title", extras.getString("android.intent.extra.SUBJECT"));
+			
+			showDialog(DIALOG_CHOOSE_COLLECTION, b);
 		}
 
 		setContentView(R.layout.main);
@@ -97,12 +115,6 @@ public class MainActivity extends Activity implements OnClickListener {
 		itemButton.setOnClickListener(this);
 		Button loginButton = (Button) findViewById(R.id.loginButton);
 		loginButton.setOnClickListener(this);
-
-		// Let items in on the fun
-		Item.db = new Database(getBaseContext());
-		XMLResponseParser.db = Item.db;
-		ItemCollection.db = Item.db;
-		Attachment.db = Item.db;
 
 		if (ServerCredentials.check(getBaseContext())) {
 			loginButton.setText("Logged in");
@@ -299,6 +311,39 @@ public class MainActivity extends Activity implements OnClickListener {
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
+		}
+	}
+	
+	protected Dialog onCreateDialog(int id, Bundle b) {
+		final String url = b.getString("url");
+		final String title = b.getString("title");
+		AlertDialog dialog;
+		switch (id) {			
+		case DIALOG_CHOOSE_COLLECTION:
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			// XXX i18n
+			builder.setTitle("Choose parent collection:")
+		    	    .setItems(MainActivity.collectionNames, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int pos) {
+		    	            Item item = new Item(getBaseContext(), "webpage");
+							Item.set(item.getKey(), "url", url);
+							Item.set(item.getKey(), "title", title);
+							Item.setTag(item.getKey(), null, "#added-by-zandy", 1);
+							ItemCollection coll = ItemCollection.load(MainActivity.collectionKeys[pos]);
+							coll.add(item);
+							Log.d(TAG, "Loading item data with key: "+item.getKey());
+							// We create and issue a specified intent with the necessary data
+					    	Intent i = new Intent(getBaseContext(), ItemDataActivity.class);
+					    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
+					    	i.putExtra("com.gimranov.zandy.client.itemDbId", item.dbId);
+					    	startActivity(i);
+		    	        }
+		    	    });
+			dialog = builder.create();
+			return dialog;
+		default:
+			Log.e(TAG, "Invalid dialog requested");
+			return null;
 		}
 	}
 }

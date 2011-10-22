@@ -464,4 +464,29 @@ public class ItemCollection extends HashSet<Item> {
 		
 		if (cur != null) cur.close();
 	}
+
+	/**
+	 * Gives us ItemCollection objects to feed into something like UI
+	 * @return
+	 */
+	public static ArrayList<ItemCollection> getCollections() {
+		ArrayList<ItemCollection> collections = new ArrayList<ItemCollection>();
+		ItemCollection coll;
+		String[] cols = Database.COLLCOLS;
+		Cursor cur = db.query("collections", cols, "", null, null, null, "collection_name", null);
+		
+		if (cur == null) {
+			Log.d(TAG,"No collections found in database");
+			return collections;
+		}
+		
+		do {
+			Log.d(TAG,"Adding collection to collection list");
+			coll = load(cur);
+			collections.add(coll);
+		} while (cur.moveToNext() != false);
+		if (cur != null) cur.close();
+		
+		return collections;
+	}
 }
