@@ -56,6 +56,38 @@ public class MainActivity extends Activity implements OnClickListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		Intent intent = getIntent();
+		String action = intent.getAction();
+		if (action != null
+				&& action.equals("android.intent.action.SEND")
+				&& intent.getExtras() != null) {
+			// Browser sends us no data
+			Bundle extras = intent.getExtras();
+			for (String s : extras.keySet()) {
+				try {
+					Log.d("TAG","Got extra: "+s +" => "+extras.getString(s));
+				} catch (ClassCastException e) {
+					Log.e(TAG, "Not a string, it seems", e);
+				}
+			}
+			
+			// Now we're dealing with share link, it seems.
+			// For now, just add it to the main library-- we'd like to let the person choose a library,
+			// but not yet.
+			
+			Item item = new Item(this, "webpage");
+			item.save();
+			Item.set(item.getKey(), "url", extras.getString("android.intent.extra.TEXT"));
+			Item.set(item.getKey(), "title", extras.getString("android.intent.extra.SUBJECT"));
+			Item.setTag(item.getKey(), null, "#added-by-zandy", 0);
+			Log.d(TAG, "Loading item data with key: "+item.getKey());
+			// We create and issue a specified intent with the necessary data
+	    	Intent i = new Intent(this, ItemDataActivity.class);
+	    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
+	    	i.putExtra("com.gimranov.zandy.client.itemDbId", item.dbId);
+	    	startActivity(i);
+		}
 
 		setContentView(R.layout.main);
 
@@ -155,7 +187,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
-
+		Log.d(TAG, "Got new intent");
 		/*
 		 * It's possible we've lost these to garbage collection, so we
 		 * reinstantiate them if they turn out to be null at this point.
@@ -179,7 +211,7 @@ public class MainActivity extends Activity implements OnClickListener {
 			uri = intent.getData();
 		else
 			return;
-
+		
 		if (uri != null) {
 			/*
 			 * TODO The logic should have cases for the various things coming in

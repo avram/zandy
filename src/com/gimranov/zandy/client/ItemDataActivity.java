@@ -63,7 +63,7 @@ public class ItemDataActivity extends ListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-                
+        
         /* Get the incoming data from the calling activity */
         String itemKey = getIntent().getStringExtra("com.gimranov.zandy.client.itemKey");
         item = Item.load(itemKey);

@@ -393,7 +393,5 @@ public class AttachmentActivity extends ListActivity {
         } catch (IOException e) {
                 Log.e(TAG, "Error: ",e);
         }
-
-}
-    
+    }
 }
