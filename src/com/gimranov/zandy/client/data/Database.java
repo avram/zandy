@@ -59,7 +59,11 @@ public class Database {
 		db.beginTransaction();
 		return db;
 	}
-		
+	
+	/**
+	 * Closes database helper -- it will be opened again if we send another query from
+	 * this object.
+	 */
 	public void close() {
 		mDatabaseOpenHelper.close();
 	}

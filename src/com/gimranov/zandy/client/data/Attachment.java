@@ -121,6 +121,7 @@ public class Attachment {
 			if (cur != null)
 				cur.close();
 		}
+		db.close();
 	}
 	
 	/**

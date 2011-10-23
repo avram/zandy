@@ -193,15 +193,16 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
     			mReqs[j] = ServerCredentials.prep(userID, APIRequest.update(Item.queue.get(j)));
     		} else if (j < Item.queue.size()
     					+ Attachment.queue.size()) {
-        			Log.d(TAG, "Queueing dirty attachment ("+j+"): "+Attachment.queue.get(j).key);
-        			mReqs[j] = ServerCredentials.prep(userID, APIRequest.update(Attachment.queue.get(j)));
+        			Log.d(TAG, "Queueing dirty attachment ("+j+"): "+Attachment.queue.get(j - Item.queue.size()).key);
+        			mReqs[j] = ServerCredentials.prep(userID, APIRequest.update(Attachment.queue.get(j - Item.queue.size())));
     		} else if (j < Item.queue.size()
     					+ Attachment.queue.size()
     					+ ItemCollection.additions.size()) {
-    			Log.d(TAG, "Queueing new collection membership ("+j+")"+ItemCollection.additions.size()+":"+Item.queue.size());
+    			Log.d(TAG, "Queueing new collection membership ("+j+")");
     			mReqs[j] = ServerCredentials.prep(userID,
     							ItemCollection.additions.get(j
-    								- Item.queue.size()));
+    								- Item.queue.size()
+    								- Attachment.queue.size()));
     		} else if (j < Item.queue.size() 
     					+ Attachment.queue.size()
     					+ ItemCollection.additions.size() 
@@ -209,7 +210,8 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
     			Log.d(TAG, "Queueing removed collection membership ("+j+")");
     			mReqs[j] = ServerCredentials.prep(userID,
     						ItemCollection.additions.get(j 
-    								- Item.queue.size() 
+    								- Item.queue.size()
+    								- Attachment.queue.size()
     								- ItemCollection.additions.size()));
     		} else if (j < Item.queue.size() 
     					+ Attachment.queue.size()
@@ -220,6 +222,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
     			mReqs[j] = ServerCredentials.prep(userID,
 						deletions.get(j 
 								- Item.queue.size() 
+								- Attachment.queue.size()
 								- ItemCollection.additions.size()
 								- ItemCollection.removals.size()));
     		}

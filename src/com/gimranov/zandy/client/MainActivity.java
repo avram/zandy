@@ -59,9 +59,6 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	static final int DIALOG_CHOOSE_COLLECTION = 1;
 	
-	public static String[] collectionNames;
-	public static String[] collectionKeys;
-	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -86,18 +83,6 @@ public class MainActivity extends Activity implements OnClickListener {
 				} catch (ClassCastException e) {
 					Log.e(TAG, "Not a string, it seems", e);
 				}
-			}
-			
-			// Now we're dealing with share link, it seems.
-			// For now, just add it to the main library-- we'd like to let the person choose a library,
-			// but not yet.
-			ArrayList<ItemCollection> collections = ItemCollection.getCollections();
-			int size = collections.size();
-			collectionNames = new String[size];
-			collectionKeys = new String[size];
-			for (int i = 0; i < size; i++) {
-				collectionNames[i] = collections.get(i).getTitle();
-				collectionKeys[i] = collections.get(i).getKey();
 			}
 			
 			Bundle b = new Bundle();
@@ -321,16 +306,26 @@ public class MainActivity extends Activity implements OnClickListener {
 		switch (id) {			
 		case DIALOG_CHOOSE_COLLECTION:
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			// Now we're dealing with share link, it seems.
+			// For now, just add it to the main library-- we'd like to let the person choose a library,
+			// but not yet.
+			final ArrayList<ItemCollection> collections = ItemCollection.getCollections();
+			int size = collections.size();
+			String[] collectionNames = new String[size];
+			for (int i = 0; i < size; i++) {
+				collectionNames[i] = collections.get(i).getTitle();
+			}
 			// XXX i18n
 			builder.setTitle("Choose parent collection:")
-		    	    .setItems(MainActivity.collectionNames, new DialogInterface.OnClickListener() {
+		    	    .setItems(collectionNames, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int pos) {
 		    	            Item item = new Item(getBaseContext(), "webpage");
+		    	            item.save();
+		    	            Log.d(TAG,"New item has key: "+item.getKey() + ", dbId: "+item.dbId);
 							Item.set(item.getKey(), "url", url);
 							Item.set(item.getKey(), "title", title);
 							Item.setTag(item.getKey(), null, "#added-by-zandy", 1);
-							ItemCollection coll = ItemCollection.load(MainActivity.collectionKeys[pos]);
-							coll.add(item);
+							collections.get(pos).add(item);
 							Log.d(TAG, "Loading item data with key: "+item.getKey());
 							// We create and issue a specified intent with the necessary data
 					    	Intent i = new Intent(getBaseContext(), ItemDataActivity.class);
