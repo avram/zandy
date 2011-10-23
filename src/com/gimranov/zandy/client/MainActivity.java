@@ -294,6 +294,9 @@ public class MainActivity extends Activity implements OnClickListener {
 		case R.id.do_prefs:
 			startActivity(new Intent(this, SettingsActivity.class));
 			return true;
+        case R.id.do_search:
+        	onSearchRequested();
+            return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}

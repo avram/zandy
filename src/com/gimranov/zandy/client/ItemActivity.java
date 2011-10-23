@@ -19,6 +19,7 @@ package com.gimranov.zandy.client;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
+import android.app.SearchManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -64,6 +65,7 @@ public class ItemActivity extends ListActivity {
 	};	
 	
 	private String collectionKey;
+	private String query;
 	private Database db;
 	
 	public String sortBy = "item_year, item_title";
@@ -78,16 +80,24 @@ public class ItemActivity extends ListActivity {
         
         setContentView(R.layout.items);
         
-        collectionKey = getIntent().getStringExtra("com.gimranov.zandy.client.collectionKey");
-        // TODO Figure out how we'll address other views that aren't collections
-        if (collectionKey != null) {
-        	ItemCollection coll = ItemCollection.load(collectionKey);
-        	itemAdapter = create(coll);
-        	this.setTitle(coll.getTitle());
-        } else {
-        	itemAdapter = create();
-        	// XXX i18n
-        	this.setTitle("All items");
+        // Be ready for a search
+        Intent intent = getIntent();
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+          query = intent.getStringExtra(SearchManager.QUERY);
+          itemAdapter = create(query);
+          this.setTitle("Search results: "+query);
+        } else {        
+	        collectionKey = intent.getStringExtra("com.gimranov.zandy.client.collectionKey");
+	        // TODO Figure out how we'll address other views that aren't collections
+	        if (collectionKey != null) {
+	        	ItemCollection coll = ItemCollection.load(collectionKey);
+	        	itemAdapter = create(coll);
+	        	this.setTitle(coll.getTitle());
+	        } else {
+	        	itemAdapter = create();
+	        	// XXX i18n
+	        	this.setTitle("All items");
+	        }
         }
         
         setListAdapter(itemAdapter);
@@ -119,8 +129,8 @@ public class ItemActivity extends ListActivity {
         	}
         });
     }
-    
-    protected void onResume() {
+
+	protected void onResume() {
 		ItemAdapter adapter = (ItemAdapter) getListAdapter();
 		// XXX This may be too agressive-- fix if causes issues
 		Cursor cur = adapter.getCursor();
@@ -175,6 +185,8 @@ public class ItemActivity extends ListActivity {
 							setSortBy(SORTS[pos]);
 							if (collectionKey != null)
 								cursor = getCursor(ItemCollection.load(collectionKey));
+							else if (query != null)
+								cursor = getCursor(query);
 							else
 								cursor = getCursor();
 							ItemAdapter adapter = (ItemAdapter) getListAdapter();
@@ -198,6 +210,12 @@ public class ItemActivity extends ListActivity {
         MenuItem sort = menu.findItem(R.id.do_sort);
         sort.setEnabled(true);
         sort.setVisible(true);
+        
+        // Turn on search item
+        MenuItem search = menu.findItem(R.id.do_search);
+        sort.setEnabled(true);
+        sort.setVisible(true);
+        
         return true;
     }
     
@@ -249,6 +267,9 @@ public class ItemActivity extends ListActivity {
         	removeDialog(DIALOG_NEW);
         	showDialog(DIALOG_NEW);
             return true;
+        case R.id.do_search:
+        	onSearchRequested();
+            return true;
         case R.id.do_prefs:
 	    	Intent i = new Intent(getBaseContext(), SettingsActivity.class);
 	    	Log.d(TAG, "Intent for class:  "+i.getClass().toString());
@@ -275,6 +296,17 @@ public class ItemActivity extends ListActivity {
 		return adapter;
 	}
 	
+	/**
+	 * Creates an ItemAdapter for the specified query
+	 * @param query
+	 * @return
+	 */
+    private ItemAdapter create(String query) {
+		Cursor cursor = getCursor(query);
+		ItemAdapter adapter = new ItemAdapter(this, cursor);
+		return adapter;		
+	}
+	
 	public void setSortBy(String sort) {
 		this.sortBy = sort;
 	}
@@ -298,4 +330,18 @@ public class ItemActivity extends ListActivity {
 		}
 		return cursor;
 	}
+
+	public Cursor getCursor(String query) {
+		String[] args = { "%"+query+"%", "%"+query+"%" };
+		Cursor cursor = db.rawQuery("SELECT item_title, item_type, item_content, etag, dirty, " +
+				"_id, item_key, item_year, item_creator, timestamp, item_children " +
+				" FROM items WHERE item_title LIKE ? OR item_creator LIKE ?" +
+				" ORDER BY "+this.sortBy,
+				args);
+		if (cursor == null) {
+			Log.e(TAG, "cursor is null");
+		}
+		return cursor;
+	}
+
 }

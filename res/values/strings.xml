@@ -23,7 +23,9 @@
     <string name="menu_delete">Delete</string>
     <string name="menu_sort">Sort</string>
     <string name="menu_prefs">Settings</string>
-	<!-- JSON templates -->
+    <string name="menu_search">Search</string>
+    <string name="search_hint">Search items</string>
+    <!-- JSON templates -->
     <string name="template_artwork">{"itemType":"artwork","title":"-_-_-","creators":[{"creatorType":"artist","firstName":"-_-_-","lastName":"-_-_-"}],"abstractNote":"-_-_-","artworkMedium":"-_-_-","artworkSize":"-_-_-","date":"-_-_-","language":"-_-_-","shortTitle":"-_-_-","archive":"-_-_-","archiveLocation":"-_-_-","libraryCatalog":"-_-_-","callNumber":"-_-_-","url":"-_-_-","accessDate":"-_-_-","rights":"-_-_-","extra":"-_-_-","tags":[],"notes":[]}</string>
     <string name="template_audioRecording">{"itemType":"audioRecording","title":"-_-_-","creators":[{"creatorType":"performer","firstName":"-_-_-","lastName":"-_-_-"}],"abstractNote":"-_-_-","audioRecordingFormat":"-_-_-","seriesTitle":"-_-_-","volume":"-_-_-","numberOfVolumes":"-_-_-","place":"-_-_-","label":"-_-_-","date":"-_-_-","runningTime":"-_-_-","language":"-_-_-","ISBN":"-_-_-","shortTitle":"-_-_-","archive":"-_-_-","archiveLocation":"-_-_-","libraryCatalog":"-_-_-","callNumber":"-_-_-","url":"-_-_-","accessDate":"-_-_-","rights":"-_-_-","extra":"-_-_-","tags":[],"notes":[]}</string>    
     <string name="template_bill">{"itemType":"bill","title":"-_-_-","creators":[{"creatorType":"sponsor","firstName":"-_-_-","lastName":"-_-_-"}],"abstractNote":"-_-_-","billNumber":"-_-_-","code":"-_-_-","codeVolume":"-_-_-","section":"-_-_-","codePages":"-_-_-","legislativeBody":"-_-_-","session":"-_-_-","history":"-_-_-","date":"-_-_-","language":"-_-_-","url":"-_-_-","accessDate":"-_-_-","shortTitle":"-_-_-","rights":"-_-_-","extra":"-_-_-","tags":[],"notes":[]}</string>    

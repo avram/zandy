@@ -29,6 +29,11 @@
           android:title="@string/menu_sort"
           android:enabled="false"
           android:visible="false" />
+    <item android:id="@+id/do_search"
+          android:icon="@drawable/glyphish_151_telescope"
+          android:title="@string/menu_search"
+          android:enabled="false"
+          android:visible="false" />    
     <item android:id="@+id/do_new"
           android:icon="@drawable/glyphish_10_medical"
           android:title="@string/menu_new" />
