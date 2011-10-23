@@ -147,6 +147,14 @@ public class XMLResponseParser extends DefaultHandler {
             							+ updateKey + " => " + item.getKey() + "");
             				existing.setKey(item.getKey());
             				existing.dirty = APIRequest.API_CLEAN;
+            				// We need to update the parent key in attachments as well,
+            				// so they aren't orphaned after we update the item key here
+            				ArrayList<Attachment> atts = Attachment.forItem(existing);
+            				for (Attachment a : atts) {
+            					Log.d(TAG, "Propagating item key replacement to attachment with key: " + a.key);
+            					a.parentKey = item.getKey();
+            					a.save();
+            				}
                 			if (!existing.getType().equals("attachment"))
                 				existing.save();
             			}
