@@ -157,9 +157,7 @@ public class AttachmentActivity extends ListActivity {
         		Attachment row = adapter.getItem(position);
         		String url = (row.url != null && !row.url.equals("")) ?
         				row.url : row.content.optString("url");
-				if (!row.getType().equals("note") 
-						&& url != null
-						&& url.length() > 0) {
+				if (!row.getType().equals("note")) {
 					Bundle b = new Bundle();
         			b.putString("title", row.title);
         			b.putString("key", row.key);
@@ -252,8 +250,7 @@ public class AttachmentActivity extends ListActivity {
 			String sanitized = att.title.replace(' ', '_');
 			File file = new File(ServerCredentials.sDocumentStorageDir,sanitized);
 			
-			if (att.status.equals(Attachment.ZFS_AVAILABLE)
-					&& !file.exists()) {
+			if (att.status.equals(Attachment.ZFS_AVAILABLE)) {
 				
 				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 				
@@ -291,7 +288,7 @@ public class AttachmentActivity extends ListActivity {
 					Log.e(TAG,"DownloadManager exception on: "+att.key,e);
 				}
 			}
-			if (att.status.equals(Attachment.ZFS_LOCAL) || file.exists()) {
+			if (att.status.equals(Attachment.ZFS_LOCAL)) {
 				Log.d(TAG,"Starting to display local attachment");
 
 				Uri uri = Uri.fromFile(new File(att.filename));
@@ -371,7 +368,7 @@ public class AttachmentActivity extends ListActivity {
                  * Define InputStreams to read from the URLConnection.
                  */
                 InputStream is = ucon.getInputStream();
-                BufferedInputStream bis = new BufferedInputStream(is);
+                BufferedInputStream bis = new BufferedInputStream(is, 16000);
 
                 /*
                  * Read bytes to the Buffer until there is nothing more to read(-1).
@@ -379,6 +376,7 @@ public class AttachmentActivity extends ListActivity {
                 ByteArrayBuffer baf = new ByteArrayBuffer(50);
                 int current = 0;
                 while ((current = bis.read()) != -1) {
+                	//Log.d(TAG, "Some more input...");
                         baf.append((byte) current);
                 }
 

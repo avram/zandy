@@ -165,10 +165,7 @@ public class XMLResponseParser extends DefaultHandler {
             				Log.d(TAG, "Updating newly created attachment to replace temporary key: " 
             							+ updateKey + " => " + attachment.key + "");
             				existing.dirty = APIRequest.API_CLEAN;
-            				// Set as downloadable if we don't know otherwise
-            				if (!existing.status.equals(Attachment.ZFS_LOCAL)
-            						&& !attachment.getType().equals("note")) 
-    	            			attachment.status = Attachment.ZFS_AVAILABLE;
+            				// we don't change the ZFS status...
             				existing.key = attachment.key;
             				existing.save();
             			}
@@ -177,7 +174,12 @@ public class XMLResponseParser extends DefaultHandler {
         				attachment.dirty = APIRequest.API_CLEAN;
 	            		if (attachment.url != null && attachment.url != "")
 	            			attachment.status = Attachment.ZFS_AVAILABLE;
-            			if (!item.getType().equals("attachment")
+	            		
+	            		// Don't touch ZFS status here
+	            		Attachment existing = Attachment.load(attachment.key);
+	            		if (existing != null) attachment.status = existing.status;
+            			
+	            		if (!item.getType().equals("attachment")
             					&& !item.getType().equals("note"))
             				item.save();
             			else
@@ -311,6 +313,7 @@ public class XMLResponseParser extends DefaultHandler {
             	} else if (rel != null && rel.equals("enclosure")) {
             		attachment.url = href;
             		attachment.status = Attachment.ZFS_AVAILABLE;
+            		Log.d(TAG, "url= "+attachment.url);
             	} else if (rel != null) Log.d(TAG, "rel="+rel+"href="+href);
             }
         });
