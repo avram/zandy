@@ -1,4 +1,4 @@
-package com.gimranov.zandy.client.data;
+package com.gimranov.zandy.app.data;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.gimranov.zandy.client.task.APIRequest;
+import com.gimranov.zandy.app.task.APIRequest;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -43,7 +43,7 @@ public class Attachment {
 	
 	public static Database db;
 	
-	private static final String TAG = "com.gimranov.zandy.client.data.Attachment";
+	private static final String TAG = "com.gimranov.zandy.app.data.Attachment";
 	
 	public static final String ZFS_AVAILABLE = "Available for download";
 	public static final String ZFS_LOCAL = "Downloaded";	

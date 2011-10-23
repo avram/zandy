@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package com.gimranov.zandy.client;
+package com.gimranov.zandy.app;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -57,10 +57,10 @@ import android.widget.TextView;
 import android.widget.TextView.BufferType;
 import android.widget.Toast;
 
-import com.gimranov.zandy.client.data.Attachment;
-import com.gimranov.zandy.client.data.Item;
-import com.gimranov.zandy.client.task.APIRequest;
-import com.gimranov.zandy.client.task.ZoteroAPITask;
+import com.gimranov.zandy.app.data.Attachment;
+import com.gimranov.zandy.app.data.Item;
+import com.gimranov.zandy.app.task.APIRequest;
+import com.gimranov.zandy.app.task.ZoteroAPITask;
 
 /**
  * This Activity handles displaying and editing attachments. It works almost the same as
@@ -73,7 +73,7 @@ import com.gimranov.zandy.client.task.ZoteroAPITask;
  */
 public class AttachmentActivity extends ListActivity {
 
-	private static final String TAG = "com.gimranov.zandy.client.AttachmentActivity";
+	private static final String TAG = "com.gimranov.zandy.app.AttachmentActivity";
 	
 	static final int DIALOG_CONFIRM_NAVIGATE = 4;	
 	static final int DIALOG_FILE_PROGRESS = 6;	
@@ -91,7 +91,7 @@ public class AttachmentActivity extends ListActivity {
                 
         /* Get the incoming data from the calling activity */
         // XXX Note that we don't know what to do when there is no key assigned
-        final String itemKey = getIntent().getStringExtra("com.gimranov.zandy.client.itemKey");
+        final String itemKey = getIntent().getStringExtra("com.gimranov.zandy.app.itemKey");
         Item item = Item.load(itemKey);
         this.item = item;
         

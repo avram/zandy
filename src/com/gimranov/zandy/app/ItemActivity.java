@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package com.gimranov.zandy.client;
+package com.gimranov.zandy.app;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -36,17 +36,17 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.gimranov.zandy.client.data.Database;
-import com.gimranov.zandy.client.data.Item;
-import com.gimranov.zandy.client.data.ItemAdapter;
-import com.gimranov.zandy.client.data.ItemCollection;
-import com.gimranov.zandy.client.task.APIRequest;
-import com.gimranov.zandy.client.task.ZoteroAPITask;
+import com.gimranov.zandy.app.data.Database;
+import com.gimranov.zandy.app.data.Item;
+import com.gimranov.zandy.app.data.ItemAdapter;
+import com.gimranov.zandy.app.data.ItemCollection;
+import com.gimranov.zandy.app.task.APIRequest;
+import com.gimranov.zandy.app.task.ZoteroAPITask;
 
 
 public class ItemActivity extends ListActivity {
 
-	private static final String TAG = "com.gimranov.zandy.client.ItemActivity";
+	private static final String TAG = "com.gimranov.zandy.app.ItemActivity";
 	
 	static final int DIALOG_VIEW = 0;
 	static final int DIALOG_NEW = 1;
@@ -87,7 +87,7 @@ public class ItemActivity extends ListActivity {
           itemAdapter = create(query);
           this.setTitle("Search results: "+query);
         } else {        
-	        collectionKey = intent.getStringExtra("com.gimranov.zandy.client.collectionKey");
+	        collectionKey = intent.getStringExtra("com.gimranov.zandy.app.collectionKey");
 	        // TODO Figure out how we'll address other views that aren't collections
 	        if (collectionKey != null) {
 	        	ItemCollection coll = ItemCollection.load(collectionKey);
@@ -116,8 +116,8 @@ public class ItemActivity extends ListActivity {
         			Log.d(TAG, "Loading item data with key: "+item.getKey());
     				// We create and issue a specified intent with the necessary data
     		    	Intent i = new Intent(getBaseContext(), ItemDataActivity.class);
-    		    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
-    		    	i.putExtra("com.gimranov.zandy.client.itemDbId", item.dbId);
+    		    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
+    		    	i.putExtra("com.gimranov.zandy.app.itemDbId", item.dbId);
     		    	startActivity(i);
         		} else {
         			// failed to move cursor-- show a toast
@@ -169,7 +169,7 @@ public class ItemActivity extends ListActivity {
 		        			Log.d(TAG, "Loading item data with key: "+item.getKey());
 		    				// We create and issue a specified intent with the necessary data
 		    		    	Intent i = new Intent(getBaseContext(), ItemDataActivity.class);
-		    		    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
+		    		    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
 		    		    	startActivity(i);
 		    	        }
 		    	    });
@@ -213,8 +213,8 @@ public class ItemActivity extends ListActivity {
         
         // Turn on search item
         MenuItem search = menu.findItem(R.id.do_search);
-        sort.setEnabled(true);
-        sort.setVisible(true);
+        search.setEnabled(true);
+        search.setVisible(true);
         
         return true;
     }

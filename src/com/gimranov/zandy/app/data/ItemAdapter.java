@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package com.gimranov.zandy.client.data;
+package com.gimranov.zandy.app.data;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -26,7 +26,7 @@ import android.widget.ImageView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
-import com.gimranov.zandy.client.R;
+import com.gimranov.zandy.app.R;
 
 /**
  * Exposes items to be displayed by a ListView
@@ -34,7 +34,7 @@ import com.gimranov.zandy.client.R;
  *
  */
 public class ItemAdapter extends ResourceCursorAdapter {
-	private static final String TAG = "com.gimranov.zandy.client.data.ItemAdapter";
+	private static final String TAG = "com.gimranov.zandy.app.data.ItemAdapter";
 	
 	public ItemAdapter(Context context, Cursor cursor) {
 		super(context, R.layout.list_item, cursor, false);

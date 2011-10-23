@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package com.gimranov.zandy.client.task;
+package com.gimranov.zandy.app.task;
 
 import java.util.ArrayList;
 
@@ -26,11 +26,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
 
-import com.gimranov.zandy.client.ServerCredentials;
-import com.gimranov.zandy.client.data.Attachment;
-import com.gimranov.zandy.client.data.Database;
-import com.gimranov.zandy.client.data.Item;
-import com.gimranov.zandy.client.data.ItemCollection;
+import com.gimranov.zandy.app.ServerCredentials;
+import com.gimranov.zandy.app.data.Attachment;
+import com.gimranov.zandy.app.data.Database;
+import com.gimranov.zandy.app.data.Item;
+import com.gimranov.zandy.app.data.ItemCollection;
 
 /**
  * Represents a request to the Zotero API. These can be consumed by
@@ -42,7 +42,7 @@ import com.gimranov.zandy.client.data.ItemCollection;
  *
  */
 public class APIRequest {
-	private static final String TAG = "com.gimranov.zandy.client.task.APIRequest";
+	private static final String TAG = "com.gimranov.zandy.app.task.APIRequest";
 
 	
 	public static final String API_DIRTY =	"Unsynced change";

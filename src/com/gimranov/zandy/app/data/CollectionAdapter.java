@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package com.gimranov.zandy.client.data;
+package com.gimranov.zandy.app.data;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -24,8 +24,8 @@ import android.view.ViewGroup;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
-import com.gimranov.zandy.client.R;
-import com.gimranov.zandy.client.task.APIRequest;
+import com.gimranov.zandy.app.R;
+import com.gimranov.zandy.app.task.APIRequest;
 
 /**
  * Exposes collection to be displayed by a ListView
@@ -33,7 +33,7 @@ import com.gimranov.zandy.client.task.APIRequest;
  *
  */
 public class CollectionAdapter extends ResourceCursorAdapter {
-	public static final String TAG = "com.gimranov.zandy.client.data.CollectionAdapter";
+	public static final String TAG = "com.gimranov.zandy.app.data.CollectionAdapter";
 
 	public Context context;
 		

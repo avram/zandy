@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package com.gimranov.zandy.client;
+package com.gimranov.zandy.app;
 
 import java.util.ArrayList;
 
@@ -22,9 +22,9 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -33,34 +33,40 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.TextView.BufferType;
+import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import com.gimranov.zandy.client.data.Item;
-import com.gimranov.zandy.client.task.APIRequest;
-import com.gimranov.zandy.client.task.ZoteroAPITask;
+import com.gimranov.zandy.app.data.Creator;
+import com.gimranov.zandy.app.data.Item;
+import com.gimranov.zandy.app.task.APIRequest;
+import com.gimranov.zandy.app.task.ZoteroAPITask;
 
 /**
- * This Activity handles displaying and editing tags. It works almost the same as
- * ItemDataActivity, using a simple ArrayAdapter on Bundles with the tag info.
+ * This Activity handles displaying and editing creators. It works almost the same as
+ * ItemDataActivity and TagActivity, using a simple ArrayAdapter on Bundles with the creator info.
+ * 
+ * This currently operates by showing the creators for a given item; it could be
+ * modified some day to show all creators in the database (when they come to be saved
+ * that way).
  * 
  * @author ajlyon
  *
  */
-public class TagActivity extends ListActivity {
+public class CreatorActivity extends ListActivity {
 
-	private static final String TAG = "com.gimranov.zandy.client.TagActivity";
+	private static final String TAG = "com.gimranov.zandy.app.CreatorActivity";
 	
-	static final int DIALOG_TAG = 3;
+	static final int DIALOG_CREATOR = 3;
 	static final int DIALOG_CONFIRM_NAVIGATE = 4;	
+	static final int DIALOG_CONFIRM_DELETE = 5;	
 	
-	private Item item;
+	public Item item;
 	
     /** Called when the activity is first created. */
     @Override
@@ -69,13 +75,13 @@ public class TagActivity extends ListActivity {
                 
         /* Get the incoming data from the calling activity */
         // XXX Note that we don't know what to do when there is no key assigned
-        String itemKey = getIntent().getStringExtra("com.gimranov.zandy.client.itemKey");
+        String itemKey = getIntent().getStringExtra("com.gimranov.zandy.app.itemKey");
         Item item = Item.load(itemKey);
         this.item = item;
         
-        this.setTitle("Tags for "+item.getTitle());
+        this.setTitle("Creators for "+item.getTitle());
         
-        ArrayList<Bundle> rows = item.tagsToBundleArray();
+        ArrayList<Bundle> rows = item.creatorsToBundleArray();
         
         /* 
          * We use the standard ArrayAdapter, passing in our data as a Bundle.
@@ -99,11 +105,9 @@ public class TagActivity extends ListActivity {
         		TextView tvLabel = (TextView) row.findViewById(R.id.data_label);
         		TextView tvContent = (TextView) row.findViewById(R.id.data_content);
         		
-        		if (getItem(position).getInt("type") == 1)
-        			tvLabel.setText("Auto");
-        		else
-        			tvLabel.setText("User");
-        		tvContent.setText(getItem(position).getString("tag"));
+        		tvLabel.setText(Item.localizedStringForString(
+        				getItem(position).getString("creatorType")));
+        		tvContent.setText(getItem(position).getString("name"));
          
         		return row;
         	}
@@ -120,7 +124,7 @@ public class TagActivity extends ListActivity {
         		ArrayAdapter<Bundle> adapter = (ArrayAdapter<Bundle>) parent.getAdapter();
         		Bundle row = adapter.getItem(position);
         		
-/* TODO Rework this logic to open an ItemActivity showing tagged items
+/* TODO Rework this logic to open an ItemActivity showing items with this creator
         		if (row.getString("label").equals("url")) {
         			row.putString("url", row.getString("content"));
         			removeDialog(DIALOG_CONFIRM_NAVIGATE);
@@ -136,7 +140,7 @@ public class TagActivity extends ListActivity {
         			return;
         		}
  */       		
-				Toast.makeText(getApplicationContext(), row.getString("tag"), 
+				Toast.makeText(getApplicationContext(), row.getString("name"), 
         				Toast.LENGTH_SHORT).show();
         	}
         });
@@ -154,8 +158,8 @@ public class TagActivity extends ListActivity {
         		ArrayAdapter<Bundle> adapter = (ArrayAdapter<Bundle>) parent.getAdapter();
         		Bundle row = adapter.getItem(position);
         		
-    			removeDialog(DIALOG_TAG);
-        		showDialog(DIALOG_TAG, row);
+    			removeDialog(DIALOG_CREATOR);
+        		showDialog(DIALOG_CREATOR, row);
         		return true;
           }
         });
@@ -163,42 +167,130 @@ public class TagActivity extends ListActivity {
     }
     
 	protected Dialog onCreateDialog(int id, Bundle b) {
-		@SuppressWarnings("unused")
-		final int type = b.getInt("type");
-		final String tag = b.getString("tag");
-		final String itemKey = b.getString("itemKey");
-		AlertDialog dialog;
+		final String creatorType = b.getString("creatorType");
+		final int creatorPosition = b.getInt("position");
+		
+		String name = b.getString("name");
+		String firstName = b.getString("firstName");
+		String lastName = b.getString("lastName");
 		
 		switch (id) {
-		/* Simple editor for a single tag */
-		case DIALOG_TAG:			
-			final EditText input = new EditText(this);
-			input.setText(tag, BufferType.EDITABLE);
+		/* Editor for a creator
+		 */
+		case DIALOG_CREATOR:
+			AlertDialog.Builder builder;
+			AlertDialog dialog;
+
+			LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+			final View layout = inflater.inflate(R.layout.creator_dialog,
+			                              (ViewGroup) findViewById(R.id.layout_root));
+
+			TextView textName = (TextView) layout.findViewById(R.id.creator_name);
+			textName.setText(name);
+			TextView textFN = (TextView) layout.findViewById(R.id.creator_firstName);
+			textFN.setText(firstName);
+			TextView textLN = (TextView) layout.findViewById(R.id.creator_lastName);
+			textLN.setText(lastName);
+
+			CheckBox mode = (CheckBox) layout.findViewById(R.id.creator_mode);
+			mode.setChecked((firstName == null || firstName.equals("")) 
+							&& (lastName == null || lastName.equals(""))
+							&& (lastName != null && !name.equals("")));
 			
-			dialog = new AlertDialog.Builder(this)
-	    	    .setTitle("Edit Tag")
-	    	    .setView(input)
-	    	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-	    	        @SuppressWarnings("unchecked")
-					public void onClick(DialogInterface dialog, int whichButton) {
-	    	            Editable value = input.getText();
-	    	            Log.d(TAG, "Got tag: "+value.toString());
-	    	            Item.setTag(itemKey, tag, value.toString(), 0);
-	    	            Item item = Item.load(itemKey);
-	    	            Log.d(TAG, "Have JSON: "+item.getContent().toString());
-	    	            ArrayAdapter<Bundle> la = (ArrayAdapter<Bundle>) getListAdapter();
-	    	            la.clear();
-	    	            for (Bundle b : item.tagsToBundleArray()) {
-	    	            	la.add(b);
-	    	            }
-	    	            la.notifyDataSetChanged();
-	    	        }
-	    	    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-	    	        public void onClick(DialogInterface dialog, int whichButton) {
-	    	        	// do nothing
-	    	        }
-	    	    }).create();
+			// Set up the adapter to get creator types
+			String[] types = Item.localizedCreatorTypesForItemType(item.getType());
+						
+			// what position are we?
+			int arrPosition = 0;
+			String localType = "";
+			if (creatorType != null) {
+				localType = Item.localizedStringForString(creatorType);
+			} else {
+				// We default to the first possibility when none specified
+				localType = Item.localizedStringForString(
+										Item.creatorTypesForItemType(item.getType())[0]);
+			}
+			for (int i = 0; i < types.length; i++) {
+				if (types[i].equals(localType)) {
+					arrPosition = i;
+					break;
+				}
+			}
+
+			ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+							android.R.layout.simple_spinner_item, types);
+		    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+			
+			Spinner spinner = (Spinner) layout.findViewById(R.id.creator_type);
+			spinner.setAdapter(adapter);
+
+			spinner.setSelection(arrPosition);
+			builder = new AlertDialog.Builder(this);
+			builder.setView(layout);
+			builder.setPositiveButton("Ok", new OnClickListener(){
+    	        @SuppressWarnings("unchecked")
+				public void onClick(DialogInterface dialog, int whichButton) {
+    	        	Creator c;
+    				TextView textName = (TextView) layout.findViewById(R.id.creator_name);
+    				TextView textFN = (TextView) layout.findViewById(R.id.creator_firstName);
+    				TextView textLN = (TextView) layout.findViewById(R.id.creator_lastName);
+    				Spinner spinner = (Spinner) layout.findViewById(R.id.creator_type);
+    				CheckBox mode = (CheckBox) layout.findViewById(R.id.creator_mode);
+    				
+    				String selected = (String) spinner.getSelectedItem();
+    				// Set up the adapter to get creator types
+    				String[] types = Item.localizedCreatorTypesForItemType(item.getType());
+    				
+    				// what position are we?
+    				int typePos = 0;
+    				for (int i = 0; i < types.length; i++) {
+    					if (types[i].equals(selected)) {
+    						typePos = i;
+    						break;
+    					}
+    				}
+    				
+    				String realType = Item.creatorTypesForItemType(item.getType())[typePos];
+
+    				if (mode.isChecked())
+    					c = new Creator(realType, textName.getText().toString(), true);
+    				else
+    					c = new Creator(realType, textFN.getText().toString(), textLN.getText().toString());
+    	            
+    	            Item.setCreator(item.getKey(), c, creatorPosition);
+    	            item = Item.load(item.getKey());
+    	            ArrayAdapter<Bundle> la = (ArrayAdapter<Bundle>) getListAdapter();
+    	            la.clear();
+    	            for (Bundle b : item.creatorsToBundleArray()) {
+    	            	la.add(b);
+    	            }
+    	            la.notifyDataSetChanged();
+    	        }
+			});
+			
+			builder.setNeutralButton("Cancel", new OnClickListener(){
+				public void onClick(DialogInterface dialog, int whichButton) {
+    	        	// do nothing
+    	        }
+			});
+
+			builder.setNegativeButton("Delete", new OnClickListener(){
+				@SuppressWarnings("unchecked")
+				public void onClick(DialogInterface dialog, int whichButton) {
+    	            Item.setCreator(item.getKey(), null, creatorPosition);
+    	            item = Item.load(item.getKey());
+    	            ArrayAdapter<Bundle> la = (ArrayAdapter<Bundle>) getListAdapter();
+    	            la.clear();
+    	            for (Bundle b : item.creatorsToBundleArray()) {
+    	            	la.add(b);
+    	            }
+    	            la.notifyDataSetChanged();
+    	        }
+			});
+			
+			dialog = builder.create();
 			return dialog;
+			
 		case DIALOG_CONFIRM_NAVIGATE:
 /*			dialog = new AlertDialog.Builder(this)
 		    	    .setTitle("View this online?")
@@ -223,6 +315,10 @@ public class TagActivity extends ListActivity {
 		}
 	}
                
+    /*
+     * I've been just copying-and-pasting the options menu code from activity to activity.
+     * It needs to be reworked for some of these activities.
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -240,18 +336,18 @@ public class TagActivity extends ListActivity {
         				Toast.LENGTH_SHORT).show();
             	return true;
         	}
-        	Log.d(TAG, "Preparing sync requests");
+        	Log.d(TAG, "Preparing sync requests, starting with present item");
         	new ZoteroAPITask(getBaseContext()).execute(APIRequest.update(this.item));
         	Toast.makeText(getApplicationContext(), "Started syncing...", 
     				Toast.LENGTH_SHORT).show();
+        	
         	return true;
         case R.id.do_new:
     		Bundle row = new Bundle();
-    		row.putString("tag", "");
+    		row.putInt("position", -1);
     		row.putString("itemKey", this.item.getKey());
-    		row.putInt("type", 0);
-			removeDialog(DIALOG_TAG);
-    		showDialog(DIALOG_TAG, row);
+			removeDialog(DIALOG_CREATOR);
+    		showDialog(DIALOG_CREATOR, row);
             return true;
         case R.id.do_prefs:
             startActivity(new Intent(this, SettingsActivity.class));

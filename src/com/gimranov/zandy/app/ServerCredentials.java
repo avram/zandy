@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package com.gimranov.zandy.client;
+package com.gimranov.zandy.app;
 
 import java.io.File;
 
@@ -23,7 +23,7 @@ import android.content.SharedPreferences;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 
-import com.gimranov.zandy.client.task.APIRequest;
+import com.gimranov.zandy.app.task.APIRequest;
 
 public class ServerCredentials {
 	/** Application key -- available from Zotero */

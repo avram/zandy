@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package com.gimranov.zandy.client;
+package com.gimranov.zandy.app;
 
 import android.app.ListActivity;
 import android.content.Intent;
@@ -33,16 +33,16 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.gimranov.zandy.client.data.CollectionAdapter;
-import com.gimranov.zandy.client.data.Database;
-import com.gimranov.zandy.client.data.ItemCollection;
-import com.gimranov.zandy.client.task.APIRequest;
-import com.gimranov.zandy.client.task.ZoteroAPITask;
+import com.gimranov.zandy.app.data.CollectionAdapter;
+import com.gimranov.zandy.app.data.Database;
+import com.gimranov.zandy.app.data.ItemCollection;
+import com.gimranov.zandy.app.task.APIRequest;
+import com.gimranov.zandy.app.task.ZoteroAPITask;
 
 /* Rework for collections only, then make another one for items */
 public class CollectionActivity extends ListActivity {
 
-	private static final String TAG = "com.gimranov.zandy.client.CollectionActivity";
+	private static final String TAG = "com.gimranov.zandy.app.CollectionActivity";
 	private ItemCollection collection;
 	private Database db;
 	
@@ -57,7 +57,7 @@ public class CollectionActivity extends ListActivity {
 
         CollectionAdapter collectionAdapter;
         
-        String collectionKey = getIntent().getStringExtra("com.gimranov.zandy.client.collectionKey");
+        String collectionKey = getIntent().getStringExtra("com.gimranov.zandy.app.collectionKey");
         if (collectionKey != null) {
 	        ItemCollection coll = ItemCollection.load(collectionKey);
 	        // We set the title to the current collection
@@ -85,7 +85,7 @@ public class CollectionActivity extends ListActivity {
         				Log.d(TAG, "Loading child collection with key: "+coll.getKey());
         				// We create and issue a specified intent with the necessary data
         		    	Intent i = new Intent(getBaseContext(), CollectionActivity.class);
-        		    	i.putExtra("com.gimranov.zandy.client.collectionKey", coll.getKey());
+        		    	i.putExtra("com.gimranov.zandy.app.collectionKey", coll.getKey());
         		    	startActivity(i);
         			} else {
         				Log.d(TAG, "Failed loading child collections for collection");
@@ -127,7 +127,7 @@ public class CollectionActivity extends ListActivity {
         				Log.d(TAG, "Loading items for collection with key: "+coll.getKey());
         				// We create and issue a specified intent with the necessary data
         		    	Intent i = new Intent(getBaseContext(), ItemActivity.class);
-        		    	i.putExtra("com.gimranov.zandy.client.collectionKey", coll.getKey());
+        		    	i.putExtra("com.gimranov.zandy.app.collectionKey", coll.getKey());
         		    	startActivity(i);
         			} else {
         				// collection loaded was null. why?

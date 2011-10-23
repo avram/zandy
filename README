@@ -2,7 +2,7 @@ Zandy: a Zotero client for Android
 by Avram Lyon (ajlyon@gmail.com)
 
 Installation:
-A built and signed version of Zandy is available for purchase on the Android Market (https://market.android.com/details?id=com.gimranov.zandy.client). You can also check out this project and built an APK yourself using Eclipse with the ADT plugin, or another alternate toolchain. Note that you will need to add the oauth-signpost libraries to your classpath to build the application.
+A built and signed version of Zandy is available for purchase on the Android Market (https://market.android.com/details?id=com.gimranov.zandy.app). You can also check out this project and built an APK yourself using Eclipse with the ADT plugin, or another alternate toolchain. Note that you will need to add the oauth-signpost libraries to your classpath to build the application.
 
 Requirements:
 Android 2.2 or later, although there are plans to support earlier versions of Android.

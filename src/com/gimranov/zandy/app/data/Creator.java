@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package com.gimranov.zandy.client.data;
+package com.gimranov.zandy.app.data;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,7 +33,7 @@ public class Creator {
 	
 	private int dbId;
 	
-	public static final String TAG = "com.gimranov.zandy.client.data.Creator";
+	public static final String TAG = "com.gimranov.zandy.app.data.Creator";
 	
 	/**
 	 * A Creator, given type, a single string, and a boolean mode.

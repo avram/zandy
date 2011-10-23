@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package com.gimranov.zandy.client;
+package com.gimranov.zandy.app;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -32,14 +32,14 @@ import android.sax.StartElementListener;
 import android.util.Log;
 import android.util.Xml;
 
-import com.gimranov.zandy.client.data.Attachment;
-import com.gimranov.zandy.client.data.Database;
-import com.gimranov.zandy.client.data.Item;
-import com.gimranov.zandy.client.data.ItemCollection;
-import com.gimranov.zandy.client.task.APIRequest;
+import com.gimranov.zandy.app.data.Attachment;
+import com.gimranov.zandy.app.data.Database;
+import com.gimranov.zandy.app.data.Item;
+import com.gimranov.zandy.app.data.ItemCollection;
+import com.gimranov.zandy.app.task.APIRequest;
 
 public class XMLResponseParser extends DefaultHandler {
-	private static final String TAG = "com.gimranov.zandy.client.XMLResponseParser";
+	private static final String TAG = "com.gimranov.zandy.app.XMLResponseParser";
 	
 	private InputStream input;
 	private Item item;

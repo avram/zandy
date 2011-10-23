@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package com.gimranov.zandy.client.data;
+package com.gimranov.zandy.app.data;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,7 +24,7 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
-import com.gimranov.zandy.client.task.APIRequest;
+import com.gimranov.zandy.app.task.APIRequest;
 
 /**
  * Represents a Zotero collection of Item objects. Collections can
@@ -43,7 +43,7 @@ public class ItemCollection extends HashSet<Item> {
 	 */
 	private static final long serialVersionUID = -4673800475017605707L;
 	
-	private static final String TAG = "com.gimranov.zandy.client.data.ItemCollection";
+	private static final String TAG = "com.gimranov.zandy.app.data.ItemCollection";
 
 	/**
 	 * Queue of dirty collections to be sent to the server

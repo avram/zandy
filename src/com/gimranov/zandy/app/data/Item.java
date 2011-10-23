@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package com.gimranov.zandy.client.data;
+package com.gimranov.zandy.app.data;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,8 +30,8 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.gimranov.zandy.client.R;
-import com.gimranov.zandy.client.task.APIRequest;
+import com.gimranov.zandy.app.R;
+import com.gimranov.zandy.app.task.APIRequest;
 
 public class Item {
 	private String id;
@@ -58,7 +58,7 @@ public class Item {
 	 */
 	public static ArrayList<Item> queue = new ArrayList<Item>();
 
-	private static final String TAG = "com.gimranov.zandy.client.data.Item";
+	private static final String TAG = "com.gimranov.zandy.app.data.Item";
 
 	/**
 	 * The next two types are arrays of information on items that we need

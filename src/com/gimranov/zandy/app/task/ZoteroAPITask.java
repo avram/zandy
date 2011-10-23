@@ -19,7 +19,7 @@
  *  
  */
 
-package com.gimranov.zandy.client.task;
+package com.gimranov.zandy.app.task;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -47,14 +47,14 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.CursorAdapter;
 
-import com.gimranov.zandy.client.ServerCredentials;
-import com.gimranov.zandy.client.XMLResponseParser;
-import com.gimranov.zandy.client.data.Attachment;
-import com.gimranov.zandy.client.data.Item;
-import com.gimranov.zandy.client.data.ItemCollection;
+import com.gimranov.zandy.app.ServerCredentials;
+import com.gimranov.zandy.app.XMLResponseParser;
+import com.gimranov.zandy.app.data.Attachment;
+import com.gimranov.zandy.app.data.Item;
+import com.gimranov.zandy.app.data.ItemCollection;
 
 public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
-	private static final String TAG = "com.gimranov.zandy.client.task.ZoteroAPITask";
+	private static final String TAG = "com.gimranov.zandy.app.task.ZoteroAPITask";
 		
 	private String key;
 	private CursorAdapter adapter;

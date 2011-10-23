@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package com.gimranov.zandy.client;
+package com.gimranov.zandy.app;
 
 import java.util.ArrayList;
 
@@ -44,18 +44,18 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.gimranov.zandy.client.data.Attachment;
-import com.gimranov.zandy.client.data.Database;
-import com.gimranov.zandy.client.data.Item;
-import com.gimranov.zandy.client.data.ItemCollection;
-import com.gimranov.zandy.client.task.APIRequest;
-import com.gimranov.zandy.client.task.ZoteroAPITask;
+import com.gimranov.zandy.app.data.Attachment;
+import com.gimranov.zandy.app.data.Database;
+import com.gimranov.zandy.app.data.Item;
+import com.gimranov.zandy.app.data.ItemCollection;
+import com.gimranov.zandy.app.task.APIRequest;
+import com.gimranov.zandy.app.task.ZoteroAPITask;
 
 public class MainActivity extends Activity implements OnClickListener {
 	private CommonsHttpOAuthConsumer httpOAuthConsumer;
 	private OAuthProvider httpOAuthProvider;
 
-	private static final String TAG = "com.gimranov.zandy.client.MainActivity";
+	private static final String TAG = "com.gimranov.zandy.app.MainActivity";
 
 	static final int DIALOG_CHOOSE_COLLECTION = 1;
 	
@@ -332,8 +332,8 @@ public class MainActivity extends Activity implements OnClickListener {
 							Log.d(TAG, "Loading item data with key: "+item.getKey());
 							// We create and issue a specified intent with the necessary data
 					    	Intent i = new Intent(getBaseContext(), ItemDataActivity.class);
-					    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
-					    	i.putExtra("com.gimranov.zandy.client.itemDbId", item.dbId);
+					    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
+					    	i.putExtra("com.gimranov.zandy.app.itemDbId", item.dbId);
 					    	startActivity(i);
 		    	        }
 		    	    });

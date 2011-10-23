@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package com.gimranov.zandy.client;
+package com.gimranov.zandy.app;
 
 import java.util.ArrayList;
 
@@ -34,23 +34,23 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.TextView.BufferType;
+import android.widget.Toast;
 
-import com.gimranov.zandy.client.data.Item;
-import com.gimranov.zandy.client.task.APIRequest;
-import com.gimranov.zandy.client.task.ZoteroAPITask;
+import com.gimranov.zandy.app.data.Item;
+import com.gimranov.zandy.app.task.APIRequest;
+import com.gimranov.zandy.app.task.ZoteroAPITask;
 
 
 public class ItemDataActivity extends ListActivity {
 
-	private static final String TAG = "com.gimranov.zandy.client.ItemDataActivity";
+	private static final String TAG = "com.gimranov.zandy.app.ItemDataActivity";
 	
 	static final int DIALOG_SINGLE_VALUE = 0;
 	static final int DIALOG_ITEM_TYPE = 1;
@@ -65,13 +65,13 @@ public class ItemDataActivity extends ListActivity {
         super.onCreate(savedInstanceState);
         
         /* Get the incoming data from the calling activity */
-        String itemKey = getIntent().getStringExtra("com.gimranov.zandy.client.itemKey");
+        String itemKey = getIntent().getStringExtra("com.gimranov.zandy.app.itemKey");
         item = Item.load(itemKey);
         
         // When an item in the view has been updated via a sync, the temporary key may have
         // been swapped out, so we fall back on the DB ID
         if (item == null) {
-            String itemDbId = getIntent().getStringExtra("com.gimranov.zandy.client.itemDbId");
+            String itemDbId = getIntent().getStringExtra("com.gimranov.zandy.app.itemDbId");
         	item = Item.loadDbId(itemDbId);
         }
         	
@@ -142,19 +142,19 @@ public class ItemDataActivity extends ListActivity {
         		}  else if (row.getString("label").equals("creators")) {
         	    	Log.d(TAG, "Trying to start creators activity");
         	    	Intent i = new Intent(getBaseContext(), CreatorActivity.class);
-    		    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
+    		    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
         	    	startActivity(i);
         	    	return;
         		} else if (row.getString("label").equals("tags")) {
         	    	Log.d(TAG, "Trying to start tag activity");
         	    	Intent i = new Intent(getBaseContext(), TagActivity.class);
-        	    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
+        	    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
         	    	startActivity(i);
         			return;
 	    		} else if (row.getString("label").equals("children")) {
 	    	    	Log.d(TAG, "Trying to start attachment activity");
 	    	    	Intent i = new Intent(getBaseContext(), AttachmentActivity.class);
-	    	    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
+	    	    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
 	    	    	startActivity(i);
 	    			return;
 	    		}
@@ -190,13 +190,13 @@ public class ItemDataActivity extends ListActivity {
         		} else if (row.getString("label").equals("creators")) {
         	    	Log.d(TAG, "Trying to start creators activity");
         	    	Intent i = new Intent(getBaseContext(), CreatorActivity.class);
-    		    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
+    		    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
         	    	startActivity(i);
         	    	return true;
         		} else if (row.getString("label").equals("tags")) {
         	    	Log.d(TAG, "Trying to start tag activity");
         	    	Intent i = new Intent(getBaseContext(), TagActivity.class);
-        	    	i.putExtra("com.gimranov.zandy.client.itemKey", item.getKey());
+        	    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
         	    	startActivity(i);
         			return true;
         		}
