@@ -128,8 +128,7 @@ public class AttachmentActivity extends ListActivity {
         		try {
 					Log.d(TAG, att.content.toString(4));
 				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					Log.e(TAG, "JSON parse exception when reading attachment content", e);
 				}
         		
         		if (att.getType().equals("note")) {
@@ -137,7 +136,7 @@ public class AttachmentActivity extends ListActivity {
         			if (note.length() > 40) {
         				note = note.substring(0,40);
         			}
-        			tvSummary.setText(att.title + " " + note);
+        			tvSummary.setText(note);
         		} else
         			tvSummary.setText(att.title + " Status: " + att.status);
          

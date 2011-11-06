@@ -337,7 +337,17 @@ public class Item {
 				rows.add(b);
 			}
 			b = new Bundle();
-			b.putString("content", children);
+			String label;
+			int notes = 0;
+			int atts = 0;
+			ArrayList<Attachment> attachments = Attachment.forItem(this);
+			for (Attachment a : attachments) {
+				if ("note".equals(a.getType())) notes++;
+				else atts++;
+			}
+			if (notes == 0 && atts == 0) label = "No attachments or notes.";
+			else label = String.format("%1$d notes, %2$d attachments", notes, atts);
+			b.putString("content", label);
 			b.putString("label", "children");
 			b.putString("itemKey", getKey());
 			rows.add(b);
