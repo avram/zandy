@@ -246,10 +246,16 @@ public class AttachmentActivity extends ListActivity {
 			if (!ServerCredentials.sDocumentStorageDir.exists())
 				ServerCredentials.sDocumentStorageDir.mkdir();
 
-			String sanitized = att.title.replace(' ', '_');
+			/* Prepare target filename and file */
+			String sanitized = att.title.replace(' ', '_')
+					.replaceFirst("^(.*?)(\\.?[^.]*)$", "$1"+"_"+att.key+"$2");
 			File file = new File(ServerCredentials.sDocumentStorageDir,sanitized);
 			
-			if (att.status.equals(Attachment.ZFS_AVAILABLE)) {
+			File attFile = new File(att.filename);
+			
+			if (att.status.equals(Attachment.ZFS_AVAILABLE)
+					// Zero-length or nonexistant gives length == 0
+					|| (attFile != null && attFile.length() == 0)) {
 				
 				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 				
@@ -257,6 +263,8 @@ public class AttachmentActivity extends ListActivity {
 				
 				mProgressDialog = new ProgressDialog(this);
 
+				Toast.makeText(getApplicationContext(), "Downloading file for "+b.getString("title"), 
+        				Toast.LENGTH_SHORT).show();	
 				mProgressDialog.setMessage("Downloading file for "+b.getString("title"));
 				mProgressDialog.setIndeterminate(true);
 				mProgressDialog.setMax(100);
@@ -273,12 +281,12 @@ public class AttachmentActivity extends ListActivity {
 					download(new URL(att.url+"?key="+settings.getString("user_key","")),
 							file);
 					att.filename = file.getPath();
-					att.status = Attachment.ZFS_LOCAL;
-					if (file.exists())
-						Log.d(TAG,"File downloaded, I think");
-					else {
+					if (file.exists() && file.length() > 0) {
+						att.status = Attachment.ZFS_LOCAL;
+						Log.d(TAG,"File downloaded");
+					} else {
 						att.status = Attachment.ZFS_AVAILABLE;
-						Toast.makeText(getApplicationContext(), "File download may have failed.", 
+						Toast.makeText(getApplicationContext(), "File download may have failed; try again.", 
 		        				Toast.LENGTH_SHORT).show();						
 					}
 					att.save();
@@ -289,7 +297,6 @@ public class AttachmentActivity extends ListActivity {
 			}
 			if (att.status.equals(Attachment.ZFS_LOCAL)) {
 				Log.d(TAG,"Starting to display local attachment");
-
 				Uri uri = Uri.fromFile(new File(att.filename));
 				try {
 					String mimeType = att.content.optString("mimeType",null);
@@ -297,7 +304,7 @@ public class AttachmentActivity extends ListActivity {
 								.setDataAndType(uri,mimeType));
 				} catch (ActivityNotFoundException e) {
 					Log.e(TAG, "No activity for intent", e);
-					Toast.makeText(getApplicationContext(), "No application for files of this type", 
+					Toast.makeText(getApplicationContext(), "No application available to open files of this type", 
 	        				Toast.LENGTH_SHORT).show();
 				}
 			}
