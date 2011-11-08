@@ -43,6 +43,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gimranov.zandy.app.data.Creator;
+import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
 import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
@@ -68,15 +69,19 @@ public class CreatorActivity extends ListActivity {
 	
 	public Item item;
 	
+	private Database db;
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
                 
+        db = new Database(this);
+        
         /* Get the incoming data from the calling activity */
         // XXX Note that we don't know what to do when there is no key assigned
         String itemKey = getIntent().getStringExtra("com.gimranov.zandy.app.itemKey");
-        Item item = Item.load(itemKey);
+        Item item = Item.load(itemKey, db);
         this.item = item;
         
         this.setTitle("Creators for "+item.getTitle());
@@ -164,6 +169,18 @@ public class CreatorActivity extends ListActivity {
           }
         });
 
+    }
+
+    @Override
+    public void onDestroy() {
+    	if (db != null) db.close();
+    	super.onDestroy();
+    }
+    
+    @Override
+    public void onResume() {
+    	if (db == null) db = new Database(this);
+    	super.onResume();
     }
     
 	protected Dialog onCreateDialog(int id, Bundle b) {
@@ -257,8 +274,8 @@ public class CreatorActivity extends ListActivity {
     				else
     					c = new Creator(realType, textFN.getText().toString(), textLN.getText().toString());
     	            
-    	            Item.setCreator(item.getKey(), c, creatorPosition);
-    	            item = Item.load(item.getKey());
+    	            Item.setCreator(item.getKey(), c, creatorPosition, db);
+    	            item = Item.load(item.getKey(), db);
     	            ArrayAdapter<Bundle> la = (ArrayAdapter<Bundle>) getListAdapter();
     	            la.clear();
     	            for (Bundle b : item.creatorsToBundleArray()) {
@@ -277,8 +294,8 @@ public class CreatorActivity extends ListActivity {
 			builder.setNegativeButton("Delete", new OnClickListener(){
 				@SuppressWarnings("unchecked")
 				public void onClick(DialogInterface dialog, int whichButton) {
-    	            Item.setCreator(item.getKey(), null, creatorPosition);
-    	            item = Item.load(item.getKey());
+    	            Item.setCreator(item.getKey(), null, creatorPosition, db);
+    	            item = Item.load(item.getKey(), db);
     	            ArrayAdapter<Bundle> la = (ArrayAdapter<Bundle>) getListAdapter();
     	            la.clear();
     	            for (Bundle b : item.creatorsToBundleArray()) {

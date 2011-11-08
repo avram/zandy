@@ -52,8 +52,6 @@ public class XMLResponseParser extends DefaultHandler {
 	
 	public static ArrayList<APIRequest> queue;
 	
-	public static Database db;
-
 	public static final int MODE_ITEMS = 1; 
 	public static final int MODE_ITEM = 2;
 	public static final int MODE_ITEM_CHILDREN = 8;
@@ -77,7 +75,7 @@ public class XMLResponseParser extends DefaultHandler {
 		updateKey = key;
 	}
 	
-	public void parse(int mode, String url) {
+	public void parse(int mode, String url, final Database db) {
 		Element entry;
 		RootElement root;
 		// we have a different root for indiv. items
@@ -113,7 +111,7 @@ public class XMLResponseParser extends DefaultHandler {
 	            			// The string "/collections/" is thirteen characters long
 	            			String id = href.substring(colloc+13, itemloc);
 	    					Log.d(TAG, "Collection key: "+id);
-	    					parent = ItemCollection.load(id);
+	    					parent = ItemCollection.load(id, db);
 	    				} else {
 	    					Log.d(TAG, "Key extraction failed from root; maybe this isn't a collection listing?");
 	    				}
@@ -141,7 +139,7 @@ public class XMLResponseParser extends DefaultHandler {
             	if (items == true) {
             		if (updateKey != null && updateType != null && updateType.equals("item")) {
             			// We have an incoming new version of an item
-            			Item existing = Item.load(updateKey);
+            			Item existing = Item.load(updateKey, db);
             			if (existing != null) {
             				Log.d(TAG, "Updating newly created item to replace temporary key: " 
             							+ updateKey + " => " + item.getKey() + "");
@@ -149,25 +147,25 @@ public class XMLResponseParser extends DefaultHandler {
             				existing.dirty = APIRequest.API_CLEAN;
             				// We need to update the parent key in attachments as well,
             				// so they aren't orphaned after we update the item key here
-            				ArrayList<Attachment> atts = Attachment.forItem(existing);
+            				ArrayList<Attachment> atts = Attachment.forItem(existing, db);
             				for (Attachment a : atts) {
             					Log.d(TAG, "Propagating item key replacement to attachment with key: " + a.key);
             					a.parentKey = item.getKey();
-            					a.save();
+            					a.save(db);
             				}
                 			if (!existing.getType().equals("attachment"))
-                				existing.save();
+                				existing.save(db);
             			}
             		} else if (updateKey != null && updateType != null && updateType.equals("attachment")) {
             			// We have an incoming new version of an item
-            			Attachment existing = Attachment.load(updateKey);
+            			Attachment existing = Attachment.load(updateKey, db);
             			if (existing != null) {
             				Log.d(TAG, "Updating newly created attachment to replace temporary key: " 
             							+ updateKey + " => " + attachment.key + "");
             				existing.dirty = APIRequest.API_CLEAN;
             				// we don't change the ZFS status...
             				existing.key = attachment.key;
-            				existing.save();
+            				existing.save(db);
             			}
             		} else {
 	            		item.dirty = APIRequest.API_CLEAN;
@@ -176,14 +174,14 @@ public class XMLResponseParser extends DefaultHandler {
 	            			attachment.status = Attachment.ZFS_AVAILABLE;
 	            		
 	            		// Don't touch ZFS status here
-	            		Attachment existing = Attachment.load(attachment.key);
+	            		Attachment existing = Attachment.load(attachment.key, db);
 	            		if (existing != null) attachment.status = existing.status;
             			
 	            		if (!item.getType().equals("attachment")
             					&& !item.getType().equals("note"))
-            				item.save();
+            				item.save(db);
             			else
-            				attachment.save();
+            				attachment.save(db);
             		}
             		
             		if (!item.getType().equals("attachment")
@@ -204,20 +202,20 @@ public class XMLResponseParser extends DefaultHandler {
             	if (items == false) {
             		if (updateKey != null && updateType != null && updateType.equals("collection")) {
             			// We have an incoming new version of a collection
-            			ItemCollection existing = ItemCollection.load(updateKey);
+            			ItemCollection existing = ItemCollection.load(updateKey, db);
             			if (existing != null) {
             				Log.d(TAG, "Updating newly created collection to replace temporary key: " 
             							+ updateKey + " => " + collection.getKey() + "");
             				existing.setKey(collection.getKey());
             				existing.dirty = APIRequest.API_CLEAN;
-            				existing.save();
+            				existing.save(db);
             			}
                     	Log.i(TAG, "Done parsing new collection entry.");            			
             			// We don't need to load again, since a new collection can't be stale
             			return;
             		}
             		
-            		ItemCollection ic = ItemCollection.load(collection.getKey());
+            		ItemCollection ic = ItemCollection.load(collection.getKey(),db);
             		if (ic != null) {
             			if (!ic.getTimestamp()
             				.equals(collection.
@@ -234,7 +232,7 @@ public class XMLResponseParser extends DefaultHandler {
             			collection.dirty = APIRequest.API_MISSING;
             		}
     				Log.d(TAG, "Status: "+collection.dirty+" for "+collection.getTitle());
-            		collection.save();
+            		collection.save(db);
                 	Log.i(TAG, "Done parsing a collection entry.");
                 	return;
             	}
@@ -346,9 +344,9 @@ public class XMLResponseParser extends DefaultHandler {
         try {
             Xml.parse(this.input, Xml.Encoding.UTF_8, root.getContentHandler());
             if (parent != null) {
-            	parent.saveChildren();
+            	parent.saveChildren(db);
             	parent.markClean();
-            	parent.save();
+            	parent.save(db);
             }
             db.close();
         } catch (Exception e) {

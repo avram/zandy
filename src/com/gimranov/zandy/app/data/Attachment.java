@@ -41,8 +41,6 @@ public class Attachment {
 	 */
 	public JSONObject content;
 	
-	public static Database db;
-	
 	private static final String TAG = "com.gimranov.zandy.app.data.Attachment";
 	
 	public static final int ZFS_AVAILABLE = 1;
@@ -93,8 +91,8 @@ public class Attachment {
 		}
 	}
 	
-	public void save() {
-		Attachment existing = load(key);
+	public void save(Database db) {
+		Attachment existing = load(key, db);
 		if (dbId == null && existing == null) {
 			Log.d(TAG, "Saving new, with status: "+status);
 			String[] args = { key, parentKey, title, filename, url, Integer.toString(status), etag, dirty, content.toString() };
@@ -105,7 +103,7 @@ public class Attachment {
 							args);
 			if (cur != null)
 				cur.close();
-			Attachment fromDB = load(key);
+			Attachment fromDB = load(key, db);
 			dbId = fromDB.dbId;
 		} else {
 			Log.d(TAG, "Saving new, with status: "+status);
@@ -128,7 +126,7 @@ public class Attachment {
 	/**
 	 * Identifies dirty items in the database and queues them for syncing
 	 */
-	public static void queue() {
+	public static void queue(Database db) {
 		if (queue == null) {
 			// Initialize the queue if necessary
 			queue = new ArrayList<Attachment>();
@@ -190,7 +188,7 @@ public class Attachment {
 		return a;
 	}
 	
-	public static Attachment load(String key) {
+	public static Attachment load(String key, Database db) {
 		String[] cols = Database.ATTCOLS;
 		String[] args = { key };
 		Cursor cur = db.query("attachments", cols, "attachment_key=?", args, null, null, null, null);
@@ -208,10 +206,10 @@ public class Attachment {
 	 * @param item
 	 * @return
 	 */
-	public static ArrayList<Attachment> forItem(Item item) {
+	public static ArrayList<Attachment> forItem(Item item, Database db) {
 		ArrayList<Attachment> list = new ArrayList<Attachment>();
 		
-		if (item.dbId == null) item.save();
+		if (item.dbId == null) item.save(db);
 		Log.d(TAG, "Looking for the kids of an item with key: "+item.getKey());
 			
 		String[] cols = { "_id", "attachment_key", "item_key", "title", "filename", "url", "status", "etag", "dirty", "content" };

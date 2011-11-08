@@ -43,10 +43,8 @@ import android.widget.TextView;
 import android.widget.TextView.BufferType;
 import android.widget.Toast;
 
-import com.gimranov.zandy.app.data.Attachment;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
-import com.gimranov.zandy.app.data.ItemCollection;
 import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
 
@@ -61,27 +59,24 @@ public class ItemDataActivity extends ListActivity {
 	static final int DIALOG_CONFIRM_DELETE = 5;
 	
 	public Item item;
-		
+	private Database db;
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        Database db = new Database(this);
-        if(Item.db == null) Item.db = db;
-		if(XMLResponseParser.db == null) XMLResponseParser.db = Item.db;
-		if (ItemCollection.db == null) ItemCollection.db = Item.db;
-		if (Attachment.db == null) Attachment.db = Item.db;
+        db = new Database(this);
         
         /* Get the incoming data from the calling activity */
         String itemKey = getIntent().getStringExtra("com.gimranov.zandy.app.itemKey");
-        item = Item.load(itemKey);
+        item = Item.load(itemKey, db);
         
         // When an item in the view has been updated via a sync, the temporary key may have
         // been swapped out, so we fall back on the DB ID
         if (item == null) {
             String itemDbId = getIntent().getStringExtra("com.gimranov.zandy.app.itemDbId");
-        	item = Item.loadDbId(itemDbId);
+        	item = Item.loadDbId(itemDbId, db);
         }
         	
         // Set the activity title to the current item's title, if the title works
@@ -90,7 +85,7 @@ public class ItemDataActivity extends ListActivity {
         else
         	this.setTitle("Item Data");
         
-        ArrayList<Bundle> rows = item.toBundleArray();
+        ArrayList<Bundle> rows = item.toBundleArray(db);
         
         /* 
          * We use the standard ArrayAdapter, passing in our data as a Bundle.
@@ -236,11 +231,11 @@ public class ItemDataActivity extends ListActivity {
 	    	        @SuppressWarnings("unchecked")
 					public void onClick(DialogInterface dialog, int whichButton) {
 	    	            Editable value = input.getText();
-	    	            Item.set(itemKey, label, value.toString());
-	    	            Item item = Item.load(itemKey);
+	    	            Item.set(itemKey, label, value.toString(), db);
+	    	            Item item = Item.load(itemKey, db);
 	    	            ArrayAdapter<Bundle> la = (ArrayAdapter<Bundle>) getListAdapter();
 	    	            la.clear();
-	    	            for (Bundle b : item.toBundleArray()) {
+	    	            for (Bundle b : item.toBundleArray(db)) {
 	    	            	la.add(b);
 	    	            }
 	    	            la.notifyDataSetChanged();
@@ -258,11 +253,11 @@ public class ItemDataActivity extends ListActivity {
 	    	    .setItems(Item.ITEM_TYPES_EN, new DialogInterface.OnClickListener() {
 	    	        @SuppressWarnings("unchecked")
 					public void onClick(DialogInterface dialog, int pos) {
-	    	            Item.set(itemKey, label, Item.ITEM_TYPES[pos]);
-	    	            Item item = Item.load(itemKey);
+	    	            Item.set(itemKey, label, Item.ITEM_TYPES[pos], db);
+	    	            Item item = Item.load(itemKey, db);
 	    	            ArrayAdapter<Bundle> la = (ArrayAdapter<Bundle>) getListAdapter();
 	    	            la.clear();
-	    	            for (Bundle b : item.toBundleArray()) {
+	    	            for (Bundle b : item.toBundleArray(db)) {
 	    	            	la.add(b);
 	    	            }
 	    	            la.notifyDataSetChanged();
@@ -291,8 +286,8 @@ public class ItemDataActivity extends ListActivity {
 		    	    .setTitle("Delete this item")
 		    	    .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int whichButton) {
-							Item i = Item.load(itemKey);
-							i.delete();
+							Item i = Item.load(itemKey, db);
+							i.delete(db);
 		    	        }
 		    	    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 		    	        public void onClick(DialogInterface dialog, int whichButton) {
@@ -305,7 +300,19 @@ public class ItemDataActivity extends ListActivity {
 			return null;
 		}
 	}
-               
+             
+    @Override
+    public void onDestroy() {
+    	if (db != null) db.close();
+    	super.onDestroy();
+    }
+    
+    @Override
+    public void onResume() {
+    	if (db == null) db = new Database(this);
+    	super.onResume();
+    }
+	
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();

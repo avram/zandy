@@ -58,6 +58,7 @@ import android.widget.TextView.BufferType;
 import android.widget.Toast;
 
 import com.gimranov.zandy.app.data.Attachment;
+import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
 import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
@@ -83,21 +84,24 @@ public class AttachmentActivity extends ListActivity {
 	
 	public Item item;
 	private ProgressDialog mProgressDialog;
+	private Database db;
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-                
+        
+        db = new Database(this);
+        
         /* Get the incoming data from the calling activity */
         // XXX Note that we don't know what to do when there is no key assigned
         final String itemKey = getIntent().getStringExtra("com.gimranov.zandy.app.itemKey");
-        Item item = Item.load(itemKey);
+        Item item = Item.load(itemKey, db);
         this.item = item;
         
         this.setTitle("Attachments for "+item.getTitle());
         
-        ArrayList<Attachment> rows = Attachment.forItem(item);
+        ArrayList<Attachment> rows = Attachment.forItem(item, db);
         
         /* 
          * We use the standard ArrayAdapter, passing in our data as a Attachment.
@@ -187,6 +191,18 @@ public class AttachmentActivity extends ListActivity {
         });
     }
     
+    @Override
+    public void onDestroy() {
+    	if (db != null) db.close();
+    	super.onDestroy();
+    }
+    
+    @Override
+    public void onResume() {
+    	if (db == null) db = new Database(this);
+    	super.onResume();
+    }
+    
 	protected Dialog onCreateDialog(int id, Bundle b) {
 		final String attachmentKey = b.getString("attachmentKey");
 		final String itemKey = b.getString("itemKey");
@@ -225,16 +241,16 @@ public class AttachmentActivity extends ListActivity {
 						if (mode != null && mode.equals("new")) {
 							Attachment att = new Attachment(getBaseContext(), "note", itemKey);
 		    	            att.setNoteText(value.toString());
-		    	            att.save();
+		    	            att.save(db);
 						} else {
-							Attachment att = Attachment.load(attachmentKey);
+							Attachment att = Attachment.load(attachmentKey, db);
 		    	            att.setNoteText(value.toString());
 		    	            att.dirty = APIRequest.API_DIRTY;
-		    	            att.save();
+		    	            att.save(db);
 						}
 	    	            ArrayAdapter<Attachment> la = (ArrayAdapter<Attachment>) getListAdapter();
 	    	            la.clear();
-	    	            for (Attachment a : Attachment.forItem(Item.load(itemKey))) {
+	    	            for (Attachment a : Attachment.forItem(Item.load(itemKey, db), db)) {
 	    	            	la.add(a);
 	    	            }
 	    	            la.notifyDataSetChanged();
@@ -247,7 +263,7 @@ public class AttachmentActivity extends ListActivity {
 	    	    }).create();
 			return dialog;
 		case DIALOG_FILE_PROGRESS:
-			Attachment att = Attachment.load(b.getString("key"));
+			Attachment att = Attachment.load(b.getString("key"), db);
 			
 			if (!ServerCredentials.sBaseStorageDir.exists())
 				ServerCredentials.sBaseStorageDir.mkdir();
@@ -298,7 +314,7 @@ public class AttachmentActivity extends ListActivity {
 						Toast.makeText(getApplicationContext(), getResources().getString(R.string.attachment_download_failed), 
 		        				Toast.LENGTH_SHORT).show();						
 					}
-					att.save();
+					att.save(db);
 					mProgressDialog.dismiss();
 				} catch (IOException e) {
 					Log.e(TAG,"DownloadManager exception on: "+att.key,e);

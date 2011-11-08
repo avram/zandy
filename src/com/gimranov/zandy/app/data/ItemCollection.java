@@ -89,9 +89,7 @@ public class ItemCollection extends HashSet<Item> {
 	 */
 	public static ArrayList<APIRequest> additions = new ArrayList<APIRequest>();
 	public static ArrayList<APIRequest> removals = new ArrayList<APIRequest>();
-	
-	public static Database db;
-		
+			
 	public ItemCollection(String title) {
 		setTitle(title);
 		dirty = APIRequest.API_DIRTY;
@@ -143,11 +141,11 @@ public class ItemCollection extends HashSet<Item> {
 	}
 	
 	/* I'm not sure how easy this is to propagate to the API */
-	public ItemCollection getParent() {
+	public ItemCollection getParent(Database db) {
 		if (parent != null) return parent;
 		if (parentKey == "false") return null;
 		if (parentKey != null) {
-			 parent = load(parentKey);
+			 parent = load(parentKey, db);
 		}
 		return parent;
 	}
@@ -218,8 +216,8 @@ public class ItemCollection extends HashSet<Item> {
 	 * 
 	 * Does nothing with the collection children.
 	 */
-	public void save() {
-		ItemCollection existing = load(key);
+	public void save(Database db) {
+		ItemCollection existing = load(key, db);
 		if (existing == null) {
 			try {
 				SQLiteStatement insert = db.compileStatement("insert or replace into collections " +
@@ -246,7 +244,7 @@ public class ItemCollection extends HashSet<Item> {
 				throw e;
 			}
 			// XXX we need a way to handle locally-created collections
-			ItemCollection loaded = load(key);
+			ItemCollection loaded = load(key, db);
 			if (loaded == null) {
 				Log.e(TAG, "Item didn't stick-- still nothing for key: "+key);
 			} else {
@@ -282,7 +280,7 @@ public class ItemCollection extends HashSet<Item> {
 	 * itself as well.
 	 * @throws Exception	If we can't save the collection or children
 	 */
-	public void saveChildren() {
+	public void saveChildren(Database db) {
 		/* The size is about to be the size of the internal ArrayList, so
 		 * set it now so it'll be propagated to the database if the collection
 		 * is new.
@@ -290,7 +288,7 @@ public class ItemCollection extends HashSet<Item> {
 		 * Save it now-- to fix the size, and to make sure we have a database ID.
 		 */
 		
-		loadChildren();
+		loadChildren(db);
 		
 		Log.d(TAG,"Collection has dbid: "+dbId);
 
@@ -301,7 +299,7 @@ public class ItemCollection extends HashSet<Item> {
 		
 		HashSet<String> keys = new HashSet<String>();
 		for (Item i : this) {
-			if (i.dbId == null) i.save();
+			if (i.dbId == null) i.save(db);
 			keys.add(i.dbId);
 		}
 			
@@ -326,15 +324,15 @@ public class ItemCollection extends HashSet<Item> {
 		if(!cur.isAfterLast()) this.size = cur.getInt(0);
 		if (cur != null) cur.close();
 
-		save();
+		save(db);
 	}
 	
 	/**
 	 * Loads the Item members of the collection into the ArrayList<>
 	 * 
 	 */
-	public void loadChildren() {
-		if (dbId == null) save();
+	public void loadChildren(Database db) {
+		if (dbId == null) save(db);
 		Log.d(TAG, "Looking for the kids of a collection with id: "+dbId);
 		
 		String[] args = { dbId };
@@ -362,7 +360,7 @@ public class ItemCollection extends HashSet<Item> {
 	 * This is a lazy getter and won't check again after the first time.
 	 * @return
 	 */
-	public ArrayList<ItemCollection> getSubcollections() {
+	public ArrayList<ItemCollection> getSubcollections(Database db) {
 		if (this.subcollections != null) return this.subcollections;
 		
 		this.subcollections = new ArrayList<ItemCollection>();
@@ -398,7 +396,7 @@ public class ItemCollection extends HashSet<Item> {
 	 * @param collKey
 	 * @return
 	 */
-	public static ItemCollection load(String collKey) {
+	public static ItemCollection load(String collKey, Database db) {
 		if (collKey == null) return null;
 		String[] cols = Database.COLLCOLS;
 		String[] args = { collKey };
@@ -442,7 +440,7 @@ public class ItemCollection extends HashSet<Item> {
 	/**
 	 * Identifies stale or missing collections in the database and queues them for syncing
 	 */
-	public static void queue() {
+	public static void queue(Database db) {
 		Log.d(TAG,"Clearing dirty queue before repopulation");		
 		queue.clear();
 		ItemCollection coll;
@@ -469,7 +467,7 @@ public class ItemCollection extends HashSet<Item> {
 	 * Gives us ItemCollection objects to feed into something like UI
 	 * @return
 	 */
-	public static ArrayList<ItemCollection> getCollections() {
+	public static ArrayList<ItemCollection> getCollections(Database db) {
 		ArrayList<ItemCollection> collections = new ArrayList<ItemCollection>();
 		ItemCollection coll;
 		String[] cols = Database.COLLCOLS;

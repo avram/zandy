@@ -50,6 +50,7 @@ import android.widget.CursorAdapter;
 import com.gimranov.zandy.app.ServerCredentials;
 import com.gimranov.zandy.app.XMLResponseParser;
 import com.gimranov.zandy.app.data.Attachment;
+import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
 import com.gimranov.zandy.app.data.ItemCollection;
 
@@ -69,6 +70,8 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 
 	public boolean autoMode = false;
 	
+	private Database db;
+	
 	public ZoteroAPITask(String key)
 	{
 		this.queue = new ArrayList<APIRequest>();
@@ -84,6 +87,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 		if (settings.getBoolean("sync_aggressively", false))
 			syncMode = AUTO_SYNC_STALE_COLLECTIONS;
 		deletions = APIRequest.delete(c);
+		db = new Database(c);
 	}
 
 	public ZoteroAPITask(Context c, CursorAdapter adapter)
@@ -95,6 +99,8 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 		if (settings.getBoolean("sync_aggressively", false))
 			syncMode = AUTO_SYNC_STALE_COLLECTIONS;
 		deletions = APIRequest.delete(c);
+		db = new Database(c);
+
 	}
 	
 	public ZoteroAPITask(String key, CursorAdapter adapter)
@@ -129,7 +135,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
         		
         		reqs[i].key = key;
         		
-        		issue(reqs[i]);
+        		issue(reqs[i], db);
 				
 				Log.i(TAG, "Succesfully retrieved API call: " + reqs[i].query);
 				
@@ -169,8 +175,8 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
     	if (this.autoMode) return ret;
     	
     	Log.d(TAG, "Sending local changes");
-    	Item.queue();
-    	Attachment.queue();
+    	Item.queue(db);
+    	Attachment.queue(db);
     	Log.d(TAG, Item.queue.size() + " items");
     	int length = Item.queue.size();
     	Log.d(TAG, Attachment.queue.size() + " attachments");
@@ -183,7 +189,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
     	int basicLength = length;
     	// We pref this off
     	if (syncMode == AUTO_SYNC_STALE_COLLECTIONS) {
-        	ItemCollection.queue();
+        	ItemCollection.queue(db);
         	length += ItemCollection.queue.size();
     	}
     	APIRequest[] mReqs = new APIRequest[length];
@@ -194,7 +200,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
     		} else if (j < Item.queue.size()
     					+ Attachment.queue.size()) {
         			Log.d(TAG, "Queueing dirty attachment ("+j+"): "+Attachment.queue.get(j - Item.queue.size()).key);
-        			mReqs[j] = ServerCredentials.prep(userID, APIRequest.update(Attachment.queue.get(j - Item.queue.size())));
+        			mReqs[j] = ServerCredentials.prep(userID, APIRequest.update(Attachment.queue.get(j - Item.queue.size()), db));
     		} else if (j < Item.queue.size()
     					+ Attachment.queue.size()
     					+ ItemCollection.additions.size()) {
@@ -277,7 +283,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	 * @param req
 	 * @return
 	 */
-	public static String issue(APIRequest req) {
+	public static String issue(APIRequest req, Database db) {
 		// Check that the method makes sense
 		String method = req.method.toLowerCase();
 		if (!method.equals("get")
@@ -349,7 +355,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 						if (req.updateKey != null && req.updateType != null)
 							parse.update(req.updateType, req.updateKey);
 						// The response on POST in XML mode (new item) is a feed
-						parse.parse(XMLResponseParser.MODE_FEED, uri.toString());
+						parse.parse(XMLResponseParser.MODE_FEED, uri.toString(), db);
 						resp = "XML was parsed.";
 					} else {
 						Log.e(TAG, "Not parsing non-XML response, code >= 400");
@@ -385,7 +391,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 						HttpEntity he = hr.getEntity();
 						InputStream in = he.getContent();
 						XMLResponseParser parse = new XMLResponseParser(in);
-						parse.parse(XMLResponseParser.MODE_ENTRY, uri.toString());
+						parse.parse(XMLResponseParser.MODE_ENTRY, uri.toString(), db);
 						resp = "XML was parsed.";
 					} else {
 						Log.e(TAG, "Not parsing non-XML response, code >= 400");
@@ -431,7 +437,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 										&& uri.toString().indexOf("/collections?") == -1
 										&& uri.toString().indexOf("/children?") == -1) ?
 											XMLResponseParser.MODE_ENTRY : XMLResponseParser.MODE_FEED;
-						parse.parse(mode, uri.toString());
+						parse.parse(mode, uri.toString(), db);
 						resp = "XML was parsed.";
 					} else {
 						Log.e(TAG, "Not parsing non-XML response, code >= 400");

@@ -92,8 +92,6 @@ public class Item {
 	 */
 	public String dirty;
 
-	public static Database db;
-
 	public Item() {
 		content = new JSONObject();
 		year = "";
@@ -251,7 +249,7 @@ public class Item {
 	 * ItemDataActivity, but it's most likely to be used by such display
 	 * activities
 	 */
-	public ArrayList<Bundle> toBundleArray() {
+	public ArrayList<Bundle> toBundleArray(Database db) {
 		JSONObject itemContent = this.content;
 		/*
 		 * Here we walk through the data and make Bundles to send to the
@@ -340,7 +338,7 @@ public class Item {
 			String label;
 			int notes = 0;
 			int atts = 0;
-			ArrayList<Attachment> attachments = Attachment.forItem(this);
+			ArrayList<Attachment> attachments = Attachment.forItem(this, db);
 			for (Attachment a : attachments) {
 				if ("note".equals(a.getType())) notes++;
 				else atts++;
@@ -481,8 +479,8 @@ public class Item {
 	/**
 	 * Saves the item's current state. Marking dirty should happen before this
 	 */
-	public void save() {
-		Item existing = load(key);
+	public void save(Database db) {
+		Item existing = load(key, db);
 		if (dbId == null && existing == null) {
 			String[] args = { title, key, type, year, creatorSummary,
 					content.toString(), etag, dirty, timestamp, children };
@@ -493,7 +491,7 @@ public class Item {
 							args);
 			if (cur != null)
 				cur.close();
-			Item fromDB = load(key);
+			Item fromDB = load(key, db);
 			dbId = fromDB.dbId;
 		} else {
 			if (dbId == null)
@@ -516,7 +514,7 @@ public class Item {
 	 * Deletes an item from the database, keeping a record of it in the deleteditems table
 	 * We will then send out delete requests via the API to propagate the deletion
 	 */
-	public void delete() {
+	public void delete(Database db) {
 		String[] args = { dbId };
 		db.rawQuery("delete from items where _id=?", args);
 		db.rawQuery("delete from itemtocreators where item_id=?", args);
@@ -532,7 +530,7 @@ public class Item {
 	 * @param itemKey
 	 * @return
 	 */
-	public static Item load(String itemKey) {
+	public static Item load(String itemKey, Database db) {
 		String[] cols = Database.ITEMCOLS;
 		String[] args = { itemKey };
 		Cursor cur = db.query("items", cols, "item_key=?", args, null, null,
@@ -550,7 +548,7 @@ public class Item {
 	 * @param itemDbId
 	 * @return
 	 */
-	public static Item loadDbId(String itemDbId) {
+	public static Item loadDbId(String itemDbId, Database db) {
 		String[] cols = Database.ITEMCOLS;
 		String[] args = { itemDbId };
 		Cursor cur = db.query("items", cols, "_id=?", args, null, null,
@@ -601,9 +599,9 @@ public class Item {
 	/**
 	 * Static method for modification of items in the database
 	 */
-	public static void set(String itemKey, String label, String content) {
+	public static void set(String itemKey, String label, String content, Database db) {
 		// Load the item
-		Item item = load(itemKey);
+		Item item = load(itemKey, db);
 		if (label.equals("title")) {
 			item.title = content;
 		}
@@ -628,8 +626,8 @@ public class Item {
 							"Caught JSON exception when we tried to modify the JSON content");
 		}
 		item.dirty = APIRequest.API_DIRTY;
-		item.save();
-		item = load(itemKey);
+		item.save(db);
+		item = load(itemKey, db);
 	}
 
 	/**
@@ -643,9 +641,9 @@ public class Item {
 	 * 
 	 */
 	public static void setTag(String itemKey, String oldTag, String newTag,
-			int type) {
+			int type, Database db) {
 		// Load the item
-		Item item = load(itemKey);
+		Item item = load(itemKey, db);
 
 		try {
 			JSONArray tags = item.content.getJSONArray("tags");
@@ -675,7 +673,7 @@ public class Item {
 			Log.e(TAG,"Caught JSON exception when we tried to modify the JSON content",e);
 		}
 		item.dirty = APIRequest.API_DIRTY;
-		item.save();
+		item.save(db);
 	}
 
 	/**
@@ -686,9 +684,9 @@ public class Item {
 	 * 
 	 * If position is -1, the new creator is appended.
 	 */
-	public static void setCreator(String itemKey, Creator c, int position) {
+	public static void setCreator(String itemKey, Creator c, int position, Database db) {
 		// Load the item
-		Item item = load(itemKey);
+		Item item = load(itemKey, db);
 		
 
 		try {
@@ -722,13 +720,13 @@ public class Item {
 			Log.e(TAG,"Caught JSON exception when we tried to modify the JSON content");
 		}
 		item.dirty = APIRequest.API_DIRTY;
-		item.save();
+		item.save(db);
 	}
 
 	/**
 	 * Identifies dirty items in the database and queues them for syncing
 	 */
-	public static void queue() {
+	public static void queue(Database db) {
 		Log.d(TAG, "Clearing item dirty queue before repopulation");
 		queue.clear();
 		Item item;

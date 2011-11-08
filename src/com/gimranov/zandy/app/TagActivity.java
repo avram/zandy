@@ -42,6 +42,7 @@ import android.widget.TextView;
 import android.widget.TextView.BufferType;
 import android.widget.Toast;
 
+import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
 import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
@@ -62,15 +63,19 @@ public class TagActivity extends ListActivity {
 	
 	private Item item;
 	
+	private Database db;
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        db = new Database(this);
                 
         /* Get the incoming data from the calling activity */
         // XXX Note that we don't know what to do when there is no key assigned
         String itemKey = getIntent().getStringExtra("com.gimranov.zandy.app.itemKey");
-        Item item = Item.load(itemKey);
+        Item item = Item.load(itemKey, db);
         this.item = item;
         
         this.setTitle("Tags for "+item.getTitle());
@@ -162,6 +167,18 @@ public class TagActivity extends ListActivity {
 
     }
     
+    @Override
+    public void onDestroy() {
+    	if (db != null) db.close();
+    	super.onDestroy();
+    }
+    
+    @Override
+    public void onResume() {
+    	if (db == null) db = new Database(this);
+    	super.onResume();
+    }
+    
 	protected Dialog onCreateDialog(int id, Bundle b) {
 		@SuppressWarnings("unused")
 		final int type = b.getInt("type");
@@ -183,8 +200,8 @@ public class TagActivity extends ListActivity {
 					public void onClick(DialogInterface dialog, int whichButton) {
 	    	            Editable value = input.getText();
 	    	            Log.d(TAG, "Got tag: "+value.toString());
-	    	            Item.setTag(itemKey, tag, value.toString(), 0);
-	    	            Item item = Item.load(itemKey);
+	    	            Item.setTag(itemKey, tag, value.toString(), 0, db);
+	    	            Item item = Item.load(itemKey, db);
 	    	            Log.d(TAG, "Have JSON: "+item.getContent().toString());
 	    	            ArrayAdapter<Bundle> la = (ArrayAdapter<Bundle>) getListAdapter();
 	    	            la.clear();

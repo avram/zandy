@@ -33,10 +33,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.gimranov.zandy.app.data.Attachment;
 import com.gimranov.zandy.app.data.CollectionAdapter;
 import com.gimranov.zandy.app.data.Database;
-import com.gimranov.zandy.app.data.Item;
 import com.gimranov.zandy.app.data.ItemCollection;
 import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
@@ -54,10 +52,6 @@ public class CollectionActivity extends ListActivity {
         super.onCreate(savedInstanceState);
         
         db = new Database(this);
-        if(Item.db == null) Item.db = db;
-		if(XMLResponseParser.db == null) XMLResponseParser.db = Item.db;
-		if (ItemCollection.db == null) ItemCollection.db = Item.db;
-		if (Attachment.db == null) Attachment.db = Item.db;
         
         setContentView(R.layout.collections);
 
@@ -65,7 +59,7 @@ public class CollectionActivity extends ListActivity {
         
         String collectionKey = getIntent().getStringExtra("com.gimranov.zandy.app.collectionKey");
         if (collectionKey != null) {
-	        ItemCollection coll = ItemCollection.load(collectionKey);
+	        ItemCollection coll = ItemCollection.load(collectionKey, db);
 	        // We set the title to the current collection
 	        this.collection = coll;
 	        this.setTitle(coll.getTitle());
@@ -87,7 +81,7 @@ public class CollectionActivity extends ListActivity {
         		if (cur.moveToPosition(position)) {
         			// and replace the cursor with one for the selected collection
         			ItemCollection coll = ItemCollection.load(cur);
-        			if (coll != null && coll.getKey() != null && coll.getSubcollections().size() > 0) {
+        			if (coll != null && coll.getKey() != null && coll.getSubcollections(db).size() > 0) {
         				Log.d(TAG, "Loading child collection with key: "+coll.getKey());
         				// We create and issue a specified intent with the necessary data
         		    	Intent i = new Intent(getBaseContext(), CollectionActivity.class);
@@ -158,6 +152,7 @@ public class CollectionActivity extends ListActivity {
 		Cursor newCursor = (collection == null) ? create() : create(collection);
 		adapter.changeCursor(newCursor);
 		adapter.notifyDataSetChanged();
+		if (db == null) db = new Database(this);
     	super.onResume();
     }
     

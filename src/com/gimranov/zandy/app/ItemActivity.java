@@ -36,7 +36,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.gimranov.zandy.app.data.Attachment;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
 import com.gimranov.zandy.app.data.ItemAdapter;
@@ -79,10 +78,6 @@ public class ItemActivity extends ListActivity {
         ItemAdapter itemAdapter;
         
         db = new Database(this);
-        if(Item.db == null) Item.db = db;
-		if(XMLResponseParser.db == null) XMLResponseParser.db = Item.db;
-		if (ItemCollection.db == null) ItemCollection.db = Item.db;
-		if (Attachment.db == null) Attachment.db = Item.db;
 		
         setContentView(R.layout.items);
         
@@ -96,7 +91,7 @@ public class ItemActivity extends ListActivity {
 	        collectionKey = intent.getStringExtra("com.gimranov.zandy.app.collectionKey");
 	        // TODO Figure out how we'll address other views that aren't collections
 	        if (collectionKey != null) {
-	        	ItemCollection coll = ItemCollection.load(collectionKey);
+	        	ItemCollection coll = ItemCollection.load(collectionKey, db);
 	        	itemAdapter = create(coll);
 	        	this.setTitle(coll.getTitle());
 	        } else {
@@ -163,13 +158,13 @@ public class ItemActivity extends ListActivity {
 						public void onClick(DialogInterface dialog, int pos) {
 		    	            Item item = new Item(getBaseContext(), Item.ITEM_TYPES[pos]);
 		    	            item.dirty = APIRequest.API_DIRTY;
-		    	            item.save();
+		    	            item.save(db);
 		    	            if (collectionKey != null) {
-		    	            	ItemCollection coll = ItemCollection.load(collectionKey);
+		    	            	ItemCollection coll = ItemCollection.load(collectionKey, db);
 		    	            	if (coll != null) {
-		    	            		coll.loadChildren();
+		    	            		coll.loadChildren(db);
 		    	            		coll.add(item);
-		    	            		coll.saveChildren();
+		    	            		coll.saveChildren(db);
 		    	            	}
 		    	            }
 		        			Log.d(TAG, "Loading item data with key: "+item.getKey());
@@ -190,7 +185,7 @@ public class ItemActivity extends ListActivity {
 							Cursor cursor;
 							setSortBy(SORTS[pos]);
 							if (collectionKey != null)
-								cursor = getCursor(ItemCollection.load(collectionKey));
+								cursor = getCursor(ItemCollection.load(collectionKey, db));
 							else if (query != null)
 								cursor = getCursor(query);
 							else
@@ -238,7 +233,7 @@ public class ItemActivity extends ListActivity {
         	}
         	// Make this a collection-specific sync, preceding by de-dirtying
         	// De-dirtying
-        	Item.queue();
+        	Item.queue(db);
         	APIRequest[] reqs = new APIRequest[Item.queue.size() + 1];
         	for (int j = 0; j < Item.queue.size(); j++) {
         		Log.d(TAG, "Adding dirty item to sync: "+Item.queue.get(j).getTitle());

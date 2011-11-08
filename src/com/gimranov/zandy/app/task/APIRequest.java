@@ -298,11 +298,11 @@ public class APIRequest {
 	 * @param attachment
 	 * @return
 	 */
-	public static APIRequest update(Attachment attachment) {
+	public static APIRequest update(Attachment attachment, Database db) {
 		Log.d(TAG, "Attachment key pre-update: "+attachment.key);
 		// If we have an attachment marked as new, update it
 		if (attachment.key.length() > 10) {	
-			Item item = Item.load(attachment.parentKey);
+			Item item = Item.load(attachment.parentKey, db);
 			ArrayList<Attachment> aL = new ArrayList<Attachment>();
 			aL.add(attachment);
 			return add(item, aL);

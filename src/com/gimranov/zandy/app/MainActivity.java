@@ -44,7 +44,6 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.gimranov.zandy.app.data.Attachment;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
 import com.gimranov.zandy.app.data.ItemCollection;
@@ -59,16 +58,15 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	static final int DIALOG_CHOOSE_COLLECTION = 1;
 	
+	private Database db;
+	
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
 		// Let items in on the fun
-		Item.db = new Database(getBaseContext());
-		XMLResponseParser.db = Item.db;
-		ItemCollection.db = Item.db;
-		Attachment.db = Item.db;
+		db = new Database(getBaseContext());
 		
 		Intent intent = getIntent();
 		String action = intent.getAction();
@@ -312,22 +310,21 @@ public class MainActivity extends Activity implements OnClickListener {
 			// Now we're dealing with share link, it seems.
 			// For now, just add it to the main library-- we'd like to let the person choose a library,
 			// but not yet.
-			final ArrayList<ItemCollection> collections = ItemCollection.getCollections();
+			final ArrayList<ItemCollection> collections = ItemCollection.getCollections(db);
 			int size = collections.size();
 			String[] collectionNames = new String[size];
 			for (int i = 0; i < size; i++) {
 				collectionNames[i] = collections.get(i).getTitle();
 			}
-			// XXX i18n
 			builder.setTitle(getResources().getString(R.string.choose_parent_collection))
 		    	    .setItems(collectionNames, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int pos) {
 		    	            Item item = new Item(getBaseContext(), "webpage");
-		    	            item.save();
+		    	            item.save(db);
 		    	            Log.d(TAG,"New item has key: "+item.getKey() + ", dbId: "+item.dbId);
-							Item.set(item.getKey(), "url", url);
-							Item.set(item.getKey(), "title", title);
-							Item.setTag(item.getKey(), null, "#added-by-zandy", 1);
+							Item.set(item.getKey(), "url", url, db);
+							Item.set(item.getKey(), "title", title, db);
+							Item.setTag(item.getKey(), null, "#added-by-zandy", 1, db);
 							collections.get(pos).add(item);
 							Log.d(TAG, "Loading item data with key: "+item.getKey());
 							// We create and issue a specified intent with the necessary data
