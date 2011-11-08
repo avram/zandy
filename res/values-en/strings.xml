@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  This file is part of Zandy.
+  
+  Zandy is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+  
+  Zandy is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+  
+  You should have received a copy of the GNU Affero General Public License
+  along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
+-->
+<resources>
+    <string name="app_name">Zandy</string>
+    <string name="applicationTitle">Zandy: A Zotero Client for Android</string>
+    <string name="menu_sync">Sync</string>
+    <string name="menu_new">New</string>
+    <string name="menu_delete">Delete</string>
+    <string name="menu_sort">Sort</string>
+    <string name="menu_prefs">Settings</string>
+    <string name="menu_search">Search</string>
+    <string name="view_items">View Items</string>
+    <string name="view_collections">View Collections</string>
+    <string name="log_in">Log in</string>
+    <string name="logged_in">Logged in</string>
+    <string name="search_hint">Search items</string>
+    <string name="choose_parent_collection">Choose parent collection</string>
+    <string name="status">Status:</string>
+    	<!-- Button labels for dialogs -->
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancel</string>
+    <string name="view">View</string>
+    <string name="view_online_warning">View this online?</string>
+    	<!-- Attachments -->
+    <string name="attachment_zfs_available">Available for download</string>
+    <string name="attachment_zfs_local">Downloaded</string>
+    <string name="attachment_unknown">Status unknown</string>
+    <string name="attachment_downloading">Downloading attachment for %s$1</string>
+	<string name="attachment_download_initiated">File download initiated.</string>
+	<string name="attachment_download_failed">File download may have failed; try again.</string>
+	<string name="attachment_intent_failed">No application available to open files of type %s$1.</string>
+		<!-- Syncing -->
+	<string name="sync_log_in_first">Log in to sync</string>
+	<string name="sync_started">Started syncing...</string>
+        <!-- Zotero terms -->
+    <string name="note">Note</string>
+</resources>
