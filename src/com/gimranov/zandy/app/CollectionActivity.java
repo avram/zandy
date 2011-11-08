@@ -65,8 +65,7 @@ public class CollectionActivity extends ListActivity {
 	        this.setTitle(coll.getTitle());
 	        collectionAdapter = new CollectionAdapter(this, create(coll));
         } else {
-        	// XXX i18n
-        	this.setTitle("Collections");
+        	this.setTitle(getResources().getString(R.string.collections));
 	        collectionAdapter = new CollectionAdapter(this, create());
         }
         
@@ -89,14 +88,15 @@ public class CollectionActivity extends ListActivity {
         		    	startActivity(i);
         			} else {
         				Log.d(TAG, "Failed loading child collections for collection");
-        				Toast.makeText(getApplicationContext(), "No subcollections for collection. To view" +
-        						" items in the collection, touch and hold the collection.", 
+        				Toast.makeText(getApplicationContext(),
+        						getResources().getString(R.string.collection_no_subcollections), 
                 				Toast.LENGTH_SHORT).show();
         			}
         		} else {
         			// failed to move cursor-- show a toast
             		TextView tvTitle = (TextView)view.findViewById(R.id.collection_title);
-            		Toast.makeText(getApplicationContext(), "Can't open "+tvTitle.getText(), 
+            		Toast.makeText(getApplicationContext(),
+            				getResources().getString(R.string.collection_cant_open, tvTitle.getText()), 
             				Toast.LENGTH_SHORT).show();
         		}
           }
@@ -114,7 +114,8 @@ public class CollectionActivity extends ListActivity {
         			if (coll != null && coll.getKey() != null) {
         				if (coll.getSize() == 0) {
             				Log.d(TAG, "Collection with key: "+coll.getKey()+ " is empty.");
-                    		Toast.makeText(getApplicationContext(), "Collection is empty, requesting update.", 
+                    		Toast.makeText(getApplicationContext(),
+                    				getResources().getString(R.string.collection_empty),
                     				Toast.LENGTH_SHORT).show();
                 			Log.d(TAG, "Running a request to populate missing data for collection");
                            	APIRequest req = new APIRequest(ServerCredentials.APIBASE
@@ -137,7 +138,8 @@ public class CollectionActivity extends ListActivity {
         		} else {
         			// failed to move cursor-- show a toast
             		TextView tvTitle = (TextView)view.findViewById(R.id.collection_title);
-            		Toast.makeText(getApplicationContext(), "Can't open items for "+tvTitle.getText(), 
+            		Toast.makeText(getApplicationContext(),
+            				getResources().getString(R.string.collection_cant_open, tvTitle.getText()), 
             				Toast.LENGTH_SHORT).show();
             		return true;
         		}
@@ -177,7 +179,7 @@ public class CollectionActivity extends ListActivity {
         switch (item.getItemId()) {
         case R.id.do_sync:
         	if (!ServerCredentials.check(getApplicationContext())) {
-            	Toast.makeText(getApplicationContext(), "Log in to sync", 
+            	Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_log_in_first), 
         				Toast.LENGTH_SHORT).show();
             	return true;
         	}
@@ -187,11 +189,12 @@ public class CollectionActivity extends ListActivity {
         			"get", null);
 			req.disposition = "xml";
 			new ZoteroAPITask(getBaseContext(), (CursorAdapter) getListAdapter()).execute(req);	
-        	Toast.makeText(getApplicationContext(), "Started syncing; refreshing collection list", 
+        	Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_collection), 
     				Toast.LENGTH_SHORT).show();
             return true;
         case R.id.do_new:
         	Log.d(TAG, "Can't yet make new collections");
+        	// XXX no i18n for temporary string
         	Toast.makeText(getApplicationContext(), "Sorry, new collection creation is not yet possible. Soon!", 
     				Toast.LENGTH_SHORT).show();
             return true;

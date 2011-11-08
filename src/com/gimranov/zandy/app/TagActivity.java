@@ -78,7 +78,7 @@ public class TagActivity extends ListActivity {
         Item item = Item.load(itemKey, db);
         this.item = item;
         
-        this.setTitle("Tags for "+item.getTitle());
+        this.setTitle(getResources().getString(R.string.tags_for_item, item.getTitle()));
         
         ArrayList<Bundle> rows = item.tagsToBundleArray();
         
@@ -105,9 +105,9 @@ public class TagActivity extends ListActivity {
         		TextView tvContent = (TextView) row.findViewById(R.id.data_content);
         		
         		if (getItem(position).getInt("type") == 1)
-        			tvLabel.setText("Auto");
+        			tvLabel.setText(getResources().getString(R.string.tag_auto));
         		else
-        			tvLabel.setText("User");
+        			tvLabel.setText(getResources().getString(R.string.tag_user));
         		tvContent.setText(getItem(position).getString("tag"));
          
         		return row;
@@ -193,9 +193,9 @@ public class TagActivity extends ListActivity {
 			input.setText(tag, BufferType.EDITABLE);
 			
 			dialog = new AlertDialog.Builder(this)
-	    	    .setTitle("Edit Tag")
+	    	    .setTitle(getResources().getString(R.string.tag_edit))
 	    	    .setView(input)
-	    	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+	    	    .setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
 	    	        @SuppressWarnings("unchecked")
 					public void onClick(DialogInterface dialog, int whichButton) {
 	    	            Editable value = input.getText();
@@ -210,7 +210,7 @@ public class TagActivity extends ListActivity {
 	    	            }
 	    	            la.notifyDataSetChanged();
 	    	        }
-	    	    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+	    	    }).setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
 	    	        public void onClick(DialogInterface dialog, int whichButton) {
 	    	        	// do nothing
 	    	        }
@@ -253,13 +253,13 @@ public class TagActivity extends ListActivity {
         switch (item.getItemId()) {
         case R.id.do_sync:
         	if (!ServerCredentials.check(getApplicationContext())) {
-            	Toast.makeText(getApplicationContext(), "Log in to sync", 
+            	Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_log_in_first), 
         				Toast.LENGTH_SHORT).show();
             	return true;
         	}
         	Log.d(TAG, "Preparing sync requests");
         	new ZoteroAPITask(getBaseContext()).execute(APIRequest.update(this.item));
-        	Toast.makeText(getApplicationContext(), "Started syncing...", 
+        	Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_started), 
     				Toast.LENGTH_SHORT).show();
         	return true;
         case R.id.do_new:

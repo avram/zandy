@@ -343,6 +343,7 @@ public class Item {
 				if ("note".equals(a.getType())) notes++;
 				else atts++;
 			}
+			// XXX i18n
 			if (notes == 0 && atts == 0) label = "No attachments or notes.";
 			else label = String.format("%1$d notes, %2$d attachments", notes, atts);
 			b.putString("content", label);
@@ -419,7 +420,7 @@ public class Item {
 	}
 
 	/**
-	 * Makes ArrayList<Bundle> from the present item's creators Primarily for
+	 * Makes ArrayList<Bundle> from the present item's creators. Primarily for
 	 * use with CreatorActivity, but who knows?
 	 */
 	public ArrayList<Bundle> creatorsToBundleArray() {
@@ -857,6 +858,7 @@ public class Item {
 	 * @param s
 	 * @return
 	 */
+	// XXX i18n
 	public static String localizedStringForString(String s) {
 		// Item fields from the API
 		if (s.equals("numPages"))

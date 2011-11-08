@@ -320,8 +320,6 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 			HttpClient client = new DefaultHttpClient();
 			// The default implementation includes an Expect: header, which
 			// confuses the Zotero servers.
-			//((AbstractHttpClient) client).removeRequestInterceptorByClass(
-			//		org.apache.http.protocol.RequestExpectContinue.class);
 			client.getParams().setParameter("http.protocol.expect-continue", false);
 			// We also need to send our data nice and raw.
 			client.getParams().setParameter("http.protocol.content-charset", "UTF-8");

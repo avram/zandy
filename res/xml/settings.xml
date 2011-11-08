@@ -17,21 +17,21 @@
 <PreferenceScreen
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:title="Settings">
-<PreferenceCategory android:title="Basics"
+<PreferenceCategory android:title="@string/settings_basic"
  			android:summary="">
         <CheckBoxPreference
                 android:key="sync_aggressively"
-                android:title="Aggressive Syncing"
-                android:summary="Check to have Zandy attempt to keep all collections synced" />
+                android:title="@string/settings_aggressive_syncing"
+                android:summary="@string/settings_aggressive_syncing_desc" />
 
         <EditTextPreference
                 android:key="user_id"
-                android:title="User ID"
-                android:summary="This is the user ID for your account at Zotero.org" />
+                android:title="@string/settings_user_id"
+                android:summary="@string/settings_user_id_desc" />
 
         <EditTextPreference
                 android:key="user_key"
-                android:title="API Key"
-                android:summary="This is the API key to access your account at Zotero.org" />
+                android:title="@string/settings_api_key"
+                android:summary="@string/settings_api_key_desc" />
 </PreferenceCategory>
 </PreferenceScreen>

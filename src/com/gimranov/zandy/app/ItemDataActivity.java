@@ -182,7 +182,7 @@ public class ItemDataActivity extends ListActivity {
         		Bundle row = adapter.getItem(position);
         		// Show the right type of dialog for the row in question
         		if (row.getString("label").equals("itemType")) {
-        			// XXX 
+        			// XXX don't need i18n, since this should be overcome
                 	Toast.makeText(getApplicationContext(), "Item type cannot be changed.", 
             				Toast.LENGTH_SHORT).show();
         			//removeDialog(DIALOG_ITEM_TYPE);
@@ -225,9 +225,9 @@ public class ItemDataActivity extends ListActivity {
 			input.setText(content, BufferType.EDITABLE);
 			
 			dialog = new AlertDialog.Builder(this)
-	    	    .setTitle("Edit " + Item.localizedStringForString(label))
+	    	    .setTitle(getResources().getString(R.string.edit_item_field, Item.localizedStringForString(label)))
 	    	    .setView(input)
-	    	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+	    	    .setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
 	    	        @SuppressWarnings("unchecked")
 					public void onClick(DialogInterface dialog, int whichButton) {
 	    	            Editable value = input.getText();
@@ -240,7 +240,7 @@ public class ItemDataActivity extends ListActivity {
 	    	            }
 	    	            la.notifyDataSetChanged();
 	    	        }
-	    	    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+	    	    }).setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
 	    	        public void onClick(DialogInterface dialog, int whichButton) {
 	    	        	// do nothing
 	    	        }
@@ -249,7 +249,8 @@ public class ItemDataActivity extends ListActivity {
 		/* Item type selector */
 		case DIALOG_ITEM_TYPE:
 			dialog = new AlertDialog.Builder(this)
-	    	    .setTitle("Change Item Type")
+	    	    .setTitle(getResources().getString(R.string.item_type_change))
+	    	    // XXX i18n
 	    	    .setItems(Item.ITEM_TYPES_EN, new DialogInterface.OnClickListener() {
 	    	        @SuppressWarnings("unchecked")
 					public void onClick(DialogInterface dialog, int pos) {
@@ -266,8 +267,9 @@ public class ItemDataActivity extends ListActivity {
 			return dialog;
 		case DIALOG_CONFIRM_NAVIGATE:
 			dialog = new AlertDialog.Builder(this)
-		    	    .setTitle("View this online?")
-		    	    .setPositiveButton("View", new DialogInterface.OnClickListener() {
+		    	    .setTitle(getResources().getString(R.string.view_online_warning))
+		    	    .setPositiveButton(getResources().getString(R.string.view),
+		    	    		new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int whichButton) {
 		        			// The behavior for invalid URIs might be nasty, but
 		        			// we'll cross that bridge if we come to it.
@@ -275,7 +277,8 @@ public class ItemDataActivity extends ListActivity {
 		        			startActivity(new Intent(Intent.ACTION_VIEW)
 		        							.setData(uri));
 		    	        }
-		    	    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+		    	    }).setNegativeButton(getResources().getString(R.string.cancel),
+		    	    		new DialogInterface.OnClickListener() {
 		    	        public void onClick(DialogInterface dialog, int whichButton) {
 		    	        	// do nothing
 		    	        }
@@ -283,13 +286,13 @@ public class ItemDataActivity extends ListActivity {
 			return dialog;
 		case DIALOG_CONFIRM_DELETE:
 			dialog = new AlertDialog.Builder(this)
-		    	    .setTitle("Delete this item")
-		    	    .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+		    	    .setTitle(getResources().getString(R.string.item_delete_confirm))
+		    	    .setPositiveButton(getResources().getString(R.string.menu_delete), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int whichButton) {
 							Item i = Item.load(itemKey, db);
 							i.delete(db);
 		    	        }
-		    	    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+		    	    }).setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
 		    	        public void onClick(DialogInterface dialog, int whichButton) {
 		    	        	// do nothing
 		    	        }
@@ -333,13 +336,13 @@ public class ItemDataActivity extends ListActivity {
         switch (i.getItemId()) {
         case R.id.do_sync:
         	if (!ServerCredentials.check(getApplicationContext())) {
-            	Toast.makeText(getApplicationContext(), "Log in to sync", 
+            	Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_log_in_first), 
         				Toast.LENGTH_SHORT).show();
             	return true;
         	}
         	Log.d(TAG, "Preparing sync requests, starting with present item");
         	new ZoteroAPITask(getBaseContext()).execute(APIRequest.update(item));
-        	Toast.makeText(getApplicationContext(), "Started syncing...", 
+        	Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_started), 
     				Toast.LENGTH_SHORT).show();
         	return true;
         case R.id.do_prefs:

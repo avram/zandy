@@ -55,13 +55,15 @@ public class ItemActivity extends ListActivity {
 	static final String[] SORTS = {
 		"item_year, item_title",
 		"item_creator, item_year",
-		"item_title, item_year"
+		"item_title, item_year",
+		"timestamp DESC, item_title"
 	};
 
 	static final String[] SORTS_EN = {
 		"Year, then title",
 		"Creator, then year",
-		"Title, then year"
+		"Title, then year",
+		"Date modified, then title"
 	};	
 	
 	private String collectionKey;
@@ -89,15 +91,13 @@ public class ItemActivity extends ListActivity {
           this.setTitle("Search results: "+query);
         } else {        
 	        collectionKey = intent.getStringExtra("com.gimranov.zandy.app.collectionKey");
-	        // TODO Figure out how we'll address other views that aren't collections
 	        if (collectionKey != null) {
 	        	ItemCollection coll = ItemCollection.load(collectionKey, db);
 	        	itemAdapter = create(coll);
 	        	this.setTitle(coll.getTitle());
 	        } else {
 	        	itemAdapter = create();
-	        	// XXX i18n
-	        	this.setTitle("All items");
+	        	this.setTitle(getResources().getString(R.string.all_items));
 	        }
         }
         
@@ -123,8 +123,8 @@ public class ItemActivity extends ListActivity {
         		} else {
         			// failed to move cursor-- show a toast
             		TextView tvTitle = (TextView)view.findViewById(R.id.item_title);
-            		// XXX i18n
-            		Toast.makeText(getApplicationContext(), "Can't open "+tvTitle.getText(), 
+            		Toast.makeText(getApplicationContext(),
+            				getResources().getString(R.string.cant_open_item, tvTitle.getText()), 
             				Toast.LENGTH_SHORT).show();
         		}
         	}
@@ -152,8 +152,8 @@ public class ItemActivity extends ListActivity {
 		switch (id) {
 		case DIALOG_NEW:
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			// XXX i18n
-			builder.setTitle("Item Type")
+			builder.setTitle(getResources().getString(R.string.item_type))
+					// XXX i18n
 		    	    .setItems(Item.ITEM_TYPES_EN, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int pos) {
 		    	            Item item = new Item(getBaseContext(), Item.ITEM_TYPES[pos]);
@@ -178,8 +178,8 @@ public class ItemActivity extends ListActivity {
 			return dialog;
 		case DIALOG_SORT:
 			AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
-			// XXX i18n
-			builder2.setTitle("Set Sort Order")
+			builder2.setTitle(getResources().getString(R.string.set_sort_order))
+					// XXX i18n
 		    	    .setItems(SORTS_EN, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int pos) {
 							Cursor cursor;
@@ -226,8 +226,7 @@ public class ItemActivity extends ListActivity {
         switch (item.getItemId()) {
         case R.id.do_sync:
         	if (!ServerCredentials.check(getBaseContext())) {
-        		// XXX i18n
-            	Toast.makeText(getBaseContext(), "Log in to sync", 
+            	Toast.makeText(getBaseContext(), getResources().getString(R.string.sync_log_in_first), 
         				Toast.LENGTH_SHORT).show();
             	return true;
         	}
@@ -260,8 +259,7 @@ public class ItemActivity extends ListActivity {
         	// This then provides a full queue, with the locally dirty items first, followed
         	// by a scoped sync. Cool!
 			new ZoteroAPITask(getBaseContext(), (CursorAdapter) getListAdapter()).execute(reqs);
-			// XXX i18n
-        	Toast.makeText(getApplicationContext(), "Started syncing...", 
+        	Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_started), 
     				Toast.LENGTH_SHORT).show();
             return true;
         case R.id.do_new:
