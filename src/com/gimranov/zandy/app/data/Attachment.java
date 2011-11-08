@@ -128,6 +128,10 @@ public class Attachment {
 	 * Identifies dirty items in the database and queues them for syncing
 	 */
 	public static void queue() {
+		if (queue == null) {
+			// Initialize the queue if necessary
+			queue = new ArrayList<Attachment>();
+		}
 		Log.d(TAG, "Clearing attachment dirty queue before repopulation");
 		queue.clear();
 		Attachment attachment;
