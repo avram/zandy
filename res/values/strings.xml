@@ -24,8 +24,32 @@
     <string name="menu_sort">Sort</string>
     <string name="menu_prefs">Settings</string>
     <string name="menu_search">Search</string>
+    <string name="view_items">View Items</string>
+    <string name="view_collections">View Collections</string>
+    <string name="log_in">Log in</string>
+    <string name="logged_in">Logged in</string>
     <string name="search_hint">Search items</string>
-    <!-- JSON templates -->
+    <string name="choose_parent_collection">Choose parent collection</string>
+    <string name="status">Status:</string>
+    	<!-- Button labels for dialogs -->
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancel</string>
+    <string name="view">View</string>
+    <string name="view_online_warning">View this online?</string>
+    	<!-- Attachments -->
+    <string name="attachment_zfs_available">Available for download</string>
+    <string name="attachment_zfs_local">Downloaded</string>
+    <string name="attachment_unknown">Status unknown</string>
+    <string name="attachment_downloading">Downloading attachment for %s$1</string>
+	<string name="attachment_download_initiated">File download initiated.</string>
+	<string name="attachment_download_failed">File download may have failed; try again.</string>
+	<string name="attachment_intent_failed">No application available to open files of type %s$1.</string>
+		<!-- Syncing -->
+	<string name="sync_log_in_first">Log in to sync</string>
+	<string name="sync_started">Started syncing...</string>
+        <!-- Zotero terms -->
+    <string name="note">Note</string>
+        <!-- JSON templates; don't need l10n -->
     <string name="template_artwork">{"itemType":"artwork","title":"-_-_-","creators":[{"creatorType":"artist","firstName":"-_-_-","lastName":"-_-_-"}],"abstractNote":"-_-_-","artworkMedium":"-_-_-","artworkSize":"-_-_-","date":"-_-_-","language":"-_-_-","shortTitle":"-_-_-","archive":"-_-_-","archiveLocation":"-_-_-","libraryCatalog":"-_-_-","callNumber":"-_-_-","url":"-_-_-","accessDate":"-_-_-","rights":"-_-_-","extra":"-_-_-","tags":[],"notes":[]}</string>
     <string name="template_audioRecording">{"itemType":"audioRecording","title":"-_-_-","creators":[{"creatorType":"performer","firstName":"-_-_-","lastName":"-_-_-"}],"abstractNote":"-_-_-","audioRecordingFormat":"-_-_-","seriesTitle":"-_-_-","volume":"-_-_-","numberOfVolumes":"-_-_-","place":"-_-_-","label":"-_-_-","date":"-_-_-","runningTime":"-_-_-","language":"-_-_-","ISBN":"-_-_-","shortTitle":"-_-_-","archive":"-_-_-","archiveLocation":"-_-_-","libraryCatalog":"-_-_-","callNumber":"-_-_-","url":"-_-_-","accessDate":"-_-_-","rights":"-_-_-","extra":"-_-_-","tags":[],"notes":[]}</string>    
     <string name="template_bill">{"itemType":"bill","title":"-_-_-","creators":[{"creatorType":"sponsor","firstName":"-_-_-","lastName":"-_-_-"}],"abstractNote":"-_-_-","billNumber":"-_-_-","code":"-_-_-","codeVolume":"-_-_-","section":"-_-_-","codePages":"-_-_-","legislativeBody":"-_-_-","session":"-_-_-","history":"-_-_-","date":"-_-_-","language":"-_-_-","url":"-_-_-","accessDate":"-_-_-","shortTitle":"-_-_-","rights":"-_-_-","extra":"-_-_-","tags":[],"notes":[]}</string>    

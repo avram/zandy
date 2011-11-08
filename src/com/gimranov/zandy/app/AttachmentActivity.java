@@ -137,9 +137,16 @@ public class AttachmentActivity extends ListActivity {
         				note = note.substring(0,40);
         			}
         			tvSummary.setText(note);
-        		} else
-        			tvSummary.setText(att.title + " Status: " + att.status);
-         
+        		} else {
+        			StringBuffer status = new StringBuffer(getResources().getString(R.string.status));
+        			if (att.status == Attachment.ZFS_AVAILABLE)
+        				status.append(getResources().getString(R.string.attachment_zfs_available));
+        			else if (att.status == Attachment.ZFS_LOCAL)
+        				status.append(getResources().getString(R.string.attachment_zfs_local));
+        			else
+        				status.append(getResources().getString(R.string.attachment_unknown));
+        			tvSummary.setText(att.title + " " + status.toString());
+        		}
         		return row;
         	}
         });
@@ -189,8 +196,8 @@ public class AttachmentActivity extends ListActivity {
 		switch (id) {			
 		case DIALOG_CONFIRM_NAVIGATE:
 			dialog = new AlertDialog.Builder(this)
-		    	    .setTitle("View this online?")
-		    	    .setPositiveButton("View", new DialogInterface.OnClickListener() {
+		    	    .setTitle(getResources().getString(R.string.view_online_warning))
+		    	    .setPositiveButton(getResources().getString(R.string.view), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int whichButton) {
 		        			// The behavior for invalid URIs might be nasty, but
 		        			// we'll cross that bridge if we come to it.
@@ -198,7 +205,7 @@ public class AttachmentActivity extends ListActivity {
 		        			startActivity(new Intent(Intent.ACTION_VIEW)
 		        							.setData(uri));
 		    	        }
-		    	    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+		    	    }).setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
 		    	        public void onClick(DialogInterface dialog, int whichButton) {
 		    	        	// do nothing
 		    	        }
@@ -209,9 +216,9 @@ public class AttachmentActivity extends ListActivity {
 			input.setText(content, BufferType.EDITABLE);
 			
 			dialog = new AlertDialog.Builder(this)
-	    	    .setTitle("Note")
+	    	    .setTitle(getResources().getString(R.string.note))
 	    	    .setView(input)
-	    	    .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+	    	    .setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
 					@SuppressWarnings("unchecked")
 					public void onClick(DialogInterface dialog, int whichButton) {
 	    	            Editable value = input.getText();
@@ -232,7 +239,8 @@ public class AttachmentActivity extends ListActivity {
 	    	            }
 	    	            la.notifyDataSetChanged();
 	    	        }
-	    	    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+	    	    }).setNegativeButton(getResources().getString(R.string.cancel),
+	    	    		new DialogInterface.OnClickListener() {
 	    	        public void onClick(DialogInterface dialog, int whichButton) {
 	    	        	// do nothing
 	    	        }
@@ -253,8 +261,8 @@ public class AttachmentActivity extends ListActivity {
 			
 			File attFile = new File(att.filename);
 			
-			if (att.status.equals(Attachment.ZFS_AVAILABLE)
-					// Zero-length or nonexistant gives length == 0
+			if (att.status == Attachment.ZFS_AVAILABLE
+					// Zero-length or nonexistent gives length == 0
 					|| (attFile != null && attFile.length() == 0)) {
 				
 				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
@@ -263,14 +271,15 @@ public class AttachmentActivity extends ListActivity {
 				
 				mProgressDialog = new ProgressDialog(this);
 
-				Toast.makeText(getApplicationContext(), "Downloading file for "+b.getString("title"), 
+				Toast.makeText(getApplicationContext(),
+						getResources().getString(R.string.attachment_downloading, b.getString("title")), 
         				Toast.LENGTH_SHORT).show();	
-				mProgressDialog.setMessage("Downloading file for "+b.getString("title"));
+				mProgressDialog.setMessage(getResources().getString(R.string.attachment_downloading, b.getString("title")));
 				mProgressDialog.setIndeterminate(true);
 				mProgressDialog.setMax(100);
 				mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 				mProgressDialog.show();
-				Toast.makeText(getApplicationContext(), "File download initiated.", 
+				Toast.makeText(getApplicationContext(), getResources().getString(R.string.attachment_download_initiated), 
         				Toast.LENGTH_SHORT).show();	
 				try {
 					if (!ServerCredentials.sBaseStorageDir.exists())
@@ -286,7 +295,7 @@ public class AttachmentActivity extends ListActivity {
 						Log.d(TAG,"File downloaded");
 					} else {
 						att.status = Attachment.ZFS_AVAILABLE;
-						Toast.makeText(getApplicationContext(), "File download may have failed; try again.", 
+						Toast.makeText(getApplicationContext(), getResources().getString(R.string.attachment_download_failed), 
 		        				Toast.LENGTH_SHORT).show();						
 					}
 					att.save();
@@ -295,16 +304,17 @@ public class AttachmentActivity extends ListActivity {
 					Log.e(TAG,"DownloadManager exception on: "+att.key,e);
 				}
 			}
-			if (att.status.equals(Attachment.ZFS_LOCAL)) {
+			if (att.status == Attachment.ZFS_LOCAL) {
 				Log.d(TAG,"Starting to display local attachment");
 				Uri uri = Uri.fromFile(new File(att.filename));
+				String mimeType = att.content.optString("mimeType",null);
 				try {
-					String mimeType = att.content.optString("mimeType",null);
 					startActivity(new Intent(Intent.ACTION_VIEW)
 								.setDataAndType(uri,mimeType));
 				} catch (ActivityNotFoundException e) {
 					Log.e(TAG, "No activity for intent", e);
-					Toast.makeText(getApplicationContext(), "No application available to open files of this type", 
+					Toast.makeText(getApplicationContext(),
+							getResources().getString(R.string.attachment_intent_failed, mimeType), 
 	        				Toast.LENGTH_SHORT).show();
 				}
 			}
@@ -328,13 +338,13 @@ public class AttachmentActivity extends ListActivity {
         switch (item.getItemId()) {
         case R.id.do_sync:
         	if (!ServerCredentials.check(getApplicationContext())) {
-            	Toast.makeText(getApplicationContext(), "Log in to sync", 
+            	Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_log_in_first), 
         				Toast.LENGTH_SHORT).show();
             	return true;
         	}
         	Log.d(TAG, "Preparing sync requests, starting with present item");
         	new ZoteroAPITask(getBaseContext()).execute(APIRequest.update(this.item));
-        	Toast.makeText(getApplicationContext(), "Started syncing...", 
+        	Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_started), 
     				Toast.LENGTH_SHORT).show();
         	
         	return true;

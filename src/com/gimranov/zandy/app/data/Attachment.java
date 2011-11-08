@@ -6,18 +6,18 @@ import java.util.UUID;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.gimranov.zandy.app.task.APIRequest;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
+
+import com.gimranov.zandy.app.task.APIRequest;
 
 public class Attachment {
 
 	public String key;
 	public String parentKey;
 	public String etag;
-	public String status;
+	public int status;
 	public String dbId;
 	public String title;
 	public String filename;
@@ -45,13 +45,14 @@ public class Attachment {
 	
 	private static final String TAG = "com.gimranov.zandy.app.data.Attachment";
 	
-	public static final String ZFS_AVAILABLE = "Available for download";
-	public static final String ZFS_LOCAL = "Downloaded";	
-	public static final String UNKNOWN = "Status unknown";	
+	public static final int ZFS_AVAILABLE = 1;
+	public static final int ZFS_LOCAL = 2;	
+	public static final int UNKNOWN = 3;	
 
 	public Attachment () {
 		if (queue == null) queue = new ArrayList<Attachment>();
-		parentKey = title = filename = url = status = etag = dirty = "";
+		parentKey = title = filename = url = etag = dirty = "";
+		status = UNKNOWN;
 		content = new JSONObject();
 	}
 	
@@ -96,7 +97,7 @@ public class Attachment {
 		Attachment existing = load(key);
 		if (dbId == null && existing == null) {
 			Log.d(TAG, "Saving new, with status: "+status);
-			String[] args = { key, parentKey, title, filename, url, status, etag, dirty, content.toString() };
+			String[] args = { key, parentKey, title, filename, url, Integer.toString(status), etag, dirty, content.toString() };
 			Cursor cur = db
 					.rawQuery(
 							"insert into attachments (attachment_key, item_key, title, filename, url, status, etag, dirty, content) "
@@ -110,7 +111,7 @@ public class Attachment {
 			Log.d(TAG, "Saving new, with status: "+status);
 			if (dbId == null)
 				dbId = existing.dbId;
-			String[] args = { key, parentKey, title, filename, url, status, etag, dirty, content.toString(), dbId };
+			String[] args = { key, parentKey, title, filename, url, Integer.toString(status), etag, dirty, content.toString(), dbId };
 			Log.i(TAG, "Updating existing attachment");
 			Cursor cur = db
 					.rawQuery(
@@ -174,7 +175,11 @@ public class Attachment {
 		a.title = cur.getString(3);
 		a.filename = cur.getString(4);
 		a.url = cur.getString(5);
-		a.status = cur.getString(6);
+		try {
+			a.status = cur.getInt(6);
+		} catch (Exception e) {
+			a.status = UNKNOWN;
+		}
 		a.etag = cur.getString(7);
 		a.dirty = cur.getString(8);
 		try {

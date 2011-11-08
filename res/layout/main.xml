@@ -20,11 +20,11 @@
 	android:layout_height="fill_parent"
 	android:id="@+id/main">
 	<TextView android:id="@+id/welcome" android:textAppearance="?android:attr/textAppearanceLarge"
-		android:text="Zandy: Zotero for Android" android:layout_height="wrap_content" android:padding="3dip" android:textStyle="bold" android:gravity="center_horizontal" android:layout_width="match_parent"/>
+		android:text="@string/applicationTitle" android:layout_height="wrap_content" android:padding="3dip" android:textStyle="bold" android:gravity="center_horizontal" android:layout_width="match_parent"/>
 	<Button android:id="@+id/collectionButton" android:layout_height="wrap_content"
-		android:text="View Collections" android:layout_width="match_parent" android:layout_weight="0.30"></Button>
+		android:text="@string/view_collections" android:layout_width="match_parent" android:layout_weight="0.30"></Button>
 	<Button android:id="@+id/itemButton" android:layout_height="wrap_content"
-		android:text="View Items" android:layout_width="match_parent" android:layout_weight="0.30"></Button>
+		android:text="@string/view_items" android:layout_width="match_parent" android:layout_weight="0.30"></Button>
 	<Button android:id="@+id/loginButton" android:layout_height="wrap_content"
-		android:text="Log in" android:layout_width="match_parent" android:layout_weight="0.10"></Button>
+		android:text="@string/log_in" android:layout_width="match_parent" android:layout_weight="0.10"></Button>
 </LinearLayout>

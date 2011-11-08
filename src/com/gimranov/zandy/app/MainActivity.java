@@ -102,7 +102,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		loginButton.setOnClickListener(this);
 
 		if (ServerCredentials.check(getBaseContext())) {
-			loginButton.setText("Logged in");
+			loginButton.setText(getResources().getString(R.string.logged_in));
 			loginButton.setClickable(false);
 		}
 	}
@@ -111,7 +111,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		Button loginButton = (Button) findViewById(R.id.loginButton);
 
 		if (!ServerCredentials.check(getBaseContext())) {
-			loginButton.setText("Log in");
+			loginButton.setText(getResources().getString(R.string.log_in));
 			loginButton.setClickable(true);
 		}
 		
@@ -278,7 +278,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		switch (item.getItemId()) {
 		case R.id.do_sync:
 			if (!ServerCredentials.check(getApplicationContext())) {
-				Toast.makeText(getApplicationContext(), "Log in to sync",
+				Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_log_in_first),
 						Toast.LENGTH_SHORT).show();
 				return true;
 			}
@@ -288,7 +288,7 @@ public class MainActivity extends Activity implements OnClickListener {
         			"get", null);
 			req.disposition = "xml";
 			new ZoteroAPITask(getBaseContext()).execute(req);
-			Toast.makeText(getApplicationContext(), "Started syncing...",
+			Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_started),
 					Toast.LENGTH_SHORT).show();
 			return true;
 		case R.id.do_prefs:
@@ -319,7 +319,7 @@ public class MainActivity extends Activity implements OnClickListener {
 				collectionNames[i] = collections.get(i).getTitle();
 			}
 			// XXX i18n
-			builder.setTitle("Choose parent collection:")
+			builder.setTitle(getResources().getString(R.string.choose_parent_collection))
 		    	    .setItems(collectionNames, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int pos) {
 		    	            Item item = new Item(getBaseContext(), "webpage");
