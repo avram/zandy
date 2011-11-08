@@ -43,7 +43,10 @@ import android.widget.TextView;
 import android.widget.TextView.BufferType;
 import android.widget.Toast;
 
+import com.gimranov.zandy.app.data.Attachment;
+import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
+import com.gimranov.zandy.app.data.ItemCollection;
 import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
 
@@ -63,6 +66,12 @@ public class ItemDataActivity extends ListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        Database db = new Database(this);
+        if(Item.db == null) Item.db = db;
+		if(XMLResponseParser.db == null) XMLResponseParser.db = Item.db;
+		if (ItemCollection.db == null) ItemCollection.db = Item.db;
+		if (Attachment.db == null) Attachment.db = Item.db;
         
         /* Get the incoming data from the calling activity */
         String itemKey = getIntent().getStringExtra("com.gimranov.zandy.app.itemKey");
