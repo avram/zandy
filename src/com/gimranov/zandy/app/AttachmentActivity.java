@@ -184,6 +184,7 @@ public class AttachmentActivity extends ListActivity {
 					b.putString("attachmentKey", row.key);
 					b.putString("itemKey", itemKey);
 					b.putString("content", row.content.optString("note", ""));
+					removeDialog(DIALOG_NOTE);
 					showDialog(DIALOG_NOTE, b);
 				}
         	}
