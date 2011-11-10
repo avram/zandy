@@ -63,8 +63,6 @@ public class Item {
 	/**
 	 * The next two types are arrays of information on items that we need
 	 * elsewhere
-	 * 
-	 * They exclude "note", since notes are treated rather separately.
 	 */
 	public static final String[] ITEM_TYPES_EN = { "Artwork",
 			"Audio Recording", "Bill", "Blog Post", "Book", "Book Section",
@@ -72,7 +70,7 @@ public class Item {
 			"Document", "E-mail", "Encyclopedia Article", "Film", "Forum Post",
 			"Hearing", "Instant Message", "Interview", "Journal Article",
 			"Letter", "Magazine Article", "Manuscript", "Map",
-			"Newspaper Article", "Patent", "Podcast", "Presentation",
+			"Newspaper Article", "Note", "Patent", "Podcast", "Presentation",
 			"Radio Broadcast", "Report", "Statute", "TV Broadcast", "Thesis",
 			"Video Recording", "Web Page" };
 
@@ -82,7 +80,7 @@ public class Item {
 			"document", "email", "encyclopediaArticle", "film", "forumPost",
 			"hearing", "instantMessage", "interview", "journalArticle",
 			"letter", "magazineArticle", "manuscript", "map",
-			"newspaperArticle", "patent", "podcast", "presentation",
+			"newspaperArticle", "note",  "patent", "podcast", "presentation",
 			"radioBroadcast", "report", "statute", "tvBroadcast", "thesis",
 			"videoRecording", "webpage" };
 

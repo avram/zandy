@@ -56,7 +56,7 @@ public class ItemActivity extends ListActivity {
 		"item_year, item_title",
 		"item_creator, item_year",
 		"item_title, item_year",
-		"timestamp DESC, item_title"
+		"timestamp ASC, item_title"
 	};
 
 	// XXX i8n
