@@ -59,6 +59,7 @@ public class ItemActivity extends ListActivity {
 		"timestamp DESC, item_title"
 	};
 
+	// XXX i8n
 	static final String[] SORTS_EN = {
 		"Year, then title",
 		"Creator, then year",
@@ -77,31 +78,12 @@ public class ItemActivity extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        ItemAdapter itemAdapter;
         
         db = new Database(this);
 		
         setContentView(R.layout.items);
-        
-        // Be ready for a search
-        Intent intent = getIntent();
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-          query = intent.getStringExtra(SearchManager.QUERY);
-          itemAdapter = create(query);
-          this.setTitle("Search results: "+query);
-        } else {        
-	        collectionKey = intent.getStringExtra("com.gimranov.zandy.app.collectionKey");
-	        if (collectionKey != null) {
-	        	ItemCollection coll = ItemCollection.load(collectionKey, db);
-	        	itemAdapter = create(coll);
-	        	this.setTitle(coll.getTitle());
-	        } else {
-	        	itemAdapter = create();
-	        	this.setTitle(getResources().getString(R.string.all_items));
-	        }
-        }
-        
-        setListAdapter(itemAdapter);
+
+        prepareAdapter();
         
         ListView lv = getListView();
         lv.setOnItemClickListener(new OnItemClickListener() {
@@ -135,7 +117,10 @@ public class ItemActivity extends ListActivity {
 		ItemAdapter adapter = (ItemAdapter) getListAdapter();
 		// XXX This may be too agressive-- fix if causes issues
 		Cursor cur = adapter.getCursor();
-		if (cur != null) cur.requery();
+		if (cur != null && !cur.isClosed()) cur.requery();
+		else {
+			prepareAdapter();
+		}
 		adapter.notifyDataSetChanged();
     	super.onResume();
     }
@@ -146,6 +131,35 @@ public class ItemActivity extends ListActivity {
 		if(cur != null) cur.close();
 		if (db != null) db.close();
 		super.onDestroy();
+    }
+    
+    private void prepareAdapter() {
+    	ItemAdapter itemAdapter;
+        // Be ready for a search
+        Intent intent = getIntent();
+        
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+        	query = intent.getStringExtra(SearchManager.QUERY);
+        	itemAdapter = create(query);
+        	// XXX i18n
+          	this.setTitle("Search results: "+query);
+        } else if (query != null) {
+           	itemAdapter = create(query);
+           	// XXX i18n
+            this.setTitle("Search results: "+query);
+        } else {        
+	        collectionKey = intent.getStringExtra("com.gimranov.zandy.app.collectionKey");
+	        if (collectionKey != null) {
+	        	ItemCollection coll = ItemCollection.load(collectionKey, db);
+	        	itemAdapter = create(coll);
+	        	this.setTitle(coll.getTitle());
+	        } else {
+	        	itemAdapter = create();
+	        	this.setTitle(getResources().getString(R.string.all_items));
+	        }
+        }
+        
+        setListAdapter(itemAdapter);
     }
     
 	protected Dialog onCreateDialog(int id, Bundle b) {

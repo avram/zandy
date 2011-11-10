@@ -94,7 +94,6 @@ public class AttachmentActivity extends ListActivity {
         db = new Database(this);
         
         /* Get the incoming data from the calling activity */
-        // XXX Note that we don't know what to do when there is no key assigned
         final String itemKey = getIntent().getStringExtra("com.gimranov.zandy.app.itemKey");
         Item item = Item.load(itemKey, db);
         this.item = item;
@@ -239,6 +238,7 @@ public class AttachmentActivity extends ListActivity {
 					public void onClick(DialogInterface dialog, int whichButton) {
 	    	            Editable value = input.getText();
 						if (mode != null && mode.equals("new")) {
+							Log.d(TAG, "Attachment created with parent key: "+itemKey);
 							Attachment att = new Attachment(getBaseContext(), "note", itemKey);
 		    	            att.setNoteText(value.toString());
 		    	            att.save(db);

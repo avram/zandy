@@ -84,7 +84,7 @@ public class XMLResponseParser extends DefaultHandler {
 	        entry = root.getChild(ATOM_NAMESPACE, "entry");
 		} else {
 			// MODE_ITEM, MODE_COLLECTION
-			Log.d(TAG, "entry mode");
+			Log.d(TAG, "Parsing in entry mode");
 			root = new RootElement(ATOM_NAMESPACE, "entry");
 			entry = (Element) root;
 		}
@@ -118,7 +118,7 @@ public class XMLResponseParser extends DefaultHandler {
 	            	}
 	    			// If there are more items, queue them up to be handled too
 	            	if (rel.contains("next")) {
-    					Log.e(TAG, "Found continuation: "+href);
+    					Log.d(TAG, "Found continuation: "+href);
 	            		APIRequest req = new APIRequest(href, "get", null);
 	        			req.disposition = "xml";
 	        			queue.add(req);
@@ -132,7 +132,7 @@ public class XMLResponseParser extends DefaultHandler {
             	item = new Item();
             	collection = new ItemCollection();
             	attachment = new Attachment();
-            	Log.i(TAG, "new entry");
+            	Log.d(TAG, "New entry");
             }
 
             public void end() {
@@ -143,7 +143,7 @@ public class XMLResponseParser extends DefaultHandler {
             			if (existing != null) {
             				Log.d(TAG, "Updating newly created item to replace temporary key: " 
             							+ updateKey + " => " + item.getKey() + "");
-            				existing.setKey(item.getKey());
+            				item.getKey();
             				existing.dirty = APIRequest.API_CLEAN;
             				// We need to update the parent key in attachments as well,
             				// so they aren't orphaned after we update the item key here
@@ -153,6 +153,8 @@ public class XMLResponseParser extends DefaultHandler {
             					a.parentKey = item.getKey();
             					a.save(db);
             				}
+            				// We can't set the new key until after updating child attachments
+            				existing.setKey(item.getKey());
                 			if (!existing.getType().equals("attachment"))
                 				existing.save(db);
             			}
@@ -195,7 +197,7 @@ public class XMLResponseParser extends DefaultHandler {
             		
                 	if (!item.getType().equals("attachment") && parent != null) parent.add(item);
             		
-                	Log.i(TAG, "Done parsing item entry.");
+                	Log.d(TAG, "Done parsing item entry.");
             		return;
             	}
             	
@@ -210,7 +212,7 @@ public class XMLResponseParser extends DefaultHandler {
             				existing.dirty = APIRequest.API_CLEAN;
             				existing.save(db);
             			}
-                    	Log.i(TAG, "Done parsing new collection entry.");            			
+                    	Log.d(TAG, "Done parsing new collection entry.");            			
             			// We don't need to load again, since a new collection can't be stale
             			return;
             		}
@@ -233,7 +235,7 @@ public class XMLResponseParser extends DefaultHandler {
             		}
     				Log.d(TAG, "Status: "+collection.dirty+" for "+collection.getTitle());
             		collection.save(db);
-                	Log.i(TAG, "Done parsing a collection entry.");
+                	Log.d(TAG, "Done parsing a collection entry.");
                 	return;
             	}
             }
@@ -243,7 +245,7 @@ public class XMLResponseParser extends DefaultHandler {
             	item.setTitle(body);
             	collection.setTitle(body);
             	attachment.title = body;
-            	Log.i(TAG, body);
+            	Log.d(TAG, body);
             }
         });
         entry.getChild(Z_NAMESPACE, "key").setEndTextElementListener(new EndTextElementListener(){
@@ -251,46 +253,46 @@ public class XMLResponseParser extends DefaultHandler {
             	item.setKey(body);
             	collection.setKey(body);
             	attachment.key = body;
-            	Log.i(TAG, body);
+            	Log.d(TAG, body);
             }
         });
         entry.getChild(ATOM_NAMESPACE, "updated").setEndTextElementListener(new EndTextElementListener(){
             public void end(String body) {
             	item.setTimestamp(body);
             	collection.setTimestamp(body);
-            	Log.i(TAG, body);
+            	Log.d(TAG, body);
             }
         });
         entry.getChild(Z_NAMESPACE, "itemType").setEndTextElementListener(new EndTextElementListener(){
             public void end(String body) {
             	item.setType(body);
             	items = true;
-            	Log.i(TAG, body);
+            	Log.d(TAG, body);
             }
         });
         entry.getChild(Z_NAMESPACE, "numChildren").setEndTextElementListener(new EndTextElementListener(){
             public void end(String body) {
             	item.setChildren(body);
-            	Log.i(TAG, body);
+            	Log.d(TAG, body);
             }
         });
         entry.getChild(Z_NAMESPACE, "year").setEndTextElementListener(new EndTextElementListener(){
             public void end(String body) {
             	item.setYear(body);
-            	Log.i(TAG, body);
+            	Log.d(TAG, body);
             }
         });
         entry.getChild(Z_NAMESPACE, "creatorSummary").setEndTextElementListener(new EndTextElementListener(){
             public void end(String body) {
             	item.setCreatorSummary(body);
-            	Log.i(TAG, body);
+            	Log.d(TAG, body);
             }
         });
         entry.getChild(ATOM_NAMESPACE, "id").setEndTextElementListener(new EndTextElementListener(){
             public void end(String body) {
             	item.setId(body);
             	collection.setId(body);
-            	Log.i(TAG, body);
+            	Log.d(TAG, body);
             }
         });
         entry.getChild(ATOM_NAMESPACE, "link").setStartElementListener(new StartElementListener(){
@@ -312,7 +314,7 @@ public class XMLResponseParser extends DefaultHandler {
             		attachment.url = href;
             		attachment.status = Attachment.ZFS_AVAILABLE;
             		Log.d(TAG, "url= "+attachment.url);
-            	} else if (rel != null) Log.d(TAG, "rel="+rel+"href="+href);
+            	} else if (rel != null) Log.d(TAG, "rel="+rel+" href="+href);
             }
         });
         entry.getChild(ATOM_NAMESPACE, "content").setStartElementListener(new StartElementListener(){
@@ -321,7 +323,7 @@ public class XMLResponseParser extends DefaultHandler {
             	item.setEtag(etag);
             	collection.setEtag(etag);
             	attachment.etag = etag;
-            	Log.i(TAG, etag);
+            	Log.d(TAG, etag);
             }
         });
         entry.getChild(ATOM_NAMESPACE, "content").setEndTextElementListener(new EndTextElementListener(){
@@ -331,14 +333,14 @@ public class XMLResponseParser extends DefaultHandler {
             		try {
             			collection.setParent(obj.getString("parent"));
             		} catch (JSONException e) {
-                		Log.e(TAG, "collection parent not found in JSON; not a collection?");
+                		Log.d(TAG, "No parent found in JSON content; not a subcollection or not a collection");
             		}
             		item.setContent(obj);
             		attachment.content = obj;
             	} catch (JSONException e) {
-            		Log.e(TAG, "content", e);
+            		Log.e(TAG, "JSON parse exception loading content", e);
             	}
-            	Log.i(TAG, body);
+            	Log.d(TAG, body);
             }
         });
         try {

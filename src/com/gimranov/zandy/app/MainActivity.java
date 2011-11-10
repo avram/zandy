@@ -183,6 +183,32 @@ public class MainActivity extends Activity implements OnClickListener {
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
 		Log.d(TAG, "Got new intent");
+		
+		if (intent == null) return;
+		
+		// Here's what we do if we get a share request from the browser
+			String action = intent.getAction();
+			if (action != null
+					&& action.equals("android.intent.action.SEND")
+					&& intent.getExtras() != null) {
+				// Browser sends us no data, just extras
+				Bundle extras = intent.getExtras();
+				for (String s : extras.keySet()) {
+					try {
+						Log.d("TAG","Got extra: "+s +" => "+extras.getString(s));
+					} catch (ClassCastException e) {
+						Log.e(TAG, "Not a string, it seems", e);
+					}
+				}
+				
+				Bundle b = new Bundle();
+				b.putString("url", extras.getString("android.intent.extra.TEXT"));
+				b.putString("title", extras.getString("android.intent.extra.SUBJECT"));
+				
+				showDialog(DIALOG_CHOOSE_COLLECTION, b);
+				return;
+			}
+		
 		/*
 		 * It's possible we've lost these to garbage collection, so we
 		 * reinstantiate them if they turn out to be null at this point.
@@ -202,10 +228,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		 * caused a NullPointerException for a user.
 		 */
 		Uri uri;
-		if (intent != null)
-			uri = intent.getData();
-		else
-			return;
+		uri = intent.getData();
 		
 		if (uri != null) {
 			/*
@@ -326,6 +349,7 @@ public class MainActivity extends Activity implements OnClickListener {
 							Item.set(item.getKey(), "title", title, db);
 							Item.setTag(item.getKey(), null, "#added-by-zandy", 1, db);
 							collections.get(pos).add(item);
+							collections.get(pos).saveChildren(db);
 							Log.d(TAG, "Loading item data with key: "+item.getKey());
 							// We create and issue a specified intent with the necessary data
 					    	Intent i = new Intent(getBaseContext(), ItemDataActivity.class);

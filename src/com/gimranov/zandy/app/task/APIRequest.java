@@ -44,7 +44,7 @@ import com.gimranov.zandy.app.data.ItemCollection;
 public class APIRequest {
 	private static final String TAG = "com.gimranov.zandy.app.task.APIRequest";
 
-	
+	// XXX i18n
 	public static final String API_DIRTY =	"Unsynced change";
 	public static final String API_NEW =	"New item / collection";
 	public static final String API_MISSING ="Partial data";
