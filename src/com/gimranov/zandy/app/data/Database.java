@@ -22,9 +22,8 @@ public class Database {
 	private final DatabaseOpenHelper mDatabaseOpenHelper;
 	
 	public Database(Context context) {
-		mDatabaseOpenHelper = new DatabaseOpenHelper(context);
+		mDatabaseOpenHelper = DatabaseOpenHelper.getHelper(context);
 	}
-	
 	
 	public Cursor query(String table, String[] columns, String selection,
 			String[] selectionArgs, String groupBy, String having, String orderBy, String limit) {
@@ -76,6 +75,8 @@ public class Database {
 		private final Context mHelperContext;
 		@SuppressWarnings("unused")
 		private SQLiteDatabase mDatabase;
+		
+		private static DatabaseOpenHelper instance;
 		
 		// table creation statements
 		// for temp table creation to work, must have (_id as first field
@@ -157,6 +158,13 @@ public class Database {
 		DatabaseOpenHelper(Context context) {
 			super(context, DATABASE_NAME, null, DATABASE_VERSION);
 			mHelperContext = context;
+		}
+		
+		public static synchronized DatabaseOpenHelper getHelper(Context context) {
+			if (instance == null)
+				instance = new DatabaseOpenHelper(context);
+			
+			return instance;
 		}
 
 		@Override
