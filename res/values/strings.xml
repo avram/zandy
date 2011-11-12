@@ -53,6 +53,7 @@
 	<string name="attachment_download_initiated">File download initiated.</string>
 	<string name="attachment_download_failed">File download may have failed; try again.</string>
 	<string name="attachment_intent_failed">No application available to open files of type %s.</string>
+	<string name="attachment_intent_failed_for_uri">No application available to open URI: %s</string>
 	<!-- Tags -->
 	<string name="tags_for_item">Tags for %s</string>
 	<string name="tag_auto">Auto</string>

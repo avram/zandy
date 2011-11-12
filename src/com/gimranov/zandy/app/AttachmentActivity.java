@@ -217,9 +217,17 @@ public class AttachmentActivity extends ListActivity {
 						public void onClick(DialogInterface dialog, int whichButton) {
 		        			// The behavior for invalid URIs might be nasty, but
 		        			// we'll cross that bridge if we come to it.
-		        			Uri uri = Uri.parse(content);
-		        			startActivity(new Intent(Intent.ACTION_VIEW)
-		        							.setData(uri));
+							try {
+								Uri uri = Uri.parse(content);
+								startActivity(new Intent(Intent.ACTION_VIEW)
+			        							.setData(uri));
+							} catch (ActivityNotFoundException e) {
+								// There can be exceptions here; not sure what would prompt us to have
+								// URIs that the browser can't load, but it apparently happens.
+								Toast.makeText(getApplicationContext(),
+										getResources().getString(R.string.attachment_intent_failed_for_uri, content), 
+				        				Toast.LENGTH_SHORT).show();
+							}
 		    	        }
 		    	    }).setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
 		    	        public void onClick(DialogInterface dialog, int whichButton) {
