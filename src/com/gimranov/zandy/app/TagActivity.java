@@ -73,7 +73,6 @@ public class TagActivity extends ListActivity {
         db = new Database(this);
                 
         /* Get the incoming data from the calling activity */
-        // XXX Note that we don't know what to do when there is no key assigned
         String itemKey = getIntent().getStringExtra("com.gimranov.zandy.app.itemKey");
         Item item = Item.load(itemKey, db);
         this.item = item;
@@ -121,28 +120,11 @@ public class TagActivity extends ListActivity {
         	// being used with the correct parametrization.
         	@SuppressWarnings("unchecked")
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        		// If we have a click on an entry, do something...
+        		// If we have a click on an entry, prompt to view that tag's items.
         		ArrayAdapter<Bundle> adapter = (ArrayAdapter<Bundle>) parent.getAdapter();
         		Bundle row = adapter.getItem(position);
-        		
-/* TODO Rework this logic to open an ItemActivity showing tagged items
-        		if (row.getString("label").equals("url")) {
-        			row.putString("url", row.getString("content"));
-        			removeDialog(DIALOG_CONFIRM_NAVIGATE);
-        			showDialog(DIALOG_CONFIRM_NAVIGATE, row);
-        			return;
-        		}
-        		
-        		if (row.getString("label").equals("DOI")) {
-        			String url = "http://dx.doi.org/"+Uri.encode(row.getString("content"));
-        			row.putString("url", url);
-        			removeDialog(DIALOG_CONFIRM_NAVIGATE);
-        			showDialog(DIALOG_CONFIRM_NAVIGATE, row);
-        			return;
-        		}
- */       		
-				Toast.makeText(getApplicationContext(), row.getString("tag"), 
-        				Toast.LENGTH_SHORT).show();
+      			removeDialog(DIALOG_CONFIRM_NAVIGATE);
+       			showDialog(DIALOG_CONFIRM_NAVIGATE, row);
         	}
         });
         
@@ -217,23 +199,20 @@ public class TagActivity extends ListActivity {
 	    	    }).create();
 			return dialog;
 		case DIALOG_CONFIRM_NAVIGATE:
-/*			dialog = new AlertDialog.Builder(this)
-		    	    .setTitle("View this online?")
-		    	    .setPositiveButton("View", new DialogInterface.OnClickListener() {
+			dialog = new AlertDialog.Builder(this)
+		    	    .setTitle(getResources().getString(R.string.tag_view_confirm))
+		    	    .setPositiveButton(getResources().getString(R.string.tag_view), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int whichButton) {
-		        			// The behavior for invalid URIs might be nasty, but
-		        			// we'll cross that bridge if we come to it.
-		        			Uri uri = Uri.parse(content);
-		        			startActivity(new Intent(Intent.ACTION_VIEW)
-		        							.setData(uri));
+							Intent i = new Intent(getBaseContext(), ItemActivity.class);
+		    		    	i.putExtra("com.gimranov.zandy.app.tag", tag);
+		        	    	startActivity(i);
 		    	        }
-		    	    }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+		    	    }).setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
 		    	        public void onClick(DialogInterface dialog, int whichButton) {
 		    	        	// do nothing
 		    	        }
 		    	    }).create();
-			return dialog;*/
-			return null;
+			return dialog;
 		default:
 			Log.e(TAG, "Invalid dialog requested");
 			return null;

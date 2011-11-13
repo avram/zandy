@@ -65,6 +65,9 @@
 	<string name="tag_auto">Auto</string>
 	<string name="tag_user">User</string>
 	<string name="tag_edit">Edit tag</string>
+	<string name="tag_view_confirm">View items for this tag?</string>
+ 	<string name="tag_view">View</string>
+ 	<string name="tag_viewing_items">Tag: %s</string>
 	<!-- Collections -->
 	<string name="collections">Collections</string>
 	<string name="collection_cant_open">Can\'t open %s</string>

@@ -78,7 +78,6 @@ public class ItemActivity extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        
         db = new Database(this);
 		
         setContentView(R.layout.items);
@@ -144,7 +143,13 @@ public class ItemActivity extends ListActivity {
         } else if (query != null) {
            	cursor = getCursor(query);
           	this.setTitle(getResources().getString(R.string.search_results, query));
-        } else {        
+        } else if (intent.getStringExtra("com.gimranov.zandy.app.tag") != null) {
+        	String tag = intent.getStringExtra("com.gimranov.zandy.app.tag");
+        	Query q = new Query();
+        	q.set("tag", tag);
+        	cursor = getCursor(q);
+        	this.setTitle(getResources().getString(R.string.tag_viewing_items, tag));
+     	} else {
 	        collectionKey = intent.getStringExtra("com.gimranov.zandy.app.collectionKey");
 	        if (collectionKey != null) {
 	        	ItemCollection coll = ItemCollection.load(collectionKey, db);
@@ -328,6 +333,10 @@ public class ItemActivity extends ListActivity {
 			Log.e(TAG, "cursor is null");
 		}
 		return cursor;
+	}
+	
+	public Cursor getCursor(Query query) {
+		return query.query(db);
 	}
 
 }
