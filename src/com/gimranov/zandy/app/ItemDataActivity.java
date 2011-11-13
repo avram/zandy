@@ -176,7 +176,7 @@ public class ItemDataActivity extends ListActivity {
 	    			return;
 	    		} else if (row.getString("label").equals("collections")) {
 	    	    	Log.d(TAG, "Trying to start collection membership activity");
-	    	    	Intent i = new Intent(getBaseContext(), AttachmentActivity.class);
+	    	    	Intent i = new Intent(getBaseContext(), CollectionMembershipActivity.class);
 	    	    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
 	    	    	startActivity(i);
 	    			return;

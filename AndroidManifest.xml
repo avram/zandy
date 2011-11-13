@@ -60,5 +60,9 @@
             	  android:label="@string/app_name"
                   android:launchMode="standard">
         </activity>
+        <activity android:name="CollectionMembershipActivity"
+            	  android:label="@string/app_name"
+                  android:launchMode="standard">
+        </activity>
     </application>
 </manifest>

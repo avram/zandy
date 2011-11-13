@@ -99,12 +99,17 @@ public class ItemCollection extends HashSet<Item> {
 	}
 	
 	/**
-	 * Items are marked to be removed by setting them to null. When the collection is next saved,
-	 * they will be removed from the database. We also call void remove(Item) to allow for queueing
+	 * We call void remove(Item) to allow for queueing
 	 * the action for application on the server, via the API.
+	 * 
+	 * XXX If the API request isn't executed before GC gets it, we
+	 * will lose it!
 	 */
-	public boolean remove(Item item) {
+	public boolean remove(Item item, Database db) {
+		String[] args = {dbId, item.dbId};
+		db.rawQuery("delete from itemtocollections where collection_id=? and item_id=?", args);
 		removals.add(APIRequest.remove(item, this));
+		super.remove(item);
 		return true;
 	}
 		
@@ -192,23 +197,18 @@ public class ItemCollection extends HashSet<Item> {
 		dirty = APIRequest.API_CLEAN;
 	}
 	
-	public boolean add(ArrayList<Item> items) {
-		boolean status = super.addAll(items);
-		// Add this to the additions list if a change was made
-		if (status) {
-			additions.add(APIRequest.add(items, this));
-		}
-		return status;
-	}
-	
 	public boolean add(Item item) {
-		boolean status = super.add(item);
-		Log.d(TAG, "item added to collection");
-		// Add this to the additions list if a change was made
-		if (status) {
-			additions.add(APIRequest.add(item, this));
+		for (Item i : this) {
+			if(i.equals(item)) {
+				Log.d(TAG, "Item already in collection");
+				return false;
+			}
 		}
-		return status;
+		
+		super.add(item);
+		Log.d(TAG, "Item added to collection");
+		additions.add(APIRequest.add(item, this));
+		return true;
 	}
 	
 	/**

@@ -70,9 +70,12 @@
  	<string name="tag_viewing_items">Tag: %s</string>
 	<!-- Collections -->
 	<string name="collections">Collections</string>
+	<string name="collections_for_item">Collections containing %s</string>
 	<string name="collection_cant_open">Can\'t open %s</string>
 	<string name="collection_no_subcollections">No subcollections for collection. To view items in the collection, touch and hold the collection.</string>
 	<string name="collection_empty">Collection is empty, requesting update.</string>
+	<string name="collection_membership_detail">Collection options</string>
+	<string name="collection_remove_item">Remove item</string>
 	<!-- Syncing -->
 	<string name="sync_log_in_first">Log in to sync</string>
 	<string name="sync_started">Started syncing...</string>

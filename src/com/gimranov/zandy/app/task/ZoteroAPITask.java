@@ -30,6 +30,7 @@ import java.util.ArrayList;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -215,7 +216,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
     					+ ItemCollection.removals.size()) {
     			Log.d(TAG, "Queueing removed collection membership ("+j+")");
     			mReqs[j] = ServerCredentials.prep(userID,
-    						ItemCollection.additions.get(j 
+    						ItemCollection.removals.get(j 
     								- Item.queue.size()
     								- Attachment.queue.size()
     								- ItemCollection.additions.size()));
@@ -232,10 +233,10 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 								- ItemCollection.additions.size()
 								- ItemCollection.removals.size()));
     		}
-    		// We'll clear the collection change queues; we may need to re-add failed requests later
-    		ItemCollection.additions.clear();
-    		ItemCollection.removals.clear();
     	}
+    	// We'll clear the collection change queues; we may need to re-add failed requests later
+		ItemCollection.additions.clear();
+		ItemCollection.removals.clear();
     	
     	// We pref this off
     	if (syncMode == AUTO_SYNC_STALE_COLLECTIONS) {
@@ -363,7 +364,14 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 						Log.e(TAG,"Post Body:"+ req.body);
 					}
 				} else {
-					resp = client.execute(request, new BasicResponseHandler());
+					BasicResponseHandler brh = new BasicResponseHandler();
+					try {
+						resp = client.execute(request, brh);
+						req.onSuccess(db);
+					} catch (ClientProtocolException e) {
+						Log.e(TAG, "Exception thrown issuing POST request: ", e);
+						req.onFailure(db);
+					}
 				}
 			} else if (method.equals("put")) {
 				HttpPut request = new HttpPut();
@@ -391,13 +399,16 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 						XMLResponseParser parse = new XMLResponseParser(in);
 						parse.parse(XMLResponseParser.MODE_ENTRY, uri.toString(), db);
 						resp = "XML was parsed.";
+						// TODO
+						req.onSuccess(db);
 					} else {
 						Log.e(TAG, "Not parsing non-XML response, code >= 400");
 						ByteArrayOutputStream ostream = new ByteArrayOutputStream();
 						hr.getEntity().writeTo(ostream);
 						Log.e(TAG,"Error Body: "+ ostream.toString());
 						Log.e(TAG,"Put Body:"+ req.body);
-						
+						// TODO
+						req.onFailure(db);
 						// "Precondition Failed"
 						// The item changed server-side, so we have a conflict to resolve...
 						// XXX This is a hard problem.
@@ -406,7 +417,14 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 						}
 					}
 				} else {
-					resp = client.execute(request, new BasicResponseHandler());
+					BasicResponseHandler brh = new BasicResponseHandler();
+					try {
+						resp = client.execute(request, brh);
+						req.onSuccess(db);
+					} catch (ClientProtocolException e) {
+						Log.e(TAG, "Exception thrown issuing PUT request: ", e);
+						req.onFailure(db);
+					}
 				}
 			} else if (method.equals("delete")) {
 				HttpDelete request = new HttpDelete();
@@ -414,7 +432,15 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 				if(req.ifMatch != null) {
 					request.setHeader("If-Match", req.ifMatch);
 				}
-				resp = client.execute(request, new BasicResponseHandler());
+				
+				BasicResponseHandler brh = new BasicResponseHandler();
+				try {
+					resp = client.execute(request, brh);
+					req.onSuccess(db);
+				} catch (ClientProtocolException e) {
+					Log.e(TAG, "Exception thrown issuing DELETE request: ", e);
+					req.onFailure(db);
+				}
 			} else {
 				HttpGet request = new HttpGet();
 				request.setURI(uri);
@@ -437,13 +463,16 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 											XMLResponseParser.MODE_ENTRY : XMLResponseParser.MODE_FEED;
 						parse.parse(mode, uri.toString(), db);
 						resp = "XML was parsed.";
+						// TODO
+						req.onSuccess(db);
 					} else {
 						Log.e(TAG, "Not parsing non-XML response, code >= 400");
 						ByteArrayOutputStream ostream = new ByteArrayOutputStream();
 						hr.getEntity().writeTo(ostream);
 						Log.e(TAG,"Error Body: "+ ostream.toString());
 						Log.e(TAG,"Put Body:"+ req.body);
-						
+						// TODO
+						req.onFailure(db);
 						// "Precondition Failed"
 						// The item changed server-side, so we have a conflict to resolve...
 						// XXX This is a hard problem.
@@ -452,7 +481,14 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 						}
 					}
 				} else {
-					resp = client.execute(request, new BasicResponseHandler());
+					BasicResponseHandler brh = new BasicResponseHandler();
+					try {
+						resp = client.execute(request, brh);
+						req.onSuccess(db);
+					} catch (ClientProtocolException e) {
+						Log.e(TAG, "Exception thrown issuing GET request: ", e);
+						req.onFailure(db);
+					}
 				}
 			}
 			Log.i(TAG, "Response: " + resp);

@@ -112,6 +112,7 @@ public class XMLResponseParser extends DefaultHandler {
 	            			String id = href.substring(colloc+13, itemloc);
 	    					Log.d(TAG, "Collection key: "+id);
 	    					parent = ItemCollection.load(id, db);
+	    					if (parent != null) parent.loadChildren(db);
 	    				} else {
 	    					Log.d(TAG, "Key extraction failed from root; maybe this isn't a collection listing?");
 	    				}

@@ -103,6 +103,16 @@ public class APIRequest {
 	public String updateType;
 	
 	/**
+	 * Database query to run upon success
+	 */
+	public String onSuccess;
+	
+	/**
+	 * Arguments to database query to run upon success
+	 */
+	public String[] onSuccessArgs;
+	
+	/**
 	 * Creates a basic APIRequest item. Augment the item using instance methods for more complex
 	 * requests, or pass it to ZoteroAPITask for simpler ones.
 	 * 
@@ -116,6 +126,27 @@ public class APIRequest {
 		this.key = key;
 		// default to XML processing
 		this.disposition = "xml";
+	}
+	
+	/**
+	 * Runs the request's onSuccess query.
+	 * This should later be implemented as a callback, to get more flexibility
+	 * @param db
+	 */
+	public void onSuccess(Database db) {
+		if (onSuccess != null) {
+			Log.d(TAG, "Running onSuccess for request");
+			db.rawQuery(onSuccess, onSuccessArgs);
+		}
+	}
+	
+	/**
+	 * Runs the request's onFailure query.
+	 * This should later be implemented as a callback, to get more flexibility
+	 * @param db
+	 */
+	public void onFailure(Database db) {
+		// TODO
 	}
 	
 	/**
@@ -191,6 +222,11 @@ public class APIRequest {
 								"DELETE",
 								null);
 		templ.disposition = "none";
+		
+		templ.onSuccess = "DELETE FROM itemtocollections where collection_id=? AND item_id=?";
+		String[] args = {collection.dbId, item.dbId};
+		templ.onSuccessArgs = args;
+		
 		return templ;
 	}
 	
