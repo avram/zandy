@@ -487,4 +487,57 @@ public class ItemCollection extends HashSet<Item> {
 		
 		return collections;
 	}
+	
+	/**
+	 * Gives us ItemCollection objects containing given item
+	 * to feed into something like UI
+	 * @return
+	 */
+	public static ArrayList<ItemCollection> getCollections(Item i, Database db) {
+		ArrayList<ItemCollection> collections = new ArrayList<ItemCollection>();
+		ItemCollection coll;
+		String[] args = { i.dbId };
+		Cursor cursor = db.rawQuery("SELECT collection_name, collection_parent," +
+				" etag, dirty, collections._id, collection_key, collection_size," +
+				" timestamp FROM collections, itemtocollections" +
+				" WHERE collections._id = collection_id AND item_id=?" +
+				"	 ORDER BY collection_name",
+				args);
+		
+		if (cursor == null) {
+			Log.d(TAG,"No collections found for item");
+			return collections;
+		}
+		
+		do {
+			Log.d(TAG,"Adding collection to collection list");
+			coll = load(cursor);
+			collections.add(coll);
+		} while (cursor.moveToNext() != false);
+		if (cursor != null) cursor.close();
+		
+		return collections;
+	}
+	
+	/**
+	 * Gives us count of ItemCollection objects containing given item
+	 * to feed into something like UI
+	 * @return
+	 */
+	public static int getCollectionCount(Item i, Database db) {
+		String[] args = { i.dbId };
+		Cursor cursor = db.rawQuery("SELECT COUNT(*) " +
+				" FROM collections, itemtocollections" +
+				" WHERE collections._id = collection_id AND item_id=?",
+				args);
+		
+		if (cursor == null) {
+			Log.d(TAG,"No collections found for item");
+			return 0;
+		}
+		
+		int count = cursor.getInt(0);
+		if (cursor != null) cursor.close();
+		return count;
+	}
 }

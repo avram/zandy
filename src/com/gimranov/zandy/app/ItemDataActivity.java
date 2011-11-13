@@ -122,6 +122,9 @@ public class ItemDataActivity extends ListActivity {
         			int atts = b.getInt("attachmentCount", 0);
 	        		if (notes == 0 && atts == 0) getResources().getString(R.string.item_attachment_info_none);
 	    			else content = getResources().getString(R.string.item_attachment_info_template, notes, atts);
+        		} else if ("collections".equals(getItem(position).getString("label"))) {
+        			int count = b.getInt("collectionCount", 0);
+	        		content = getResources().getString(R.string.item_collection_count, count);
         		} else {
         			content = b.getString("content");
         		}

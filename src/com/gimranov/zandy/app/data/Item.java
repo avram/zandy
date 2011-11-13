@@ -343,7 +343,17 @@ public class Item {
 
 			b.putInt("noteCount", notes);
 			b.putInt("attachmentCount", atts);
+			b.putString("content", "not-empty-so-sorting-works");
 			b.putString("label", "children");
+			b.putString("itemKey", getKey());
+			rows.add(b);
+			
+			b = new Bundle();
+			int collectionCount = ItemCollection.getCollectionCount(this, db);
+
+			b.putInt("collectionCount", collectionCount);
+			b.putString("content", "not-empty-so-sorting-works");
+			b.putString("label", "collections");
 			b.putString("itemKey", getKey());
 			rows.add(b);
 		} catch (JSONException e) {
@@ -1076,6 +1086,8 @@ public class Item {
 			return "Item Type";
 		if (s.equals("children"))
 			return "Attachments";
+		if (s.equals("collections"))
+			return "Collections";
 		
 		// And item types
 		if (s.equals("artwork"))
