@@ -36,6 +36,7 @@
     <string name="cant_open_item">Can\'t open %s</string>
     <string name="item_type">Item type</string>
     <string name="set_sort_order">Set sort order</string>
+    <string name="search_results">Search results: %s</string>
     <!-- ItemDataActivity (item details) -->
     <string name="edit_item_field">Edit %s</string>
     <string name="item_delete_confirm">Delete this item?</string>
@@ -54,6 +55,7 @@
 	<string name="attachment_download_failed">File download may have failed; try again.</string>
 	<string name="attachment_intent_failed">No application available to open files of type %s.</string>
 	<string name="attachment_intent_failed_for_uri">No application available to open URI: %s</string>
+    <string name="attachment_delete_confirm">Delete this attachment?</string>
 	<!-- Tags -->
 	<string name="tags_for_item">Tags for %s</string>
 	<string name="tag_auto">Auto</string>

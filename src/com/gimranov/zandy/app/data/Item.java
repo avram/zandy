@@ -518,8 +518,15 @@ public class Item {
 		db.rawQuery("delete from items where _id=?", args);
 		db.rawQuery("delete from itemtocreators where item_id=?", args);
 		db.rawQuery("delete from itemtocollections where item_id=?", args);
-		String[] args2 = { key, etag };
-		db.rawQuery("insert into deleteditems (item_key, etag) values (?, ?)", args2);		
+		ArrayList<Attachment> atts = Attachment.forItem(this, db);
+		for (Attachment a : atts) {
+			a.delete(db);
+		}
+		// Don't prepare deletion requests for unsynced new items
+		if (!APIRequest.API_NEW.equals(dirty)) {
+			String[] args2 = { key, etag };
+			db.rawQuery("insert into deleteditems (item_key, etag) values (?, ?)", args2);	
+		}
 	}
 	
 	/**

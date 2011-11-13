@@ -115,13 +115,7 @@ public class ItemActivity extends ListActivity {
 
 	protected void onResume() {
 		ItemAdapter adapter = (ItemAdapter) getListAdapter();
-		// XXX This may be too agressive-- fix if causes issues
-		Cursor cur = adapter.getCursor();
-		if (cur != null && !cur.isClosed()) cur.requery();
-		else {
-			prepareAdapter();
-		}
-		adapter.notifyDataSetChanged();
+		adapter.changeCursor(prepareCursor());
     	super.onResume();
     }
     
@@ -134,32 +128,34 @@ public class ItemActivity extends ListActivity {
     }
     
     private void prepareAdapter() {
-    	ItemAdapter itemAdapter;
+		ItemAdapter adapter = new ItemAdapter(this, prepareCursor());
+        setListAdapter(adapter);
+    }
+    
+    private Cursor prepareCursor() {
+    	Cursor cursor;
         // Be ready for a search
         Intent intent = getIntent();
         
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
         	query = intent.getStringExtra(SearchManager.QUERY);
-        	itemAdapter = create(query);
-        	// XXX i18n
-          	this.setTitle("Search results: "+query);
+        	cursor = getCursor(query);
+          	this.setTitle(getResources().getString(R.string.search_results, query));
         } else if (query != null) {
-           	itemAdapter = create(query);
-           	// XXX i18n
-            this.setTitle("Search results: "+query);
+           	cursor = getCursor(query);
+          	this.setTitle(getResources().getString(R.string.search_results, query));
         } else {        
 	        collectionKey = intent.getStringExtra("com.gimranov.zandy.app.collectionKey");
 	        if (collectionKey != null) {
 	        	ItemCollection coll = ItemCollection.load(collectionKey, db);
-	        	itemAdapter = create(coll);
+	        	cursor = getCursor(coll);
 	        	this.setTitle(coll.getTitle());
 	        } else {
-	        	itemAdapter = create();
+	        	cursor = getCursor();
 	        	this.setTitle(getResources().getString(R.string.all_items));
 	        }
         }
-        
-        setListAdapter(itemAdapter);
+        return cursor;
     }
     
 	protected Dialog onCreateDialog(int id, Bundle b) {
@@ -296,29 +292,6 @@ public class ItemActivity extends ListActivity {
             return super.onOptionsItemSelected(item);
         }
     }
-    
-	public ItemAdapter create() {
-		Cursor cursor = getCursor();
-		ItemAdapter adapter = new ItemAdapter(this, cursor);
-		return adapter;
-	}
-	
-	public ItemAdapter create(ItemCollection parent) {
-		Cursor cursor = getCursor(parent);
-		ItemAdapter adapter = new ItemAdapter(this, cursor);
-		return adapter;
-	}
-	
-	/**
-	 * Creates an ItemAdapter for the specified query
-	 * @param query
-	 * @return
-	 */
-    private ItemAdapter create(String query) {
-		Cursor cursor = getCursor(query);
-		ItemAdapter adapter = new ItemAdapter(this, cursor);
-		return adapter;		
-	}
 	
 	public void setSortBy(String sort) {
 		this.sortBy = sort;

@@ -124,6 +124,20 @@ public class Attachment {
 	}
 	
 	/**
+	 * Deletes an attachment from the database, keeping a record of it in the deleteditems table
+	 * We will then send out delete requests via the API to propagate the deletion
+	 */
+	public void delete(Database db) {
+		String[] args = { dbId };
+		db.rawQuery("delete from attachments where _id=?", args);
+		// Don't prepare deletion requests for unsynced new attachments
+		if (!APIRequest.API_NEW.equals(dirty)) {
+			String[] args2 = { key, etag };
+			db.rawQuery("insert into deleteditems (item_key, etag) values (?, ?)", args2);		
+		}
+	}
+	
+	/**
 	 * Identifies dirty items in the database and queues them for syncing
 	 */
 	public static void queue(Database db) {

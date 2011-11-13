@@ -79,7 +79,6 @@ public class CreatorActivity extends ListActivity {
         db = new Database(this);
         
         /* Get the incoming data from the calling activity */
-        // XXX Note that we don't know what to do when there is no key assigned
         String itemKey = getIntent().getStringExtra("com.gimranov.zandy.app.itemKey");
         Item item = Item.load(itemKey, db);
         this.item = item;
@@ -244,7 +243,7 @@ public class CreatorActivity extends ListActivity {
 			spinner.setSelection(arrPosition);
 			builder = new AlertDialog.Builder(this);
 			builder.setView(layout);
-			builder.setPositiveButton("Ok", new OnClickListener(){
+			builder.setPositiveButton(getResources().getString(R.string.ok), new OnClickListener(){
     	        @SuppressWarnings("unchecked")
 				public void onClick(DialogInterface dialog, int whichButton) {
     	        	Creator c;
@@ -285,13 +284,13 @@ public class CreatorActivity extends ListActivity {
     	        }
 			});
 			
-			builder.setNeutralButton("Cancel", new OnClickListener(){
+			builder.setNeutralButton(getResources().getString(R.string.cancel), new OnClickListener(){
 				public void onClick(DialogInterface dialog, int whichButton) {
     	        	// do nothing
     	        }
 			});
 
-			builder.setNegativeButton("Delete", new OnClickListener(){
+			builder.setNegativeButton(getResources().getString(R.string.menu_delete), new OnClickListener(){
 				@SuppressWarnings("unchecked")
 				public void onClick(DialogInterface dialog, int whichButton) {
     	            Item.setCreator(item.getKey(), null, creatorPosition, db);
@@ -349,13 +348,13 @@ public class CreatorActivity extends ListActivity {
         switch (item.getItemId()) {
         case R.id.do_sync:
         	if (!ServerCredentials.check(getApplicationContext())) {
-            	Toast.makeText(getApplicationContext(), "Log in to sync", 
+            	Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_log_in_first), 
         				Toast.LENGTH_SHORT).show();
             	return true;
         	}
         	Log.d(TAG, "Preparing sync requests, starting with present item");
         	new ZoteroAPITask(getBaseContext()).execute(APIRequest.update(this.item));
-        	Toast.makeText(getApplicationContext(), "Started syncing...", 
+        	Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_started), 
     				Toast.LENGTH_SHORT).show();
         	
         	return true;

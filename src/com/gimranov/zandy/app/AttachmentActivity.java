@@ -229,6 +229,26 @@ public class AttachmentActivity extends ListActivity {
 				        				Toast.LENGTH_SHORT).show();
 							}
 		    	        }
+		    	    }).setNeutralButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+		    	        public void onClick(DialogInterface dialog, int whichButton) {
+		    	        	// do nothing
+		    	        }
+		    	    }).create();
+			return dialog;
+		case DIALOG_CONFIRM_DELETE:
+			dialog = new AlertDialog.Builder(this)
+		    	    .setTitle(getResources().getString(R.string.attachment_delete_confirm))
+		    	    .setPositiveButton(getResources().getString(R.string.menu_delete), new DialogInterface.OnClickListener() {
+						@SuppressWarnings("unchecked")
+						public void onClick(DialogInterface dialog, int whichButton) {
+							Attachment a = Attachment.load(attachmentKey, db);
+							a.delete(db);
+		    	            ArrayAdapter<Attachment> la = (ArrayAdapter<Attachment>) getListAdapter();
+		    	            la.clear();
+		    	            for (Attachment at : Attachment.forItem(Item.load(itemKey, db), db)) {
+		    	            	la.add(at);
+		    	            }
+		    	        }
 		    	    }).setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
 		    	        public void onClick(DialogInterface dialog, int whichButton) {
 		    	        	// do nothing
@@ -239,7 +259,7 @@ public class AttachmentActivity extends ListActivity {
 			final EditText input = new EditText(this);
 			input.setText(content, BufferType.EDITABLE);
 			
-			dialog = new AlertDialog.Builder(this)
+			AlertDialog.Builder builder = new AlertDialog.Builder(this)
 	    	    .setTitle(getResources().getString(R.string.note))
 	    	    .setView(input)
 	    	    .setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
@@ -264,12 +284,25 @@ public class AttachmentActivity extends ListActivity {
 	    	            }
 	    	            la.notifyDataSetChanged();
 	    	        }
-	    	    }).setNegativeButton(getResources().getString(R.string.cancel),
+	    	    }).setNeutralButton(getResources().getString(R.string.cancel),
 	    	    		new DialogInterface.OnClickListener() {
 	    	        public void onClick(DialogInterface dialog, int whichButton) {
 	    	        	// do nothing
 	    	        }
-	    	    }).create();
+	    	    });
+			// We only want the delete option when this isn't a new note
+			if (mode == null || !"new".equals(mode)) {
+				builder = builder.setNegativeButton(getResources().getString(R.string.menu_delete), new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+	    	            Bundle b = new Bundle();
+	    	            b.putString("attachmentKey", attachmentKey);
+	    	            b.putString("itemKey", itemKey);
+	    	        	removeDialog(DIALOG_CONFIRM_DELETE);
+	    	        	showDialog(DIALOG_CONFIRM_DELETE, b);
+	    	        }
+	    	    });
+			}
+			dialog = builder.create();
 			return dialog;
 		case DIALOG_FILE_PROGRESS:
 			Attachment att = Attachment.load(b.getString("key"), db);
@@ -359,6 +392,7 @@ public class AttachmentActivity extends ListActivity {
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+		Bundle b = new Bundle();
         // Handle item selection
         switch (item.getItemId()) {
         case R.id.do_sync:
@@ -374,7 +408,6 @@ public class AttachmentActivity extends ListActivity {
         	
         	return true;
         case R.id.do_new:
-			Bundle b = new Bundle();
 			b.putString("itemKey", this.item.getKey());
 			b.putString("mode", "new");
         	removeDialog(DIALOG_NOTE);

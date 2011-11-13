@@ -305,6 +305,12 @@ public class APIRequest {
 			Item item = Item.load(attachment.parentKey, db);
 			ArrayList<Attachment> aL = new ArrayList<Attachment>();
 			aL.add(attachment);
+			if (item == null) {
+				Log.e(TAG, "Orphaned attachment with key: "+attachment.key);
+				attachment.delete(db);
+				// send something, so we don't get errors elsewhere
+				return new APIRequest(ServerCredentials.APIBASE, "GET", null);
+			}
 			return add(item, aL);
 		}
 		
