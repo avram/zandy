@@ -41,6 +41,9 @@
     <string name="edit_item_field">Edit %s</string>
     <string name="item_delete_confirm">Delete this item?</string>
     <string name="item_type_change">Change item type</string>
+    <string name="item_details">Item Details</string>
+    <string name="item_attachment_info_template">%1$d notes, %2$d attachments</string>
+    <string name="item_attachment_info_none">No attachments or notes.</string>
     <!-- Button labels for dialogs -->
     <string name="ok">Ok</string>
     <string name="cancel">Cancel</string>

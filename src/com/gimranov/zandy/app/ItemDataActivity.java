@@ -83,7 +83,7 @@ public class ItemDataActivity extends ListActivity {
         if (item.getTitle() != null && !item.getTitle().equals(""))
         	this.setTitle(item.getTitle());
         else
-        	this.setTitle("Item Data");
+        	this.setTitle(getResources().getString(R.string.item_details));
         
         ArrayList<Bundle> rows = item.toBundleArray(db);
         
@@ -109,13 +109,23 @@ public class ItemDataActivity extends ListActivity {
         		TextView tvLabel = (TextView) row.findViewById(R.id.data_label);
         		TextView tvContent = (TextView) row.findViewById(R.id.data_content);
         		
+        		Bundle b = getItem(position);
+        		String content = "";
+        		
 	        	/* Since the field names are the API / internal form, we
 	        	 * attempt to get a localized, human-readable version. */
         		tvLabel.setText(Item.localizedStringForString(
-        					getItem(position).getString("label")));
+        					b.getString("label")));
         		
-        		String content = getItem(position).getString("content");
-        		
+        		if ("children".equals(getItem(position).getString("label"))) {
+        			int notes = b.getInt("noteCount", 0);
+        			int atts = b.getInt("attachmentCount", 0);
+	        		if (notes == 0 && atts == 0) getResources().getString(R.string.item_attachment_info_none);
+	    			else content = getResources().getString(R.string.item_attachment_info_template, notes, atts);
+        		} else {
+        			content = b.getString("content");
+        		}
+        	     		
         		tvContent.setText(content);
          
         		return row;
@@ -157,6 +167,12 @@ public class ItemDataActivity extends ListActivity {
         			return;
 	    		} else if (row.getString("label").equals("children")) {
 	    	    	Log.d(TAG, "Trying to start attachment activity");
+	    	    	Intent i = new Intent(getBaseContext(), AttachmentActivity.class);
+	    	    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
+	    	    	startActivity(i);
+	    			return;
+	    		} else if (row.getString("label").equals("collections")) {
+	    	    	Log.d(TAG, "Trying to start collection membership activity");
 	    	    	Intent i = new Intent(getBaseContext(), AttachmentActivity.class);
 	    	    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
 	    	    	startActivity(i);
