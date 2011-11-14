@@ -317,7 +317,7 @@ public class AttachmentActivity extends ListActivity {
 			mProgressDialog = new ProgressDialog(this);
 			mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 			mProgressDialog.setMessage(getResources().getString(R.string.attachment_downloading, b.getString("title")));
-			mProgressDialog.setIndeterminate(false);
+			mProgressDialog.setIndeterminate(true);
 			mProgressDialog.setMax(100);
 			return mProgressDialog;
 		default:
@@ -391,6 +391,11 @@ public class AttachmentActivity extends ListActivity {
 				return;
 			}
 			
+			if (ProgressThread.STATE_UNZIPPING == msg.arg2) {
+				mProgressDialog.setMessage(getResources().getString(R.string.attachment_unzipping));
+				return;
+			}
+			
 			int total = msg.arg1;
 			mProgressDialog.setProgress(total);
 			if (total >= 100) {
@@ -405,6 +410,7 @@ public class AttachmentActivity extends ListActivity {
 		Bundle arguments;
 		final static int STATE_DONE = 5;
 		final static int STATE_RUNNING = 1;
+		final static int STATE_UNZIPPING = 6;
 		int mState;
 		
 		ProgressThread(Handler h, Bundle b) {
@@ -492,7 +498,13 @@ public class AttachmentActivity extends ListActivity {
                     fos.write(baf.toByteArray());
                     fos.close();
                     ZipFile zf = new ZipFile(tmpFile);
-                    Enumeration<ZipEntry> entries = (Enumeration<ZipEntry>) zf.entries();
+                    
+                    // Change the message to reflect that we're unzipping now
+                    Message msg = mHandler.obtainMessage();
+                	msg.arg1 = STATE_UNZIPPING;
+                	mHandler.sendMessage(msg);
+                    
+                	Enumeration<ZipEntry> entries = (Enumeration<ZipEntry>) zf.entries();
                     do {
                     	ZipEntry entry = entries.nextElement();
                     	String name64 = entry.getName();
