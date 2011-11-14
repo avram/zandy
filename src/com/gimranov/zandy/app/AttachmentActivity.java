@@ -21,9 +21,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONException;
@@ -42,6 +47,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.text.Editable;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -406,33 +412,54 @@ public class AttachmentActivity extends ListActivity {
 			arguments = b;
 		}
 		
+		@SuppressWarnings("unchecked")
 		public void run() {
 			mState = STATE_RUNNING;
 			
+			// XXX
+			//String mode = "webdav";
+			
 			// Setup
 			final String attachmentKey = arguments.getString("attachmentKey");
-
+			final String mode = arguments.getString("mode");
+			URL url;
+			File file;
+			String urlstring;
 			Attachment att = Attachment.load(attachmentKey, db);
-			SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+			final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 			String sanitized = att.title.replace(' ', '_')
 					.replaceFirst("^(.*?)(\\.?[^.]*)$", "$1"+"_"+att.key+"$2");
-			File file = new File(ServerCredentials.sDocumentStorageDir,sanitized);
+			file = new File(ServerCredentials.sDocumentStorageDir,sanitized);
 			if (!ServerCredentials.sBaseStorageDir.exists())
 				ServerCredentials.sBaseStorageDir.mkdir();
 			if (!ServerCredentials.sDocumentStorageDir.exists())
 				ServerCredentials.sDocumentStorageDir.mkdir();
 			
-			URL url;
+			if ("webdav".equals(mode)) {
+				//urlstring = "https://dfs.humnet.ucla.edu/home/ajlyon/zotero/223RMC7C.zip";
+				//urlstring = "http://www.gimranov.com/research/zotero/223RMC7C.zip";
+				urlstring = settings.getString("webdav_path", "")+att.key+".zip";
+				
+				Authenticator.setDefault (new Authenticator() {
+				    protected PasswordAuthentication getPasswordAuthentication() {
+				        return new PasswordAuthentication (settings.getString("webdav_username", ""),
+				        		settings.getString("webdav_password", "").toCharArray());
+				    }
+				});
+			} else {
+				urlstring = att.url+"?key="+settings.getString("user_key","");
+			}
+			
 			try {
-				url = new URL(att.url+"?key="+settings.getString("user_key",""));
+				url = new URL(urlstring);
 				//this is the downloader method
                 long startTime = System.currentTimeMillis();
                 Log.d(TAG, "download beginning");
                 Log.d(TAG, "download url:" + url.toString());
                 Log.d(TAG, "downloaded file name:" + file.getPath());
+                
                 /* Open a connection to that URL. */
-                URLConnection ucon = url.openConnection();
-
+                URLConnection ucon = url.openConnection();                
                 /*
                  * Define InputStreams to read from the URLConnection.
                  */
@@ -458,13 +485,42 @@ public class AttachmentActivity extends ListActivity {
                         }
                 }
 
-                /* Convert the Bytes read to a String. */
-                FileOutputStream fos = new FileOutputStream(file);
-                fos.write(baf.toByteArray());
-                fos.close();
-                Log.d(TAG, "download ready in "
-                                + ((System.currentTimeMillis() - startTime) / 1000)
-                                + " sec");
+    			/* Save to temporary directory for WebDAV */
+    			if ("webdav".equals(mode)) {
+    				File tmpFile = File.createTempFile("zandy", ".zip");
+    				FileOutputStream fos = new FileOutputStream(tmpFile);
+                    fos.write(baf.toByteArray());
+                    fos.close();
+                    ZipFile zf = new ZipFile(tmpFile);
+                    Enumeration<ZipEntry> entries = (Enumeration<ZipEntry>) zf.entries();
+                    do {
+                    	ZipEntry entry = entries.nextElement();
+                    	String name64 = entry.getName();
+                    	byte[] byteName = Base64.decode(name64.getBytes(), 0, name64.length() - 5, Base64.DEFAULT);
+                    	String name = new String(byteName);
+                    	Log.d(TAG, "Found file "+name+" from encoded "+name64);
+                    	if (name.contains(".pdf")) {
+                    		FileOutputStream fos2 = new FileOutputStream(file);
+                    		InputStream entryStream = zf.getInputStream(entry);
+                            ByteArrayBuffer baf2 = new ByteArrayBuffer(100);
+                            while ((current = entryStream.read()) != -1) {
+                            	baf2.append((byte) current);
+                            }
+                            fos2.write(baf2.toByteArray());
+                            fos2.close();
+                            Log.d(TAG, "Finished reading a pdf from the zipfile");
+                    	}
+                    } while (entries.hasMoreElements());
+                    zf.close();
+                    tmpFile.delete();
+    			} else {
+                    FileOutputStream fos = new FileOutputStream(file);
+                    fos.write(baf.toByteArray());
+                    fos.close();
+                }
+    			Log.d(TAG, "download ready in "
+                        + ((System.currentTimeMillis() - startTime) / 1000)
+                        + " sec");
 	        } catch (IOException e) {
 	                Log.e(TAG, "Error: ",e);
 	        }
