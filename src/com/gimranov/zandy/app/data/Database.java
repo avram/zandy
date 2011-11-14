@@ -62,7 +62,8 @@ public class Database {
 	 * this object.
 	 */
 	public void close() {
-		mDatabaseOpenHelper.close();
+		//mDatabaseOpenHelper.close();
+		Log.d(TAG, "close() no-op");
 	}
 	
 	public SQLiteStatement compileStatement(String sql) throws SQLiteException {
