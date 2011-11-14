@@ -173,8 +173,9 @@ public class XMLResponseParser extends DefaultHandler {
             		} else {
 	            		item.dirty = APIRequest.API_CLEAN;
         				attachment.dirty = APIRequest.API_CLEAN;
-	            		if (attachment.url != null && attachment.url != "")
-	            			attachment.status = Attachment.ZFS_AVAILABLE;
+	            		if ((attachment.url != null && attachment.url != "")
+	            				|| attachment.content.optInt("linkMode") == Attachment.MODE_NOT_ZFS)
+	            			attachment.status = Attachment.AVAILABLE;
 	            		
 	            		// Don't touch ZFS status here
 	            		Attachment existing = Attachment.load(attachment.key, db);
@@ -313,7 +314,7 @@ public class XMLResponseParser extends DefaultHandler {
                 	Log.d(TAG, "Setting parentKey to: "+attachment.parentKey);
             	} else if (rel != null && rel.equals("enclosure")) {
             		attachment.url = href;
-            		attachment.status = Attachment.ZFS_AVAILABLE;
+            		attachment.status = Attachment.AVAILABLE;
             		Log.d(TAG, "url= "+attachment.url);
             	} else if (rel != null) Log.d(TAG, "rel="+rel+" href="+href);
             }

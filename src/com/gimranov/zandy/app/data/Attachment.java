@@ -43,9 +43,13 @@ public class Attachment {
 	
 	private static final String TAG = "com.gimranov.zandy.app.data.Attachment";
 	
-	public static final int ZFS_AVAILABLE = 1;
-	public static final int ZFS_LOCAL = 2;	
-	public static final int UNKNOWN = 3;	
+	public static final int AVAILABLE = 1;
+	public static final int LOCAL = 2;	
+	public static final int UNKNOWN = 3;
+	
+	public static final int MODE_ZFS = 0; // also indicated by presence of enclosure in XML
+	public static final int MODE_LINK = 3;
+	public static final int MODE_NOT_ZFS = 1; // Can be WebDAV, but also snapshots, as they're not available through ZFS 
 
 	public Attachment () {
 		if (queue == null) queue = new ArrayList<Attachment>();

@@ -151,9 +151,9 @@ public class AttachmentActivity extends ListActivity {
         			tvSummary.setText(note);
         		} else {
         			StringBuffer status = new StringBuffer(getResources().getString(R.string.status));
-        			if (att.status == Attachment.ZFS_AVAILABLE)
+        			if (att.status == Attachment.AVAILABLE)
         				status.append(getResources().getString(R.string.attachment_zfs_available));
-        			else if (att.status == Attachment.ZFS_LOCAL)
+        			else if (att.status == Attachment.LOCAL)
         				status.append(getResources().getString(R.string.attachment_zfs_local));
         			else
         				status.append(getResources().getString(R.string.attachment_unknown));
@@ -175,16 +175,21 @@ public class AttachmentActivity extends ListActivity {
         		Attachment row = adapter.getItem(position);
         		String url = (row.url != null && !row.url.equals("")) ?
         				row.url : row.content.optString("url");
+        		
 				if (!row.getType().equals("note")) {
 					Bundle b = new Bundle();
         			b.putString("title", row.title);
         			b.putString("attachmentKey", row.key);
         			b.putString("content", url);
-        			// 0 means download from ZFS. 1 is everything else (?)
-        			String linkMode = row.content.optString("linkMode","0");
-        			if (linkMode.equals("0"))
+    				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        			int linkMode = row.content.optInt("linkMode", Attachment.MODE_ZFS);
+        			if (linkMode == Attachment.MODE_ZFS)
         				loadFileAttachment(b);
-        			else
+        			else if (linkMode == Attachment.MODE_NOT_ZFS 
+        					&& settings.getBoolean("webdav_enabled", false)) {
+        				b.putString("mode", "webdav");
+        				loadFileAttachment(b);
+        			} else
         				showDialog(DIALOG_CONFIRM_NAVIGATE, b);
 				}
 								
@@ -349,12 +354,12 @@ public class AttachmentActivity extends ListActivity {
 		
 		File attFile = new File(att.filename);
 		
-		if (att.status == Attachment.ZFS_AVAILABLE
+		if (att.status == Attachment.AVAILABLE
 				// Zero-length or nonexistent gives length == 0
 				|| (attFile != null && attFile.length() == 0)) {				
 			Log.d(TAG,"Starting to try and download ZFS-available attachment (status: "+att.status+", fn: "+att.filename+")");
 			showDialog(DIALOG_FILE_PROGRESS, b);
-		} else if (att.status == Attachment.ZFS_LOCAL) {
+		} else if (att.status == Attachment.LOCAL) {
 			Log.d(TAG,"Starting to display local attachment");
 			Uri uri = Uri.fromFile(new File(att.filename));
 			String mimeType = att.content.optString("mimeType",null);
@@ -422,9 +427,6 @@ public class AttachmentActivity extends ListActivity {
 		public void run() {
 			mState = STATE_RUNNING;
 			
-			// XXX
-			//String mode = "webdav";
-			
 			// Setup
 			final String attachmentKey = arguments.getString("attachmentKey");
 			final String mode = arguments.getString("mode");
@@ -444,7 +446,7 @@ public class AttachmentActivity extends ListActivity {
 			if ("webdav".equals(mode)) {
 				//urlstring = "https://dfs.humnet.ucla.edu/home/ajlyon/zotero/223RMC7C.zip";
 				//urlstring = "http://www.gimranov.com/research/zotero/223RMC7C.zip";
-				urlstring = settings.getString("webdav_path", "")+att.key+".zip";
+				urlstring = settings.getString("webdav_path", "")+"/"+att.key+".zip";
 				
 				Authenticator.setDefault (new Authenticator() {
 				    protected PasswordAuthentication getPasswordAuthentication() {
@@ -501,7 +503,7 @@ public class AttachmentActivity extends ListActivity {
                     
                     // Change the message to reflect that we're unzipping now
                     Message msg = mHandler.obtainMessage();
-                	msg.arg1 = STATE_UNZIPPING;
+                	msg.arg2 = STATE_UNZIPPING;
                 	mHandler.sendMessage(msg);
                     
                 	Enumeration<ZipEntry> entries = (Enumeration<ZipEntry>) zf.entries();
@@ -511,6 +513,7 @@ public class AttachmentActivity extends ListActivity {
                     	byte[] byteName = Base64.decode(name64.getBytes(), 0, name64.length() - 5, Base64.DEFAULT);
                     	String name = new String(byteName);
                     	Log.d(TAG, "Found file "+name+" from encoded "+name64);
+                    	// TODO handle file names and extensions better
                     	if (name.contains(".pdf")) {
                     		FileOutputStream fos2 = new FileOutputStream(file);
                     		InputStream entryStream = zf.getInputStream(entry);
@@ -539,11 +542,11 @@ public class AttachmentActivity extends ListActivity {
 			att.filename = file.getPath();
 			File newFile = new File(att.filename);
 			if (newFile.length() > 0) {
-				att.status = Attachment.ZFS_LOCAL;
+				att.status = Attachment.LOCAL;
 				Log.d(TAG,"File downloaded: "+att.filename);
 			} else {
 				Log.d(TAG, "File not downloaded: "+att.filename);
-				att.status = Attachment.ZFS_AVAILABLE;				
+				att.status = Attachment.AVAILABLE;				
 			}
 			att.save(db);
         	Message msg = mHandler.obtainMessage();

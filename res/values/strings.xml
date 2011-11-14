@@ -90,6 +90,15 @@
 	<string name="settings_user_id_desc">This is the numeric user ID for your account at Zotero.org</string>
 	<string name="settings_api_key">API Key</string>
 	<string name="settings_api_key_desc">This is the API key to access your account at Zotero.org</string>
+	<string name="settings_webdav">WebDAV</string>
+	<string name="settings_webdav_enabled">Enable WebDAV</string>
+	<string name="settings_webdav_enabled_desc">Check to have Zandy look for attachments on a WebDAV host</string>
+	<string name="settings_webdav_path">Base URL</string>
+	<string name="settings_webdav_path_desc">Server and path for your WebDAV setup, like https://www.example.com/users/bobsmith/zotero</string>
+	<string name="settings_webdav_username">Username</string>
+	<string name="settings_webdav_username_desc">Username for WebDAV server. This is separate from your Zotero username.</string>
+	<string name="settings_webdav_password">Password</string>
+	<string name="settings_webdav_password_desc">Password for WebDAV server. This is separate from your Zotero password.</string>
 	<!-- Zotero terms -->
     <string name="note">Note</string>
 
