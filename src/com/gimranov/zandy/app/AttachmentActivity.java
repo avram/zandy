@@ -183,9 +183,13 @@ public class AttachmentActivity extends ListActivity {
         			b.putString("content", url);
     				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         			int linkMode = row.content.optInt("linkMode", Attachment.MODE_ZFS);
-        			if (linkMode == Attachment.MODE_ZFS)
+        			
+        			// This is a mess. What on earth are these modes supposed to mean?
+        			if (linkMode == Attachment.MODE_ZFS
+        					&& !settings.getBoolean("webdav_enabled", false))
         				loadFileAttachment(b);
-        			else if (linkMode == Attachment.MODE_NOT_ZFS 
+        			else if ((linkMode == Attachment.MODE_NOT_ZFS 
+        						|| linkMode == Attachment.MODE_ZFS)
         					&& settings.getBoolean("webdav_enabled", false)) {
         				b.putString("mode", "webdav");
         				loadFileAttachment(b);
@@ -335,6 +339,7 @@ public class AttachmentActivity extends ListActivity {
 		switch(id) {
 		case DIALOG_FILE_PROGRESS:
 			mProgressDialog.setProgress(0);
+			mProgressDialog.setMessage(getResources().getString(R.string.attachment_downloading, b.getString("title")));
 			progressThread = new ProgressThread(handler, b);
 			progressThread.start();
 		}
@@ -357,7 +362,7 @@ public class AttachmentActivity extends ListActivity {
 		if (att.status == Attachment.AVAILABLE
 				// Zero-length or nonexistent gives length == 0
 				|| (attFile != null && attFile.length() == 0)) {				
-			Log.d(TAG,"Starting to try and download ZFS-available attachment (status: "+att.status+", fn: "+att.filename+")");
+			Log.d(TAG,"Starting to try and download attachment (status: "+att.status+", fn: "+att.filename+")");
 			showDialog(DIALOG_FILE_PROGRESS, b);
 		} else if (att.status == Attachment.LOCAL) {
 			Log.d(TAG,"Starting to display local attachment");
