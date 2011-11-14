@@ -60,6 +60,7 @@
 	<string name="attachment_intent_failed">No application available to open files of type %s.</string>
 	<string name="attachment_intent_failed_for_uri">No application available to open URI: %s</string>
     <string name="attachment_delete_confirm">Delete this attachment?</string>
+    <string name="attachments_for_item">Attachments for %s</string>
 	<!-- Tags -->
 	<string name="tags_for_item">Tags for %s</string>
 	<string name="tag_auto">Auto</string>

@@ -101,8 +101,7 @@ public class AttachmentActivity extends ListActivity {
         Item item = Item.load(itemKey, db);
         this.item = item;
         
-        // XXX i18n
-        this.setTitle("Attachments for "+item.getTitle());
+        this.setTitle(getResources().getString(R.string.attachments_for_item,item.getTitle()));
         
         ArrayList<Attachment> rows = Attachment.forItem(item, db);
         
