@@ -39,10 +39,10 @@
     <string name="attachment_zfs_available">Доступно для скачивания</string>
     <string name="attachment_zfs_local">Загружен</string>
     <string name="attachment_unknown">Неизвестный статус</string>
-    <string name="attachment_downloading">Скачивается приложение к единице: %s$1</string>
+    <string name="attachment_downloading">Скачивается приложение к единице: %s</string>
 	<string name="attachment_download_initiated">Загрузка файла начата.</string>
 	<string name="attachment_download_failed">Возможно не удалось скачать файл; попробуйте заново.</string>
-	<string name="attachment_intent_failed">Не удалось найти приложение для файлов типа "%s$1".</string>
+	<string name="attachment_intent_failed">Не удалось найти приложение для файлов типа "%s".</string>
 		<!-- Syncing -->
 	<string name="sync_log_in_first">Выполните вход для синхронизации</string>
 	<string name="sync_started">Синхронизация запущена...</string>

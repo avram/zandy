@@ -106,11 +106,10 @@ public class Attachment {
 			Attachment fromDB = load(key, db);
 			dbId = fromDB.dbId;
 		} else {
-			Log.d(TAG, "Saving new, with status: "+status);
+			Log.d(TAG, "Updating attachment, with status: "+status+" and fn: "+filename);
 			if (dbId == null)
 				dbId = existing.dbId;
 			String[] args = { key, parentKey, title, filename, url, Integer.toString(status), etag, dirty, content.toString(), dbId };
-			Log.i(TAG, "Updating existing attachment");
 			Cursor cur = db
 					.rawQuery(
 							"update attachments set attachment_key=?, item_key=?, title=?," +
@@ -234,7 +233,6 @@ public class Attachment {
 			cursor.moveToFirst();
 			while (!cursor.isAfterLast()) {
 				Attachment a = Attachment.load(cursor);
-				Log.d(TAG,"Found attachment: "+a.title);
 				list.add(a);
 				cursor.moveToNext();
 			}

@@ -38,6 +38,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.util.Log;
@@ -84,6 +86,7 @@ public class AttachmentActivity extends ListActivity {
 	
 	public Item item;
 	private ProgressDialog mProgressDialog;
+	private ProgressThread progressThread;
 	private Database db;
 	
     /** Called when the activity is first created. */
@@ -98,6 +101,7 @@ public class AttachmentActivity extends ListActivity {
         Item item = Item.load(itemKey, db);
         this.item = item;
         
+        // XXX i18n
         this.setTitle("Attachments for "+item.getTitle());
         
         ArrayList<Attachment> rows = Attachment.forItem(item, db);
@@ -124,7 +128,7 @@ public class AttachmentActivity extends ListActivity {
         		TextView tvSummary = (TextView)row.findViewById(R.id.attachment_summary);
         		
         		Attachment att = getItem(position);
-        		Log.d(TAG, "Have an attachment: "+att.title);
+        		Log.d(TAG, "Have an attachment: "+att.title + " fn:"+att.filename + " status:" + att.status);
         		
         		tvType.setImageResource(Item.resourceForType(att.getType()));
         		
@@ -169,12 +173,12 @@ public class AttachmentActivity extends ListActivity {
 				if (!row.getType().equals("note")) {
 					Bundle b = new Bundle();
         			b.putString("title", row.title);
-        			b.putString("key", row.key);
+        			b.putString("attachmentKey", row.key);
         			b.putString("content", url);
         			// 0 means download from ZFS. 1 is everything else (?)
         			String linkMode = row.content.optString("linkMode","0");
         			if (linkMode.equals("0"))
-        				showDialog(DIALOG_FILE_PROGRESS, b);
+        				loadFileAttachment(b);
         			else
         				showDialog(DIALOG_CONFIRM_NAVIGATE, b);
 				}
@@ -305,81 +309,183 @@ public class AttachmentActivity extends ListActivity {
 			dialog = builder.create();
 			return dialog;
 		case DIALOG_FILE_PROGRESS:
-			Attachment att = Attachment.load(b.getString("key"), db);
+			mProgressDialog = new ProgressDialog(this);
+			mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+			mProgressDialog.setMessage(getResources().getString(R.string.attachment_downloading, b.getString("title")));
+			mProgressDialog.setIndeterminate(false);
+			mProgressDialog.setMax(100);
+			return mProgressDialog;
+		default:
+			Log.e(TAG, "Invalid dialog requested");
+			return null;
+		}
+	}
+	
+	protected void onPrepareDialog(int id, Dialog dialog, Bundle b) {
+		switch(id) {
+		case DIALOG_FILE_PROGRESS:
+			mProgressDialog.setProgress(0);
+			progressThread = new ProgressThread(handler, b);
+			progressThread.start();
+		}
+	}
+	
+	/**
+	 * This mainly is to move the logic out of the onClick callback above
+	 * Decides whether to download or view, and launches the appropriate action
+	 * @param b
+	 */
+	private void loadFileAttachment(Bundle b) {
+		Attachment att = Attachment.load(b.getString("attachmentKey"), db);
+		if (!ServerCredentials.sBaseStorageDir.exists())
+			ServerCredentials.sBaseStorageDir.mkdir();
+		if (!ServerCredentials.sDocumentStorageDir.exists())
+			ServerCredentials.sDocumentStorageDir.mkdir();
+		
+		File attFile = new File(att.filename);
+		
+		if (att.status == Attachment.ZFS_AVAILABLE
+				// Zero-length or nonexistent gives length == 0
+				|| (attFile != null && attFile.length() == 0)) {				
+			Log.d(TAG,"Starting to try and download ZFS-available attachment (status: "+att.status+", fn: "+att.filename+")");
+			showDialog(DIALOG_FILE_PROGRESS, b);
+		} else if (att.status == Attachment.ZFS_LOCAL) {
+			Log.d(TAG,"Starting to display local attachment");
+			Uri uri = Uri.fromFile(new File(att.filename));
+			String mimeType = att.content.optString("mimeType",null);
+			try {
+				startActivity(new Intent(Intent.ACTION_VIEW)
+							.setDataAndType(uri,mimeType));
+			} catch (ActivityNotFoundException e) {
+				Log.e(TAG, "No activity for intent", e);
+				Toast.makeText(getApplicationContext(),
+						getResources().getString(R.string.attachment_intent_failed, mimeType), 
+        				Toast.LENGTH_SHORT).show();
+			}
+		}
+	}
+	
+	/**
+	 * Refreshes the current list adapter
+	 */
+	@SuppressWarnings("unchecked")
+	private void refreshView() {
+		ArrayAdapter<Attachment> la = (ArrayAdapter<Attachment>) getListAdapter();
+        la.clear();
+        for (Attachment at : Attachment.forItem(item, db)) {
+        	la.add(at);
+        }
+	}
+	
+	final Handler handler = new Handler() {
+		public void handleMessage(Message msg) {
+			if (ProgressThread.STATE_DONE == msg.arg2) {
+				if(mProgressDialog.isShowing())
+					dismissDialog(DIALOG_FILE_PROGRESS);
+				refreshView();
+				return;
+			}
 			
+			int total = msg.arg1;
+			mProgressDialog.setProgress(total);
+			if (total >= 100) {
+				dismissDialog(DIALOG_FILE_PROGRESS);
+				progressThread.setState(ProgressThread.STATE_DONE);
+			}
+		}
+	};
+	
+	private class ProgressThread extends Thread {
+		Handler mHandler;
+		Bundle arguments;
+		final static int STATE_DONE = 5;
+		final static int STATE_RUNNING = 1;
+		int mState;
+		
+		ProgressThread(Handler h, Bundle b) {
+			mHandler = h;
+			arguments = b;
+		}
+		
+		public void run() {
+			mState = STATE_RUNNING;
+			
+			// Setup
+			final String attachmentKey = arguments.getString("attachmentKey");
+
+			Attachment att = Attachment.load(attachmentKey, db);
+			SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+			String sanitized = att.title.replace(' ', '_')
+					.replaceFirst("^(.*?)(\\.?[^.]*)$", "$1"+"_"+att.key+"$2");
+			File file = new File(ServerCredentials.sDocumentStorageDir,sanitized);
 			if (!ServerCredentials.sBaseStorageDir.exists())
 				ServerCredentials.sBaseStorageDir.mkdir();
 			if (!ServerCredentials.sDocumentStorageDir.exists())
 				ServerCredentials.sDocumentStorageDir.mkdir();
-
-			/* Prepare target filename and file */
-			String sanitized = att.title.replace(' ', '_')
-					.replaceFirst("^(.*?)(\\.?[^.]*)$", "$1"+"_"+att.key+"$2");
-			File file = new File(ServerCredentials.sDocumentStorageDir,sanitized);
 			
-			File attFile = new File(att.filename);
-			
-			if (att.status == Attachment.ZFS_AVAILABLE
-					// Zero-length or nonexistent gives length == 0
-					|| (attFile != null && attFile.length() == 0)) {
-				
-				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-				
-				Log.d(TAG,"Starting to try and download ZFS-available attachment");
-				
-				mProgressDialog = new ProgressDialog(this);
+			URL url;
+			try {
+				url = new URL(att.url+"?key="+settings.getString("user_key",""));
+				//this is the downloader method
+                long startTime = System.currentTimeMillis();
+                Log.d(TAG, "download beginning");
+                Log.d(TAG, "download url:" + url.toString());
+                Log.d(TAG, "downloaded file name:" + file.getPath());
+                /* Open a connection to that URL. */
+                URLConnection ucon = url.openConnection();
 
-				Toast.makeText(getApplicationContext(),
-						getResources().getString(R.string.attachment_downloading, b.getString("title")), 
-        				Toast.LENGTH_SHORT).show();	
-				mProgressDialog.setMessage(getResources().getString(R.string.attachment_downloading, b.getString("title")));
-				mProgressDialog.setIndeterminate(true);
-				mProgressDialog.setMax(100);
-				mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-				mProgressDialog.show();
-				Toast.makeText(getApplicationContext(), getResources().getString(R.string.attachment_download_initiated), 
-        				Toast.LENGTH_SHORT).show();	
-				try {
-					if (!ServerCredentials.sBaseStorageDir.exists())
-						ServerCredentials.sBaseStorageDir.mkdir();
-					if (!ServerCredentials.sDocumentStorageDir.exists())
-						ServerCredentials.sDocumentStorageDir.mkdir();
-					
-					download(new URL(att.url+"?key="+settings.getString("user_key","")),
-							file);
-					att.filename = file.getPath();
-					if (file.exists() && file.length() > 0) {
-						att.status = Attachment.ZFS_LOCAL;
-						Log.d(TAG,"File downloaded");
-					} else {
-						att.status = Attachment.ZFS_AVAILABLE;
-						Toast.makeText(getApplicationContext(), getResources().getString(R.string.attachment_download_failed), 
-		        				Toast.LENGTH_SHORT).show();						
-					}
-					att.save(db);
-					mProgressDialog.dismiss();
-				} catch (IOException e) {
-					Log.e(TAG,"DownloadManager exception on: "+att.key,e);
-				}
+                /*
+                 * Define InputStreams to read from the URLConnection.
+                 */
+                InputStream is = ucon.getInputStream();
+                BufferedInputStream bis = new BufferedInputStream(is, 16000);
+
+                ByteArrayBuffer baf = new ByteArrayBuffer(50);
+                int current = 0;
+                
+                /*
+                 * Read bytes to the Buffer until there is nothing more to read(-1).
+                 */
+    			while (mState == STATE_RUNNING 
+    					&& (current = bis.read()) != -1) {
+                        baf.append((byte) current);
+                        
+                        if (baf.length() % 2048 == 0) {
+                        	Message msg = mHandler.obtainMessage();
+                        	// XXX do real length later
+                        	Log.d(TAG, baf.length() + " downloaded so far");
+                        	msg.arg1 = baf.length() % 100;
+                        	mHandler.sendMessage(msg);
+                        }
+                }
+
+                /* Convert the Bytes read to a String. */
+                FileOutputStream fos = new FileOutputStream(file);
+                fos.write(baf.toByteArray());
+                fos.close();
+                Log.d(TAG, "download ready in "
+                                + ((System.currentTimeMillis() - startTime) / 1000)
+                                + " sec");
+	        } catch (IOException e) {
+	                Log.e(TAG, "Error: ",e);
+	        }
+			att.filename = file.getPath();
+			File newFile = new File(att.filename);
+			if (newFile.length() > 0) {
+				att.status = Attachment.ZFS_LOCAL;
+				Log.d(TAG,"File downloaded: "+att.filename);
+			} else {
+				Log.d(TAG, "File not downloaded: "+att.filename);
+				att.status = Attachment.ZFS_AVAILABLE;				
 			}
-			if (att.status == Attachment.ZFS_LOCAL) {
-				Log.d(TAG,"Starting to display local attachment");
-				Uri uri = Uri.fromFile(new File(att.filename));
-				String mimeType = att.content.optString("mimeType",null);
-				try {
-					startActivity(new Intent(Intent.ACTION_VIEW)
-								.setDataAndType(uri,mimeType));
-				} catch (ActivityNotFoundException e) {
-					Log.e(TAG, "No activity for intent", e);
-					Toast.makeText(getApplicationContext(),
-							getResources().getString(R.string.attachment_intent_failed, mimeType), 
-	        				Toast.LENGTH_SHORT).show();
-				}
-			}
-			return null;
-		default:
-			Log.e(TAG, "Invalid dialog requested");
-			return null;
+			att.save(db);
+        	Message msg = mHandler.obtainMessage();
+        	msg.arg2 = STATE_DONE;
+        	mHandler.sendMessage(msg);
+		}
+		
+		public void setState(int state) {
+			mState = state;
 		}
 	}
                
@@ -418,52 +524,6 @@ public class AttachmentActivity extends ListActivity {
             return true;
         default:
             return super.onOptionsItemSelected(item);
-        }
-    }
-    
-
-    /**
-     * Saves a file from specified URL to specified destination.
-     * TODO This should be made asynchronous, and spun out into its own routine
-     * @param url
-     * @param destination
-     */
-    public void download(URL url, File destination) {  
-    	//this is the downloader method
-        try {
-                long startTime = System.currentTimeMillis();
-                Log.d(TAG, "download begining");
-                Log.d(TAG, "download url:" + url.toString());
-                Log.d(TAG, "downloaded file name:" + destination.getPath());
-                /* Open a connection to that URL. */
-                URLConnection ucon = url.openConnection();
-
-                /*
-                 * Define InputStreams to read from the URLConnection.
-                 */
-                InputStream is = ucon.getInputStream();
-                BufferedInputStream bis = new BufferedInputStream(is, 16000);
-
-                /*
-                 * Read bytes to the Buffer until there is nothing more to read(-1).
-                 */
-                ByteArrayBuffer baf = new ByteArrayBuffer(50);
-                int current = 0;
-                while ((current = bis.read()) != -1) {
-                	//Log.d(TAG, "Some more input...");
-                        baf.append((byte) current);
-                }
-
-                /* Convert the Bytes read to a String. */
-                FileOutputStream fos = new FileOutputStream(destination);
-                fos.write(baf.toByteArray());
-                fos.close();
-                Log.d(TAG, "download ready in"
-                                + ((System.currentTimeMillis() - startTime) / 1000)
-                                + " sec");
-
-        } catch (IOException e) {
-                Log.e(TAG, "Error: ",e);
         }
     }
 }
