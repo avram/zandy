@@ -267,7 +267,7 @@ public class MainActivity extends Activity implements OnClickListener {
 				editor.commit();
 
 				Button loginButton = (Button) findViewById(R.id.loginButton);
-				loginButton.setText("Logged in");
+				loginButton.setText(getResources().getString(R.string.logged_in));
 				loginButton.setClickable(false);
 
 			} catch (OAuthMessageSignerException e) {
