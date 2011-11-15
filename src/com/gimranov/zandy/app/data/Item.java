@@ -130,7 +130,8 @@ public class Item {
 	}
 
 	public void setTitle(String title) {
-		if (this.title != title) {
+		if (title == null) title = "";
+		if (!this.title.equals(title)) {
 			this.content.remove("title");
 
 			try {
@@ -616,6 +617,10 @@ public class Item {
 	public static void set(String itemKey, String label, String content, Database db) {
 		// Load the item
 		Item item = load(itemKey, db);
+		
+		// Don't set anything to null
+		if (content == null) content = "";
+		
 		if (label.equals("title")) {
 			item.title = content;
 		}
