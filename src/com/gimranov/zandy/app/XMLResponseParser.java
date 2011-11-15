@@ -197,7 +197,8 @@ public class XMLResponseParser extends DefaultHandler {
                 		Log.d(TAG, "Item has children: "+item.getChildren());
             		}
             		
-                	if (!item.getType().equals("attachment") && parent != null) parent.add(item);
+            		// Add to containing collection
+                	if (!item.getType().equals("attachment") && parent != null) parent.add(item, true);
             		
                 	Log.d(TAG, "Done parsing item entry.");
             		return;

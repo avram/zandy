@@ -198,6 +198,10 @@ public class ItemCollection extends HashSet<Item> {
 	}
 	
 	public boolean add(Item item) {
+		return add(item, false);
+	}
+	
+	public boolean add(Item item, boolean fromAPI) {
 		for (Item i : this) {
 			if(i.equals(item)) {
 				Log.d(TAG, "Item already in collection");
@@ -207,7 +211,7 @@ public class ItemCollection extends HashSet<Item> {
 		
 		super.add(item);
 		Log.d(TAG, "Item added to collection");
-		additions.add(APIRequest.add(item, this));
+		if (!fromAPI) additions.add(APIRequest.add(item, this));
 		return true;
 	}
 	
@@ -238,6 +242,7 @@ public class ItemCollection extends HashSet<Item> {
 				else insert.bindString(7, timestamp);
 				insert.executeInsert();
 				insert.clearBindings();
+				insert.close();
 				Log.d(TAG, "Saved collection with key: "+key);
 			} catch (SQLiteException e) {
 				Log.e(TAG, "Exception compiling or running insert statement", e);
@@ -267,6 +272,7 @@ public class ItemCollection extends HashSet<Item> {
 				update.bindString(6, dbId);
 				update.executeInsert();
 				update.clearBindings();
+				update.close();
 				Log.i(TAG, "Updating existing collection.");
 			} catch (SQLiteException e) {
 				Log.e(TAG, "Exception compiling or running update statement", e);
