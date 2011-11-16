@@ -19,3 +19,4 @@ Icons from Glyphish's free icon set (http://glyphish.com/) are used for some but
 
 Dependencies:
 Requires oauth-signpost (http://code.google.com/p/oauth-signpost/) for OAuth support, licensed under the Apache license, version 2.
+Bar code scanning requires that the ZXing Bar Code Scanner app be installed. Zandy includes an integration file from the ZXing project (http://code.google.com/p/zxing/), licensed under the Apache license, version 2.
