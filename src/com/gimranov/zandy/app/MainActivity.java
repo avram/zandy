@@ -313,7 +313,8 @@ public class MainActivity extends Activity implements OnClickListener {
 					Toast.LENGTH_SHORT).show();
 			return true;
 		case R.id.do_prefs:
-			startActivity(new Intent(this, SettingsActivity.class));
+			//startActivity(new Intent(this, SettingsActivity.class));
+			startActivity(new Intent(this, LookupActivity.class));
 			return true;
         case R.id.do_search:
         	onSearchRequested();
