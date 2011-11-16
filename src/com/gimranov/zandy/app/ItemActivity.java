@@ -16,14 +16,29 @@
  ******************************************************************************/
 package com.gimranov.zandy.app;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+
+import org.apache.http.util.ByteArrayBuffer;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.text.Editable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,6 +47,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.CursorAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -51,7 +67,9 @@ public class ItemActivity extends ListActivity {
 	static final int DIALOG_VIEW = 0;
 	static final int DIALOG_NEW = 1;
 	static final int DIALOG_SORT = 2;
-	
+	static final int DIALOG_IDENTIFIER = 3;
+	static final int DIALOG_PROGRESS = 6;
+
 	static final String[] SORTS = {
 		"item_year, item_title",
 		"item_creator, item_year",
@@ -70,6 +88,9 @@ public class ItemActivity extends ListActivity {
 	private String collectionKey;
 	private String query;
 	private Database db;
+	
+	private ProgressDialog mProgressDialog;
+	private ProgressThread progressThread;
 	
 	public String sortBy = "item_year, item_title";
 	
@@ -212,11 +233,56 @@ public class ItemActivity extends ListActivity {
 		    	    });
 			AlertDialog dialog2 = builder2.create();
 			return dialog2;
+		case DIALOG_PROGRESS:
+			mProgressDialog = new ProgressDialog(this);
+			mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			mProgressDialog.setIndeterminate(true);
+			return mProgressDialog;
+		case DIALOG_IDENTIFIER:
+			final EditText input = new EditText(this);
+			// XXX i18n
+			input.setHint("Enter identifier");
+			
+			dialog = new AlertDialog.Builder(this)
+				// XXX i18n
+	    	    .setTitle("Look up item by identifier")
+	    	    .setView(input)
+	    	    .setPositiveButton("Search", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+	    	            Editable value = input.getText();
+	    	            // run search
+	    	            Bundle c = new Bundle();
+	    	            c.putString("mode", "isbn");
+	    	            c.putString("identifier", value.toString());
+	    	            removeDialog(DIALOG_PROGRESS);
+	    	            showDialog(DIALOG_PROGRESS, c);
+	    	        }
+	    	    }).setNeutralButton("Scan", new DialogInterface.OnClickListener() {
+	    	        public void onClick(DialogInterface dialog, int whichButton) {
+	    	        	Toast.makeText(getApplicationContext(),
+	            				"Would've scanned", 
+	            				Toast.LENGTH_SHORT).show();
+	    	        	}
+	    	    }).setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+	    	        public void onClick(DialogInterface dialog, int whichButton) {
+	    	        	// do nothing
+	    	        }
+	    	    }).create();
+			return dialog;
 		default:
 			return null;
 		}
 	}
-           
+    
+	protected void onPrepareDialog(int id, Dialog dialog, Bundle b) {
+		switch(id) {
+		case DIALOG_PROGRESS:
+			mProgressDialog.setMessage("Looking up item...");
+			progressThread = new ProgressThread(handler, b);
+			progressThread.start();
+		}
+	}
+	
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -231,6 +297,11 @@ public class ItemActivity extends ListActivity {
         MenuItem search = menu.findItem(R.id.do_search);
         search.setEnabled(true);
         search.setVisible(true);
+        
+        // Turn on identifier item
+        MenuItem identifier = menu.findItem(R.id.do_identifier);
+        identifier.setEnabled(true);
+        identifier.setVisible(true);
         
         return true;
     }
@@ -281,6 +352,10 @@ public class ItemActivity extends ListActivity {
         	removeDialog(DIALOG_NEW);
         	showDialog(DIALOG_NEW);
             return true;
+        case R.id.do_identifier:
+        	removeDialog(DIALOG_IDENTIFIER);
+        	showDialog(DIALOG_IDENTIFIER);
+            return true;
         case R.id.do_search:
         	onSearchRequested();
             return true;
@@ -298,10 +373,12 @@ public class ItemActivity extends ListActivity {
         }
     }
 	
+    /* Sorting */
 	public void setSortBy(String sort) {
 		this.sortBy = sort;
 	}
 	
+	/* Handling the ListView and keeping it up to date */
 	public Cursor getCursor() {
 		Cursor cursor = db.query("items", Database.ITEMCOLS, null, null, null, null, this.sortBy, null);
 		if (cursor == null) {
@@ -339,4 +416,215 @@ public class ItemActivity extends ListActivity {
 		return query.query(db);
 	}
 
+	/* Thread and helper to run lookups */
+	
+	final Handler handler = new Handler() {
+		public void handleMessage(Message msg) {
+			if (ProgressThread.STATE_DONE == msg.arg2) {
+				if(mProgressDialog.isShowing())
+					dismissDialog(DIALOG_PROGRESS);
+				Bundle data = msg.getData();
+				String itemKey = data.getString("itemKey");
+				if (itemKey != null) {
+					if (collectionKey != null) {
+						Item item = Item.load(itemKey, db);
+						ItemCollection coll = ItemCollection.load(collectionKey, db);
+						coll.add(item);
+						coll.saveChildren(db);
+					}
+					
+					Log.d(TAG, "Loading new item data with key: "+itemKey);
+    				// We create and issue a specified intent with the necessary data
+    		    	Intent i = new Intent(getBaseContext(), ItemDataActivity.class);
+    		    	i.putExtra("com.gimranov.zandy.app.itemKey", itemKey);
+    		    	startActivity(i);
+					
+				}
+				return;
+			}
+			
+			if (ProgressThread.STATE_PARSING == msg.arg2) {
+				mProgressDialog.setMessage("Parsing item data...");
+				return;
+			}
+			
+			if (ProgressThread.STATE_ERROR == msg.arg2) {
+				dismissDialog(DIALOG_PROGRESS);
+				// XXX i18n
+				Toast.makeText(getBaseContext(), "Error fetching metadata", 
+	    				Toast.LENGTH_SHORT).show();
+				progressThread.setState(ProgressThread.STATE_DONE);
+				return;
+			}
+			
+			int total = msg.arg1;
+			mProgressDialog.setProgress(total);
+			if (total >= 100) {
+				dismissDialog(DIALOG_PROGRESS);
+				progressThread.setState(ProgressThread.STATE_DONE);
+			}
+		}
+	};
+	
+	private class ProgressThread extends Thread {
+		Handler mHandler;
+		Bundle arguments;
+		final static int STATE_DONE = 5;
+		final static int STATE_FETCHING = 1;
+		final static int STATE_PARSING = 6;
+		final static int STATE_ERROR = 7;
+		
+		int mState;
+		
+		ProgressThread(Handler h, Bundle b) {
+			mHandler = h;
+			arguments = b;
+		}
+		
+		public void run() {
+			mState = STATE_FETCHING;
+			
+			// Setup
+			String identifier = arguments.getString("identifier");
+			String mode = arguments.getString("mode");
+			URL url;
+			String urlstring;
+			
+			String response = "";
+			
+			if ("isbn".equals(mode)) {
+				if (identifier == null || identifier.equals(""))
+					identifier = "0674081250";
+				urlstring = "http://xisbn.worldcat.org/webservices/xid/isbn/"
+							+ identifier
+							+ "?method=getMetadata&fl=*&format=json&count=1";
+			} else {
+				urlstring = "";
+			}
+			
+			try {
+				Log.d(TAG, "Fetching from: "+urlstring);
+				url = new URL(urlstring);
+                
+                /* Open a connection to that URL. */
+                URLConnection ucon = url.openConnection();                
+                /*
+                 * Define InputStreams to read from the URLConnection.
+                 */
+                InputStream is = ucon.getInputStream();
+                BufferedInputStream bis = new BufferedInputStream(is, 16000);
+
+                ByteArrayBuffer baf = new ByteArrayBuffer(50);
+                int current = 0;
+                
+                /*
+                 * Read bytes to the Buffer until there is nothing more to read(-1).
+                 */
+    			while (mState == STATE_FETCHING 
+    					&& (current = bis.read()) != -1) {
+                        baf.append((byte) current);
+                }
+                response = new String(baf.toByteArray());
+    			Log.d(TAG, response);
+    			
+    			
+	        } catch (IOException e) {
+	                Log.e(TAG, "Error: ",e);
+	        }
+
+			Message msg = mHandler.obtainMessage();
+        	msg.arg2 = STATE_PARSING;
+        	mHandler.sendMessage(msg);
+        	
+        	/*
+        	 * {
+ "stat":"ok",
+ "list":[{
+	"url":["http://www.worldcat.org/oclc/177669176?referer=xid"],
+	"publisher":"O'Reilly",
+	"form":["BA"],
+	"lccn":["2004273129"],
+	"lang":"eng",
+	"city":"Sebastopol, CA",
+	"author":"by Mark Lutz and David Ascher.",
+	"ed":"2nd ed.",
+	"year":"2003",
+	"isbn":["0596002815"],
+	"title":"Learning Python",
+	"oclcnum":["177669176",
+..
+	 "748093898"]}]}
+        	 */
+        	
+        	// This is OCLC-specific logic
+        	try {
+				JSONObject result = new JSONObject(response);
+				
+				if (!result.getString("stat").equals("ok")) {
+					Log.e(TAG, "Error response received");
+					msg = mHandler.obtainMessage();
+		        	msg.arg2 = STATE_ERROR;
+		        	mHandler.sendMessage(msg);
+		        	return;
+				}
+				
+				result = result.getJSONArray("list").getJSONObject(0);
+				String form = result.getJSONArray("form").getString(0);
+				String type;
+				
+				if ("AA".equals(form)) type = "audioRecording";
+				else if ("VA".equals(form)) type = "videoRecording";
+				else if ("FA".equals(form)) type = "film";
+				else type = "book";
+				
+				Item item = new Item(getBaseContext(), type);
+				
+				JSONObject content = new JSONObject();
+				
+				String lccn = "LCCN: " + result.getJSONArray("lccn").getString(0);
+				
+				content.accumulate("title", result.optString("title", ""))
+						.accumulate("place", result.optString("city", ""))
+						.accumulate("edition", result.optString("ed", ""))
+						.accumulate("language", result.optString("lang", ""))
+						.accumulate("extra", lccn)
+						.accumulate("publisher", result.optString("publisher", ""))
+						.accumulate("date", result.optString("year", ""));
+				
+				item.setTitle(result.optString("title", ""));
+				item.setYear(result.optString("year", ""));
+				
+				String author = result.optString("author", "");
+				
+				item.setCreatorSummary(author);
+				JSONArray array = new JSONArray();
+				JSONObject member = new JSONObject();
+				member.accumulate("creatorType", "author");
+				member.accumulate("name", author);
+				array.put(member);
+				content.accumulate("creators", array);
+				
+				item.setContent(content);
+				item.save(db);
+								
+				msg = mHandler.obtainMessage();
+				Bundle data = new Bundle();
+				data.putString("itemKey", item.getKey());
+				msg.setData(data);
+				msg.arg2 = STATE_DONE;
+	        	mHandler.sendMessage(msg);
+				return;
+			} catch (JSONException e) {
+				Log.e(TAG, "exception parsing response", e);
+				msg = mHandler.obtainMessage();
+	        	msg.arg2 = STATE_ERROR;
+	        	mHandler.sendMessage(msg);
+	        	return;
+			}
+		}
+		
+		public void setState(int state) {
+			mState = state;
+		}
+	}
 }
