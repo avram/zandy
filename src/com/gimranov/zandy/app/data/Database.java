@@ -51,10 +51,19 @@ public class Database {
 		return cursor;
 	}
 	
-	public SQLiteDatabase beginTransaction() {
+	public void beginTransaction() {
 		SQLiteDatabase db = mDatabaseOpenHelper.getWritableDatabase();
 		db.beginTransaction();
-		return db;
+	}
+
+	public void endTransaction() {
+		SQLiteDatabase db = mDatabaseOpenHelper.getWritableDatabase();
+		db.endTransaction();
+	}
+
+	public void setTransactionSuccessful() {
+		SQLiteDatabase db = mDatabaseOpenHelper.getWritableDatabase();
+		db.setTransactionSuccessful();
 	}
 	
 	/**

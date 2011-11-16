@@ -310,6 +310,7 @@ public class ItemDataActivity extends ListActivity {
 						public void onClick(DialogInterface dialog, int whichButton) {
 							Item i = Item.load(itemKey, db);
 							i.delete(db);
+							finish();
 		    	        }
 		    	    }).setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
 		    	        public void onClick(DialogInterface dialog, int whichButton) {

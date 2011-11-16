@@ -308,18 +308,21 @@ public class ItemCollection extends HashSet<Item> {
 			if (i.dbId == null) i.save(db);
 			keys.add(i.dbId);
 		}
-			
+		
+		db.beginTransaction();
 		try {
 			String[] cid = { this.dbId };
 			db.rawQuery("delete from itemtocollections where collection_id=?", cid);
 			for (String i : keys) {
 				String[] args = { this.dbId, i };
-				Cursor cur = db.rawQuery(
+				db.rawQuery(
 						"insert into itemtocollections (collection_id, item_id) values (?, ?)", args);
-				if (cur != null) cur.close();
 			}
+			db.setTransactionSuccessful();
 		} catch (Exception e) {
 			Log.e(TAG, "Exception caught on saving collection children", e);
+		} finally {
+			db.endTransaction();
 		}
 		
 		// We can now get a proper and total count

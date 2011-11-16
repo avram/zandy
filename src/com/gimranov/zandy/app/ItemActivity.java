@@ -58,6 +58,8 @@ import com.gimranov.zandy.app.data.ItemAdapter;
 import com.gimranov.zandy.app.data.ItemCollection;
 import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 
 
 public class ItemActivity extends ListActivity {
@@ -88,6 +90,8 @@ public class ItemActivity extends ListActivity {
 	private String collectionKey;
 	private String query;
 	private Database db;
+	
+	private int requestID;
 	
 	private ProgressDialog mProgressDialog;
 	private ProgressThread progressThread;
@@ -234,14 +238,21 @@ public class ItemActivity extends ListActivity {
 			AlertDialog dialog2 = builder2.create();
 			return dialog2;
 		case DIALOG_PROGRESS:
+			Log.d(TAG, "_____________________dialog_progress");
 			mProgressDialog = new ProgressDialog(this);
 			mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 			mProgressDialog.setIndeterminate(true);
+			// XXX i18n
+			mProgressDialog.setMessage("Looking up item...");
+			progressThread = new ProgressThread(handler, b);
+			progressThread.start();
 			return mProgressDialog;
 		case DIALOG_IDENTIFIER:
 			final EditText input = new EditText(this);
 			// XXX i18n
 			input.setHint("Enter identifier");
+			
+			final ItemActivity current = this;
 			
 			dialog = new AlertDialog.Builder(this)
 				// XXX i18n
@@ -259,9 +270,8 @@ public class ItemActivity extends ListActivity {
 	    	        }
 	    	    }).setNeutralButton("Scan", new DialogInterface.OnClickListener() {
 	    	        public void onClick(DialogInterface dialog, int whichButton) {
-	    	        	Toast.makeText(getApplicationContext(),
-	            				"Would've scanned", 
-	            				Toast.LENGTH_SHORT).show();
+	    	        		IntentIntegrator integrator = new IntentIntegrator(current);
+	    	        		integrator.initiateScan();
 	    	        	}
 	    	    }).setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
 	    	        public void onClick(DialogInterface dialog, int whichButton) {
@@ -277,9 +287,7 @@ public class ItemActivity extends ListActivity {
 	protected void onPrepareDialog(int id, Dialog dialog, Bundle b) {
 		switch(id) {
 		case DIALOG_PROGRESS:
-			mProgressDialog.setMessage("Looking up item...");
-			progressThread = new ProgressThread(handler, b);
-			progressThread.start();
+			Log.d(TAG, "_____________________dialog_progress_prepare");
 		}
 	}
 	
@@ -418,11 +426,40 @@ public class ItemActivity extends ListActivity {
 
 	/* Thread and helper to run lookups */
 	
+	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+		Log.d(TAG, "_____________________on_activity_result");
+		
+		IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
+		if (scanResult != null) {
+		    // handle scan result
+			Bundle b = new Bundle();
+			b.putString("mode", "isbn");
+			b.putString("identifier", scanResult.getContents());
+			if (scanResult != null
+					&& scanResult.getContents() != null) {
+				Log.d(TAG, b.getString("identifier"));
+				removeDialog(DIALOG_PROGRESS);			
+				showDialog(DIALOG_PROGRESS, b);
+			} else {
+				// XXX i18n
+				Toast.makeText(getApplicationContext(),
+						"Scan canceled or failed", 
+	    				Toast.LENGTH_SHORT).show();
+			}
+		} else {
+			// XXX i18n
+			Toast.makeText(getApplicationContext(),
+					"Scan canceled or failed", 
+    				Toast.LENGTH_SHORT).show();
+		}
+	}
+	
 	final Handler handler = new Handler() {
 		public void handleMessage(Message msg) {
+			Log.d(TAG, "______________________handle_message");
 			if (ProgressThread.STATE_DONE == msg.arg2) {
 				if(mProgressDialog.isShowing())
-					dismissDialog(DIALOG_PROGRESS);
+					removeDialog(DIALOG_PROGRESS);
 				Bundle data = msg.getData();
 				String itemKey = data.getString("itemKey");
 				if (itemKey != null) {
@@ -433,12 +470,14 @@ public class ItemActivity extends ListActivity {
 						coll.saveChildren(db);
 					}
 					
+					mProgressDialog.dismiss();
+					mProgressDialog = null;
+					
 					Log.d(TAG, "Loading new item data with key: "+itemKey);
     				// We create and issue a specified intent with the necessary data
     		    	Intent i = new Intent(getBaseContext(), ItemDataActivity.class);
     		    	i.putExtra("com.gimranov.zandy.app.itemKey", itemKey);
     		    	startActivity(i);
-					
 				}
 				return;
 			}
@@ -456,13 +495,6 @@ public class ItemActivity extends ListActivity {
 				progressThread.setState(ProgressThread.STATE_DONE);
 				return;
 			}
-			
-			int total = msg.arg1;
-			mProgressDialog.setProgress(total);
-			if (total >= 100) {
-				dismissDialog(DIALOG_PROGRESS);
-				progressThread.setState(ProgressThread.STATE_DONE);
-			}
 		}
 	};
 	
@@ -479,9 +511,11 @@ public class ItemActivity extends ListActivity {
 		ProgressThread(Handler h, Bundle b) {
 			mHandler = h;
 			arguments = b;
+			Log.d(TAG, "_____________________thread_constructor");
 		}
 		
 		public void run() {
+			Log.d(TAG, "_____________________thread_run");
 			mState = STATE_FETCHING;
 			
 			// Setup
@@ -493,8 +527,6 @@ public class ItemActivity extends ListActivity {
 			String response = "";
 			
 			if ("isbn".equals(mode)) {
-				if (identifier == null || identifier.equals(""))
-					identifier = "0674081250";
 				urlstring = "http://xisbn.worldcat.org/webservices/xid/isbn/"
 							+ identifier
 							+ "?method=getMetadata&fl=*&format=json&count=1";
@@ -577,19 +609,28 @@ public class ItemActivity extends ListActivity {
 				else if ("FA".equals(form)) type = "film";
 				else type = "book";
 				
+				// TODO Fix this
+				type = "book";
+				
 				Item item = new Item(getBaseContext(), type);
 				
-				JSONObject content = new JSONObject();
+				JSONObject content = item.getContent();
 				
-				String lccn = "LCCN: " + result.getJSONArray("lccn").getString(0);
+				if (result.has("lccn")) {
+					String lccn = "LCCN: " + result.getJSONArray("lccn").getString(0);
+					content.put("extra", lccn);
+				}
 				
-				content.accumulate("title", result.optString("title", ""))
-						.accumulate("place", result.optString("city", ""))
-						.accumulate("edition", result.optString("ed", ""))
-						.accumulate("language", result.optString("lang", ""))
-						.accumulate("extra", lccn)
-						.accumulate("publisher", result.optString("publisher", ""))
-						.accumulate("date", result.optString("year", ""));
+				if (result.has("isbn")) {
+					content.put("ISBN", result.getJSONArray("isbn").getString(0));
+				}
+				
+				content.put("title", result.optString("title", ""));
+				content.put("place", result.optString("city", ""));
+				content.put("edition", result.optString("ed", ""));
+				content.put("language", result.optString("lang", ""));
+				content.put("publisher", result.optString("publisher", ""));
+				content.put("date", result.optString("year", ""));
 				
 				item.setTitle(result.optString("title", ""));
 				item.setYear(result.optString("year", ""));
@@ -602,7 +643,7 @@ public class ItemActivity extends ListActivity {
 				member.accumulate("creatorType", "author");
 				member.accumulate("name", author);
 				array.put(member);
-				content.accumulate("creators", array);
+				content.put("creators", array);
 				
 				item.setContent(content);
 				item.save(db);

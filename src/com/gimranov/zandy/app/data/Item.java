@@ -137,7 +137,8 @@ public class Item {
 			try {
 				this.content.put("title", title);
 				this.title = title;
-				this.dirty = APIRequest.API_DIRTY;
+				if (!APIRequest.API_CLEAN.equals(this.dirty))
+					this.dirty = APIRequest.API_DIRTY;
 			} catch (JSONException e) {
 				Log.e(TAG, "Exception setting title", e);
 			}
@@ -185,8 +186,9 @@ public class Item {
 	}
 
 	public void setContent(JSONObject content) {
-		if (this.content != content) {
-			this.dirty = APIRequest.API_DIRTY;
+		if (!this.content.toString().equals(content.toString())) {
+			if (!APIRequest.API_CLEAN.equals(this.dirty))
+				this.dirty = APIRequest.API_DIRTY;
 			this.content = content;
 		}
 	}
@@ -194,7 +196,8 @@ public class Item {
 	public void setContent(String content) throws JSONException {
 		JSONObject con = new JSONObject(content);
 		if (this.content != con) {
-			this.dirty = APIRequest.API_DIRTY;
+			if (!APIRequest.API_CLEAN.equals(this.dirty))
+				this.dirty = APIRequest.API_DIRTY;
 			this.content = con;
 		}
 	}
