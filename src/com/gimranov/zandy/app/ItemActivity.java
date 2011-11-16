@@ -90,9 +90,7 @@ public class ItemActivity extends ListActivity {
 	private String collectionKey;
 	private String query;
 	private Database db;
-	
-	private int requestID;
-	
+		
 	private ProgressDialog mProgressDialog;
 	private ProgressThread progressThread;
 	
