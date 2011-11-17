@@ -242,8 +242,6 @@ public class ItemActivity extends ListActivity {
 			mProgressDialog.setIndeterminate(true);
 			// XXX i18n
 			mProgressDialog.setMessage("Looking up item...");
-			progressThread = new ProgressThread(handler, b);
-			progressThread.start();
 			return mProgressDialog;
 		case DIALOG_IDENTIFIER:
 			final EditText input = new EditText(this);
@@ -436,6 +434,8 @@ public class ItemActivity extends ListActivity {
 			if (scanResult != null
 					&& scanResult.getContents() != null) {
 				Log.d(TAG, b.getString("identifier"));
+				progressThread = new ProgressThread(handler, b);
+				progressThread.start();
 				removeDialog(DIALOG_PROGRESS);			
 				showDialog(DIALOG_PROGRESS, b);
 			} else {
@@ -456,8 +456,6 @@ public class ItemActivity extends ListActivity {
 		public void handleMessage(Message msg) {
 			Log.d(TAG, "______________________handle_message");
 			if (ProgressThread.STATE_DONE == msg.arg2) {
-				if(mProgressDialog.isShowing())
-					removeDialog(DIALOG_PROGRESS);
 				Bundle data = msg.getData();
 				String itemKey = data.getString("itemKey");
 				if (itemKey != null) {

@@ -76,6 +76,11 @@ public class ItemDataActivity extends ListActivity {
         // been swapped out, so we fall back on the DB ID
         if (item == null) {
             String itemDbId = getIntent().getStringExtra("com.gimranov.zandy.app.itemDbId");
+            if (itemDbId == null) {
+            	Log.d(TAG, "Failed to load item using itemKey and no dbId specified. Give up and finish activity.");
+            	finish();
+            	return;
+            }
         	item = Item.loadDbId(itemDbId, db);
         }
         	
