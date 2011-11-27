@@ -95,10 +95,14 @@ public class AttachmentActivity extends ListActivity {
 	private ProgressThread progressThread;
 	private Database db;
 	
+	private ArrayList<File> tmpFiles;
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        tmpFiles = new ArrayList<File>();
         
         db = new Database(this);
         
@@ -222,6 +226,17 @@ public class AttachmentActivity extends ListActivity {
     @Override
     public void onDestroy() {
     	if (db != null) db.close();
+    	
+    	if (tmpFiles != null) {
+    		for (File f : tmpFiles) {
+    			if (!f.delete()) {
+    				Log.e(TAG, "Failed to delete temporary file on activity close.");
+    			}
+    		}
+    		
+    		tmpFiles.clear();
+    	}
+    	
     	super.onDestroy();
     }
     
@@ -514,6 +529,9 @@ public class AttachmentActivity extends ListActivity {
     			/* Save to temporary directory for WebDAV */
     			if ("webdav".equals(mode)) {
     				File tmpFile = File.createTempFile("zandy", ".zip");
+    				// Keep track of temp files that we've created.
+    				if (tmpFiles == null) tmpFiles = new ArrayList<File>();
+    				tmpFiles.add(tmpFile);
     				FileOutputStream fos = new FileOutputStream(tmpFile);
                     fos.write(baf.toByteArray());
                     fos.close();
@@ -545,7 +563,11 @@ public class AttachmentActivity extends ListActivity {
                     	}
                     } while (entries.hasMoreElements());
                     zf.close();
-                    tmpFile.delete();
+                	// We remove the file from the ArrayList if deletion succeeded;
+                    // otherwise deletion is put off until the activity exits.
+                    if (tmpFile.delete()) {
+                    	tmpFiles.remove(tmpFile);
+                    }
     			} else {
                     FileOutputStream fos = new FileOutputStream(file);
                     fos.write(baf.toByteArray());
