@@ -107,6 +107,12 @@ public class AttachmentActivity extends ListActivity {
         Item item = Item.load(itemKey, db);
         this.item = item;
         
+        if (item == null) {
+        	Log.e(TAG, "AttachmentActivity started without itemKey; finishing.");
+        	finish();
+        	return;
+        }
+        
         this.setTitle(getResources().getString(R.string.attachments_for_item,item.getTitle()));
         
         ArrayList<Attachment> rows = Attachment.forItem(item, db);
@@ -184,11 +190,15 @@ public class AttachmentActivity extends ListActivity {
     				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         			int linkMode = row.content.optInt("linkMode", Attachment.MODE_ZFS);
         			
+        			// Apparently ZFS attachments sometimes have linkMode of 1!
+        			if (url.indexOf("https://api.zotero.org/") != -1) linkMode = Attachment.MODE_ZFS;
+        			
         			// This is a mess. What on earth are these modes supposed to mean?
         			if (linkMode == Attachment.MODE_ZFS
-        					&& !settings.getBoolean("webdav_enabled", false))
+        					&& !settings.getBoolean("webdav_enabled", false)) {
+        				b.putString("mode", "zfs");
         				loadFileAttachment(b);
-        			else if ((linkMode == Attachment.MODE_NOT_ZFS 
+        			} else if ((linkMode == Attachment.MODE_NOT_ZFS 
         						|| linkMode == Attachment.MODE_ZFS)
         					&& settings.getBoolean("webdav_enabled", false)) {
         				b.putString("mode", "webdav");
@@ -470,9 +480,12 @@ public class AttachmentActivity extends ListActivity {
                 Log.d(TAG, "download beginning");
                 Log.d(TAG, "download url:" + url.toString());
                 Log.d(TAG, "downloaded file name:" + file.getPath());
-                
+                                
                 /* Open a connection to that URL. */
-                URLConnection ucon = url.openConnection();                
+                URLConnection ucon = url.openConnection();
+                ucon.setRequestProperty("User-Agent","Mozilla/5.0 ( compatible ) ");
+                ucon.setRequestProperty("Accept","*/*");
+
                 /*
                  * Define InputStreams to read from the URLConnection.
                  */
