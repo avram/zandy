@@ -174,7 +174,8 @@ public class XMLResponseParser extends DefaultHandler {
 	            		item.dirty = APIRequest.API_CLEAN;
         				attachment.dirty = APIRequest.API_CLEAN;
 	            		if ((attachment.url != null && attachment.url != "")
-	            				|| attachment.content.optInt("linkMode") == Attachment.MODE_NOT_ZFS)
+	            				|| attachment.content.optInt("linkMode") == Attachment.MODE_IMPORTED_FILE
+	            				|| attachment.content.optInt("linkMode") == Attachment.MODE_IMPORTED_URL)
 	            			attachment.status = Attachment.AVAILABLE;
 	            		
 	            		// Don't touch ZFS status here

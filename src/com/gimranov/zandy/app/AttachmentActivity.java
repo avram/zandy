@@ -192,20 +192,15 @@ public class AttachmentActivity extends ListActivity {
         			b.putString("attachmentKey", row.key);
         			b.putString("content", url);
     				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        			int linkMode = row.content.optInt("linkMode", Attachment.MODE_ZFS);
+        			int linkMode = row.content.optInt("linkMode", Attachment.MODE_LINKED_URL);
         			
-        			// Apparently ZFS attachments sometimes have linkMode of 1!
-        			if (url.indexOf("https://api.zotero.org/") != -1) linkMode = Attachment.MODE_ZFS;
-        			
-        			// This is a mess. What on earth are these modes supposed to mean?
-        			if (linkMode == Attachment.MODE_ZFS
-        					&& !settings.getBoolean("webdav_enabled", false)) {
-        				b.putString("mode", "zfs");
-        				loadFileAttachment(b);
-        			} else if ((linkMode == Attachment.MODE_NOT_ZFS 
-        						|| linkMode == Attachment.MODE_ZFS)
-        					&& settings.getBoolean("webdav_enabled", false)) {
+        			if (settings.getBoolean("webdav_enabled", false))
         				b.putString("mode", "webdav");
+        			else
+        				b.putString("mode", "zfs");
+        			
+        			if (linkMode == Attachment.MODE_IMPORTED_FILE
+        					|| linkMode == Attachment.MODE_IMPORTED_URL) {
         				loadFileAttachment(b);
         			} else
         				showDialog(DIALOG_CONFIRM_NAVIGATE, b);

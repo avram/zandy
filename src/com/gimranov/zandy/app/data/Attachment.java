@@ -47,9 +47,18 @@ public class Attachment {
 	public static final int LOCAL = 2;	
 	public static final int UNKNOWN = 3;
 	
-	public static final int MODE_ZFS = 0; // also indicated by presence of enclosure in XML
-	public static final int MODE_LINK = 3;
-	public static final int MODE_NOT_ZFS = 1; // Can be WebDAV, but also snapshots, as they're not available through ZFS 
+
+	/* linkMode statuses from the Zotero client code
+this.LINK_MODE_IMPORTED_FILE = 0;
+this.LINK_MODE_IMPORTED_URL = 1;
+this.LINK_MODE_LINKED_FILE = 2;
+this.LINK_MODE_LINKED_URL = 3;
+	 */
+	
+	public static final int MODE_LINKED_URL = 3;
+	public static final int MODE_LINKED_FILE = 2;
+	public static final int MODE_IMPORTED_URL = 1;
+	public static final int MODE_IMPORTED_FILE = 0;
 
 	public Attachment () {
 		if (queue == null) queue = new ArrayList<Attachment>();
