@@ -55,6 +55,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -459,14 +460,23 @@ public class AttachmentActivity extends ListActivity {
 			File file;
 			String urlstring;
 			Attachment att = Attachment.load(attachmentKey, db);
-			final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-			String sanitized = att.title.replace(' ', '_')
-					.replaceFirst("^(.*?)(\\.?[^.]*)$", "$1"+"_"+att.key+"$2");
+			
+			String sanitized = att.title.replace(' ', '_');
+			
+			// If no 1-6-character extension, try to add one using MIME type
+			if (!sanitized.matches(".*\\.[a-zA-Z0-9]{1-6}")) {
+				String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(att.getType());
+				if (extension != null) sanitized = sanitized + "." + extension;
+			}
+			sanitized = sanitized.replaceFirst("^(.*?)(\\.?[^.]*)$", "$1"+"_"+att.key+"$2");
+			
 			file = new File(ServerCredentials.sDocumentStorageDir,sanitized);
 			if (!ServerCredentials.sBaseStorageDir.exists())
 				ServerCredentials.sBaseStorageDir.mkdir();
 			if (!ServerCredentials.sDocumentStorageDir.exists())
 				ServerCredentials.sDocumentStorageDir.mkdir();
+			
+			final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 			
 			if ("webdav".equals(mode)) {
 				//urlstring = "https://dfs.humnet.ucla.edu/home/ajlyon/zotero/223RMC7C.zip";
@@ -544,8 +554,11 @@ public class AttachmentActivity extends ListActivity {
                     	byte[] byteName = Base64.decode(name64.getBytes(), 0, name64.length() - 5, Base64.DEFAULT);
                     	String name = new String(byteName);
                     	Log.d(TAG, "Found file "+name+" from encoded "+name64);
-                    	// TODO handle file names and extensions better
-                    	if (name.contains(".pdf")) {
+                    	// If the linkMode is not an imported URL (snapshot) and the MIME type isn't text/html,
+                    	// then we unzip it and we're happy. If either of the preceding is true, we skip the file
+                    	// unless the filename includes .htm (covering .html automatically)
+                    	if ( ((att.content.optInt("linkMode", Attachment.MODE_IMPORTED_FILE) != Attachment.MODE_IMPORTED_URL)
+                    			&& !att.getType().equals("text/html")) || name.contains(".htm")) {
                     		FileOutputStream fos2 = new FileOutputStream(file);
                     		InputStream entryStream = zf.getInputStream(entry);
                             ByteArrayBuffer baf2 = new ByteArrayBuffer(100);
@@ -554,7 +567,9 @@ public class AttachmentActivity extends ListActivity {
                             }
                             fos2.write(baf2.toByteArray());
                             fos2.close();
-                            Log.d(TAG, "Finished reading a pdf from the zipfile");
+                            Log.d(TAG, "Finished reading file");
+                    	} else {
+                    		Log.d(TAG, "Skipping file: "+name);
                     	}
                     } while (entries.hasMoreElements());
                     zf.close();
