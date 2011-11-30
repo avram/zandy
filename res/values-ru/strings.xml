@@ -17,17 +17,17 @@
 -->
 <resources>
     <string name="applicationTitle">Zandy: Zotero для Android</string>
-    <string name="menu_sync">Sync</string>
+    <string name="menu_sync">Синхронизовать</string>
     <string name="menu_new">Добавить</string>
     <string name="menu_delete">Удалить</string>
     <string name="menu_sort">Сортировать</string>
     <string name="menu_prefs">Настройки</string>
     <string name="menu_search">Поиск</string>
-    <string name="view_items">Просмотр единиц</string>
+    <string name="view_items">Просмотр документов</string>
     <string name="view_collections">Просмотр коллекций</string>
-    <string name="log_in">Входить в систему</string>
+    <string name="log_in">Войти в систему</string>
     <string name="logged_in">Вход выполнен</string>
-    <string name="search_hint">Поиск единиц</string>
+    <string name="search_hint">Поиск документов</string>
     <string name="choose_parent_collection">Выбрать коллекцию</string>
     <string name="status">Статус:</string>
     	<!-- Button labels for dialogs -->
@@ -39,7 +39,7 @@
     <string name="attachment_zfs_available">Доступно для скачивания</string>
     <string name="attachment_zfs_local">Загружен</string>
     <string name="attachment_unknown">Неизвестный статус</string>
-    <string name="attachment_downloading">Скачивается приложение к единице: %s</string>
+    <string name="attachment_downloading">Скачивается приложение к документу: %s</string>
 	<string name="attachment_download_initiated">Загрузка файла начата.</string>
 	<string name="attachment_download_failed">Возможно не удалось скачать файл; попробуйте заново.</string>
 	<string name="attachment_intent_failed">Не удалось найти приложение для файлов типа "%s".</string>
@@ -47,5 +47,5 @@
 	<string name="sync_log_in_first">Выполните вход для синхронизации</string>
 	<string name="sync_started">Синхронизация запущена...</string>
         <!-- Zotero terms -->
-    <string name="note">Записка</string>
+    <string name="note">Заметка</string>
 </resources>
