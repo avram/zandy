@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Authenticator;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.net.URLConnection;
@@ -422,6 +423,23 @@ public class AttachmentActivity extends ListActivity {
 				return;
 			}
 			
+			if (ProgressThread.STATE_FAILED == msg.arg2) {
+	        	// Notify that we failed to get anything
+	        	Toast.makeText(getApplicationContext(),
+						getResources().getString(R.string.attachment_no_download_url), 
+	    				Toast.LENGTH_SHORT).show();
+	        	
+				if(mProgressDialog.isShowing())
+					dismissDialog(DIALOG_FILE_PROGRESS);
+				
+				// Let's try to fall back on an online version
+				Bundle b = msg.getData();
+				showDialog(DIALOG_CONFIRM_NAVIGATE, b);
+				
+				refreshView();
+				return;
+			}
+			
 			if (ProgressThread.STATE_UNZIPPING == msg.arg2) {
 				mProgressDialog.setMessage(getResources().getString(R.string.attachment_unzipping));
 				return;
@@ -440,6 +458,7 @@ public class AttachmentActivity extends ListActivity {
 		Handler mHandler;
 		Bundle arguments;
 		final static int STATE_DONE = 5;
+		final static int STATE_FAILED = 3;
 		final static int STATE_RUNNING = 1;
 		final static int STATE_UNZIPPING = 6;
 		int mState;
@@ -464,7 +483,7 @@ public class AttachmentActivity extends ListActivity {
 			String sanitized = att.title.replace(' ', '_');
 			
 			// If no 1-6-character extension, try to add one using MIME type
-			if (!sanitized.matches(".*\\.[a-zA-Z0-9]{1-6}")) {
+			if (!sanitized.matches(".*\\.[a-zA-Z0-9]{1,6}")) {
 				String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(att.getType());
 				if (extension != null) sanitized = sanitized + "." + extension;
 			}
@@ -494,7 +513,18 @@ public class AttachmentActivity extends ListActivity {
 			}
 			
 			try {
-				url = new URL(urlstring);
+				try {
+					url = new URL(urlstring);
+				} catch (MalformedURLException e) {
+					// Alert that we don't have a valid download URL and return
+					Message msg = mHandler.obtainMessage();
+		        	msg.arg2 = STATE_FAILED;
+		        	msg.setData(arguments);
+		        	mHandler.sendMessage(msg);
+		        	
+		        	Log.e(TAG, "Download URL not valid: "+urlstring, e);
+		        	return;
+				}
 				//this is the downloader method
                 long startTime = System.currentTimeMillis();
                 Log.d(TAG, "download beginning");
