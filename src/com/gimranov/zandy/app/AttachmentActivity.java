@@ -58,6 +58,7 @@ import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -208,6 +209,31 @@ public class AttachmentActivity extends ListActivity {
 				}
 								
 				if (row.getType().equals("note")) {
+	    	    	Log.d(TAG, "Trying to start note view activity");
+	    	    	Intent i = new Intent(getBaseContext(), NoteActivity.class);
+	    	    	i.putExtra("com.gimranov.zandy.app.note", row.content.optString("note", ""));
+	    	    	startActivity(i);
+/*
+					Bundle b = new Bundle();
+					b.putString("attachmentKey", row.key);
+					b.putString("itemKey", itemKey);
+					b.putString("content", row.content.optString("note", ""));
+					removeDialog(DIALOG_NOTE);
+					showDialog(DIALOG_NOTE, b);
+*/					
+				}
+        	}
+        });
+        lv.setOnItemLongClickListener(new OnItemLongClickListener() {
+        	// Warning here because Eclipse can't tell whether my ArrayAdapter is
+        	// being used with the correct parametrization.
+        	@SuppressWarnings("unchecked")
+			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        		// If we have a click on an entry, do something...
+        		ArrayAdapter<Attachment> adapter = (ArrayAdapter<Attachment>) parent.getAdapter();
+        		Attachment row = adapter.getItem(position);
+        		
+				if (row.getType().equals("note")) {
 					Bundle b = new Bundle();
 					b.putString("attachmentKey", row.key);
 					b.putString("itemKey", itemKey);
@@ -215,6 +241,7 @@ public class AttachmentActivity extends ListActivity {
 					removeDialog(DIALOG_NOTE);
 					showDialog(DIALOG_NOTE, b);
 				}
+				return true;
         	}
         });
     }
