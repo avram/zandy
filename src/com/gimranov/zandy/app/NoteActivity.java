@@ -75,12 +75,30 @@ public class NoteActivity extends Activity {
         
         // FIXME: why is it causing exception?
         // this.setTitle(getResources().getString(R.string.note_for_item,att.title));
-        
+        //file:///android_assets/tinymce/
         mWebView = (WebView) findViewById(R.id.webview);
         mWebView.getSettings().setJavaScriptEnabled(true);
+        String data =
+        "<html xmlns=\"http://www.w3.org/1999/xhtml\">" +
+        "<head>" +
+        "<script type=\"text/javascript\" src=\"jscripts/tiny_mce/tiny_mce.js\"></script>" +
+        "<script type=\"text/javascript\">" +
+    	"tinyMCE.init({" +
+    	"	mode : \"textareas\"," +
+    	"	theme : \"simple\"" +
+    	"});" +
+        "</script>" +
+        "</head>" +
+    	"<body>" +
+        "<textarea id=\"wysiwyg\">" +
+        att.content.optString("note", "") +
+        "</textarea>" +
+        "</body>" +
+        "</html>";
 
         /* Get the incoming data from the calling activity */
-        mWebView.loadData(att.content.optString("note", ""), "text/html", "UTF-8");//loadUrl("http://www.google.com");
+        mWebView.loadDataWithBaseURL("file:///android_asset/tinymce/", data, "text/html", "UTF-8", null);
+        //mWebView.loadUrl("file:///android_asset/tinymce/qq.html");
     }
     
     @Override
