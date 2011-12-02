@@ -58,6 +58,7 @@ public class NoteActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setDefaultKeyMode(DEFAULT_KEYS_DISABLE);
         setContentView(R.layout.note);
 
         db = new Database(this);
@@ -78,10 +79,11 @@ public class NoteActivity extends Activity {
         //file:///android_assets/tinymce/
         mWebView = (WebView) findViewById(R.id.webview);
         mWebView.getSettings().setJavaScriptEnabled(true);
+        // FIXME: can we template it somehow?
         String data =
         "<html xmlns=\"http://www.w3.org/1999/xhtml\">" +
         "<head>" +
-        "<script type=\"text/javascript\" src=\"jscripts/tiny_mce/tiny_mce.js\"></script>" +
+        "<script type=\"text/javascript\" src=\"tiny_mce.js\"></script>" +
         "<script type=\"text/javascript\">" +
     	"tinyMCE.init({" +
     	"	mode : \"textareas\"," +
@@ -96,9 +98,7 @@ public class NoteActivity extends Activity {
         "</body>" +
         "</html>";
 
-        /* Get the incoming data from the calling activity */
-        mWebView.loadDataWithBaseURL("file:///android_asset/tinymce/", data, "text/html", "UTF-8", null);
-        //mWebView.loadUrl("file:///android_asset/tinymce/qq.html");
+        mWebView.loadDataWithBaseURL("file:///android_asset/tiny_mce/", data, "text/html", "UTF-8", null);
     }
     
     @Override
@@ -107,6 +107,15 @@ public class NoteActivity extends Activity {
             mWebView.goBack();
             return true;
         }
-        return super.onKeyDown(keyCode, event);
+        return true;
+//        return super.onKeyDown(keyCode, event);
+    }    
+    @Override
+    public boolean onKeyLongPress(int keyCode, KeyEvent event) {
+        return true;
+    }    
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        return true;
     }    
 }
