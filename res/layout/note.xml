@@ -15,8 +15,23 @@
   You should have received a copy of the GNU Affero General Public License
   along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
 -->
-<WebView  xmlns:android="http://schemas.android.com/apk/res/android"
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/relativeLayout1"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+<Button
+    android:id="@+id/cancel"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:text="@string/cancel" />
+
+<WebView
     android:id="@+id/webview"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-/>
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_above="@id/cancel"
+    android:layout_alignParentTop="true" />
+
+    </RelativeLayout>
