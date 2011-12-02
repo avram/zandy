@@ -44,7 +44,7 @@ public class NoteActivity extends Activity {
 	
 	public Attachment att;
 	private Database db;
-    private WebView mWebView;
+    private ZWebView mWebView;
 	
 	private class HelloWebViewClient extends WebViewClient {
 	    @Override
@@ -77,7 +77,7 @@ public class NoteActivity extends Activity {
         // FIXME: why is it causing exception?
         // this.setTitle(getResources().getString(R.string.note_for_item,att.title));
         //file:///android_assets/tinymce/
-        mWebView = (WebView) findViewById(R.id.webview);
+        mWebView = (ZWebView) findViewById(R.id.webview);
         mWebView.getSettings().setJavaScriptEnabled(true);
         // FIXME: can we template it somehow?
         String data =
@@ -109,13 +109,5 @@ public class NoteActivity extends Activity {
         }
         return true;
 //        return super.onKeyDown(keyCode, event);
-    }    
-    @Override
-    public boolean onKeyLongPress(int keyCode, KeyEvent event) {
-        return true;
-    }    
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        return true;
     }    
 }

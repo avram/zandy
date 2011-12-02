@@ -27,7 +27,7 @@
     android:layout_alignParentBottom="true"
     android:text="@string/cancel" />
 
-<WebView
+<com.gimranov.zandy.app.ZWebView
     android:id="@+id/webview"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
