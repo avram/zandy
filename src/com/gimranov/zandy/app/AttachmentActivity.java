@@ -310,6 +310,7 @@ public class AttachmentActivity extends ListActivity {
 							Log.d(TAG, "Attachment created with parent key: "+itemKey);
 							Attachment att = new Attachment(getBaseContext(), "note", itemKey);
 		    	            att.setNoteText(value.toString());
+		    	            att.dirty = APIRequest.API_NEW;
 		    	            att.save(db);
 						} else {
 							Attachment att = Attachment.load(attachmentKey, db);
