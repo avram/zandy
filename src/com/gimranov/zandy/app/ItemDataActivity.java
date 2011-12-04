@@ -33,6 +33,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -60,11 +62,20 @@ public class ItemDataActivity extends ListActivity {
 	
 	public Item item;
 	private Database db;
+
+	private class HelloWebViewClient extends WebViewClient {
+	    @Override
+	    public boolean shouldOverrideUrlLoading(WebView view, String url) {
+	        view.loadUrl(url);
+	        return true;
+	    }
+	}
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+//        setContentView(R.layout.list_data);
         
         db = new Database(this);
         
@@ -102,27 +113,11 @@ public class ItemDataActivity extends ListActivity {
         	public View getView(int position, View convertView, ViewGroup parent) {
         		View row;
         		
-                // We are reusing views, but we need to initialize it if null
-        		if (null == convertView) {
-                    LayoutInflater inflater = getLayoutInflater();
-        			row = inflater.inflate(R.layout.list_data, null);
-        		} else {
-        			row = convertView;
-        		}
-         
-        		/* Our layout has just two fields */
-        		TextView tvLabel = (TextView) row.findViewById(R.id.data_label);
-        		TextView tvContent = (TextView) row.findViewById(R.id.data_content);
-        		
         		Bundle b = getItem(position);
+        		String label = b.getString("label");
         		String content = "";
-        		
-	        	/* Since the field names are the API / internal form, we
-	        	 * attempt to get a localized, human-readable version. */
-        		tvLabel.setText(Item.localizedStringForString(
-        					b.getString("label")));
-        		
-        		if ("children".equals(getItem(position).getString("label"))) {
+
+        		if ("children".equals(label)) {
         			int notes = b.getInt("noteCount", 0);
         			int atts = b.getInt("attachmentCount", 0);
 	        		if (notes == 0 && atts == 0) getResources().getString(R.string.item_attachment_info_none);
@@ -134,7 +129,37 @@ public class ItemDataActivity extends ListActivity {
         			content = b.getString("content");
         		}
         	     		
-        		tvContent.setText(content);
+                // We are reusing views, but we need to initialize it if null
+        		if (null == convertView) {
+                    LayoutInflater inflater = getLayoutInflater();
+        			row = inflater.inflate(R.layout.list_data, null);
+        		} else {
+        			row = convertView;
+        		}
+
+        		/*
+                LayoutInflater inflater = getLayoutInflater();
+                if (web) {
+        			row = inflater.inflate(R.layout.list_data_web, null);
+                } else {
+        			row = inflater.inflate(R.layout.list_data, null);
+                }*/
+
+        		/* Our layout has just two fields */
+        		TextView tvLabel = (TextView) row.findViewById(R.id.data_label);
+        		TextView tvContent = (TextView) row.findViewById(R.id.data_content);
+        		WebView tvWeb = (WebView) row.findViewById(R.id.data_content_web);
+        		tvWeb.setVisibility(View.INVISIBLE);
+
+        		/* Since the field names are the API / internal form, we
+	        	 * attempt to get a localized, human-readable version. */
+        		tvLabel.setText(Item.localizedStringForString(label));
+        		if ("note".equals(label)) {
+        			tvWeb.loadData(content, "text/html", "UTF-8");
+            		tvWeb.setVisibility(View.VISIBLE);
+        		} else {
+            		tvContent.setText(content);
+        		}
          
         		return row;
         	}
@@ -233,7 +258,14 @@ public class ItemDataActivity extends ListActivity {
         		return true;
           }
         });
-
+        /*
+        LayoutInflater inflater = getLayoutInflater();
+		View row = inflater.inflate(R.layout.list_data, null);
+		WebView tvWeb = (WebView) row.findViewById(R.id.webView1);
+		tvWeb.getSettings().setJavaScriptEnabled(true);
+		tvWeb.loadUrl("http://www.google.com");
+		tvWeb.setWebViewClient(new HelloWebViewClient());
+		*/
     }
     
 	protected Dialog onCreateDialog(int id, Bundle b) {

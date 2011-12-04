@@ -16,11 +16,13 @@
   along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/list_data"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:stretchColumns="1"
-    android:id="@+id/list_data">
-	<TableRow>
+    android:layout_height="wrap_content"
+    android:stretchColumns="1" >
+
+	<TableRow android:layout_width="match_parent" >
+
 	    <TextView android:text="" android:id="@+id/data_label"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
@@ -32,5 +34,11 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:padding="3dip" />
-	</TableRow>
+        <WebView
+        android:id="@+id/data_content_web"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="3dip" />
+	    </TableRow>
 </TableLayout>
+    

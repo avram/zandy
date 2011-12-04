@@ -1,3 +1,5 @@
+assets/*
 bin/*
 gen/*
 .classpath
+project.properties

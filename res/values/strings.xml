@@ -103,6 +103,7 @@
 	<string name="settings_webdav_password_desc">Password for WebDAV server. This is separate from your Zotero password.</string>
 	<!-- Zotero terms -->
     <string name="note">Note</string>
+        <string name="note_for_item">Note for</string>
 
     <!-- JSON templates; don't need l10n -->
     <string name="template_artwork">{"itemType":"artwork","title":"-_-_-","creators":[{"creatorType":"artist","firstName":"-_-_-","lastName":"-_-_-"}],"abstractNote":"-_-_-","artworkMedium":"-_-_-","artworkSize":"-_-_-","date":"-_-_-","language":"-_-_-","shortTitle":"-_-_-","archive":"-_-_-","archiveLocation":"-_-_-","libraryCatalog":"-_-_-","callNumber":"-_-_-","url":"-_-_-","accessDate":"-_-_-","rights":"-_-_-","extra":"-_-_-","tags":[],"notes":[]}</string>

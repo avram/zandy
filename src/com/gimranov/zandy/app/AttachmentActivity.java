@@ -59,6 +59,7 @@ import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -182,7 +183,24 @@ public class AttachmentActivity extends ListActivity {
         	// being used with the correct parametrization.
         	@SuppressWarnings("unchecked")
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        		// If we have a click on an entry, do something...
+        		// If we have a click on an entry, show its note
+        		ArrayAdapter<Attachment> adapter = (ArrayAdapter<Attachment>) parent.getAdapter();
+        		Attachment row = adapter.getItem(position);
+        		
+        		if (row.content.has("note")) {
+	    	    	Log.d(TAG, "Trying to start note view activity for: "+row.key);
+	    	    	Intent i = new Intent(getBaseContext(), NoteActivity.class);
+	    	    	i.putExtra("com.gimranov.zandy.app.attKey", row.key);//row.content.optString("note", ""));
+	    	    	startActivity(i);
+				}
+        	}
+        });
+        lv.setOnItemLongClickListener(new OnItemLongClickListener() {
+        	// Warning here because Eclipse can't tell whether my ArrayAdapter is
+        	// being used with the correct parametrization.
+        	@SuppressWarnings("unchecked")
+			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        		// If we have a long click on an entry, do something...
         		ArrayAdapter<Attachment> adapter = (ArrayAdapter<Attachment>) parent.getAdapter();
         		Attachment row = adapter.getItem(position);
         		String url = (row.url != null && !row.url.equals("")) ?
@@ -207,7 +225,7 @@ public class AttachmentActivity extends ListActivity {
         			} else
         				showDialog(DIALOG_CONFIRM_NAVIGATE, b);
 				}
-								
+        		
 				if (row.getType().equals("note")) {
 					Bundle b = new Bundle();
 					b.putString("attachmentKey", row.key);
@@ -216,6 +234,7 @@ public class AttachmentActivity extends ListActivity {
 					removeDialog(DIALOG_NOTE);
 					showDialog(DIALOG_NOTE, b);
 				}
+				return true;
         	}
         });
     }

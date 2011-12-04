@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="TinyMCE copy" default="build" basedir=".">
+	<!-- Concat and minify classes and scripts -->
+	<target name="build" depends="" description="Builds the project">
+		<copy todir="assets/tiny_mce">
+			<fileset dir="tinymce/jscripts/tiny_mce/" />
+		</copy>
+	</target>
+</project>

@@ -68,5 +68,6 @@
             	  android:label="@string/app_name"
                   android:launchMode="standard">
         </activity>
+        <activity android:name=".NoteActivity" android:label="@string/app_name" android:launchMode="standard"></activity>
     </application>
 </manifest>
