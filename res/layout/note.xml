@@ -21,17 +21,23 @@
         android:layout_height="fill_parent" >
 
 <Button
-    android:id="@+id/cancel"
+    android:id="@+id/noteCancel"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_alignParentBottom="true"
     android:text="@string/cancel" />
-
+
+<Button
+    android:id="@+id/noteEdit"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:text="@string/note_edit" />
 <com.gimranov.zandy.app.ZWebView
     android:id="@+id/webview"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_above="@id/cancel"
+    android:layout_above="@id/noteCancel"
     android:layout_alignParentTop="true" />
 
     </RelativeLayout>
