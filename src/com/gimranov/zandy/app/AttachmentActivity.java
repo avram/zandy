@@ -385,6 +385,23 @@ public class AttachmentActivity extends ListActivity {
 		}
 	}
 	
+	private void showAttachment(Attachment att) {
+		if (att.status == Attachment.LOCAL) {
+			Log.d(TAG,"Starting to display local attachment");
+			Uri uri = Uri.fromFile(new File(att.filename));
+			String mimeType = att.content.optString("mimeType",null);
+			try {
+				startActivity(new Intent(Intent.ACTION_VIEW)
+				.setDataAndType(uri,mimeType));
+			} catch (ActivityNotFoundException e) {
+				Log.e(TAG, "No activity for intent", e);
+				Toast.makeText(getApplicationContext(),
+						getResources().getString(R.string.attachment_intent_failed, mimeType), 
+						Toast.LENGTH_SHORT).show();
+			}
+		}	
+	}
+	
 	/**
 	 * This mainly is to move the logic out of the onClick callback above
 	 * Decides whether to download or view, and launches the appropriate action
@@ -404,20 +421,7 @@ public class AttachmentActivity extends ListActivity {
 				|| (attFile != null && attFile.length() == 0)) {				
 			Log.d(TAG,"Starting to try and download attachment (status: "+att.status+", fn: "+att.filename+")");
 			showDialog(DIALOG_FILE_PROGRESS, b);
-		} else if (att.status == Attachment.LOCAL) {
-			Log.d(TAG,"Starting to display local attachment");
-			Uri uri = Uri.fromFile(new File(att.filename));
-			String mimeType = att.content.optString("mimeType",null);
-			try {
-				startActivity(new Intent(Intent.ACTION_VIEW)
-							.setDataAndType(uri,mimeType));
-			} catch (ActivityNotFoundException e) {
-				Log.e(TAG, "No activity for intent", e);
-				Toast.makeText(getApplicationContext(),
-						getResources().getString(R.string.attachment_intent_failed, mimeType), 
-        				Toast.LENGTH_SHORT).show();
-			}
-		}
+		} else showAttachment(att);
 	}
 	
 	/**
@@ -438,6 +442,8 @@ public class AttachmentActivity extends ListActivity {
 				if(mProgressDialog.isShowing())
 					dismissDialog(DIALOG_FILE_PROGRESS);
 				refreshView();
+				if (null != msg.obj)
+					showAttachment((Attachment)msg.obj);
 				return;
 			}
 			
@@ -483,7 +489,7 @@ public class AttachmentActivity extends ListActivity {
 			String sanitized = att.title.replace(' ', '_');
 			
 			// If no 1-6-character extension, try to add one using MIME type
-			if (!sanitized.matches(".*\\.[a-zA-Z0-9]{1-6}")) {
+			if (!sanitized.matches(".*\\.[a-zA-Z0-9]{1,6}$")) {
 				String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(att.getType());
 				if (extension != null) sanitized = sanitized + "." + extension;
 			}
@@ -544,7 +550,7 @@ public class AttachmentActivity extends ListActivity {
                         if (baf.length() % 2048 == 0) {
                         	Message msg = mHandler.obtainMessage();
                         	// XXX do real length later
-                        	Log.d(TAG, baf.length() + " downloaded so far");
+//                        	Log.d(TAG, baf.length() + " downloaded so far");
                         	msg.arg1 = baf.length() % 100;
                         	mHandler.sendMessage(msg);
                         }
@@ -576,8 +582,7 @@ public class AttachmentActivity extends ListActivity {
                     	// If the linkMode is not an imported URL (snapshot) and the MIME type isn't text/html,
                     	// then we unzip it and we're happy. If either of the preceding is true, we skip the file
                     	// unless the filename includes .htm (covering .html automatically)
-                    	if ( ((att.content.optInt("linkMode", Attachment.MODE_IMPORTED_FILE) != Attachment.MODE_IMPORTED_URL)
-                    			&& !att.getType().equals("text/html")) || name.contains(".htm")) {
+                    	if ( (!att.getType().equals("text/html")) || name.contains(".htm")) {
                     		FileOutputStream fos2 = new FileOutputStream(file);
                     		InputStream entryStream = zf.getInputStream(entry);
                             ByteArrayBuffer baf2 = new ByteArrayBuffer(100);
@@ -610,15 +615,17 @@ public class AttachmentActivity extends ListActivity {
 	        }
 			att.filename = file.getPath();
 			File newFile = new File(att.filename);
+        	Message msg = mHandler.obtainMessage();
 			if (newFile.length() > 0) {
 				att.status = Attachment.LOCAL;
 				Log.d(TAG,"File downloaded: "+att.filename);
+				msg.obj = att;
 			} else {
 				Log.d(TAG, "File not downloaded: "+att.filename);
-				att.status = Attachment.AVAILABLE;				
+				att.status = Attachment.AVAILABLE;
+				msg.obj = null;
 			}
 			att.save(db);
-        	Message msg = mHandler.obtainMessage();
         	msg.arg2 = STATE_DONE;
         	mHandler.sendMessage(msg);
 		}

@@ -25,6 +25,9 @@ import android.text.Editable;
 import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -78,35 +81,38 @@ public class NoteActivity extends Activity {
         Item item = Item.load(att.parentKey, db);
         this.att = att;
         
-        // Set up buttons
-        Button cancelButton = (Button) findViewById(R.id.noteCancel);
-		cancelButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				finish();
-			}
-		});
-        Button editButton = (Button) findViewById(R.id.noteEdit);
-		editButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				Bundle b = new Bundle();
-				b.putString("attachmentKey", att.key);
-				b.putString("itemKey", att.parentKey);
-				b.putString("content", att.content.optString("note", ""));
-				removeDialog(DIALOG_NOTE);
-				showDialog(DIALOG_NOTE, b);
-			}
-		});
-        
         setTitle(getResources().getString(R.string.note_for_item, item.getTitle()));
         //file:///android_assets/tinymce/
         mWebView = (ZWebView) findViewById(R.id.webview);
         mWebView.getSettings().setJavaScriptEnabled(false);
 		mWebView.loadUrl(dataUrlForNote(att.content.optString("note", "")));
     }
-    
-    /**
+        
+    @Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+    	MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.note_menu, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle item selection
+	    switch (item.getItemId()) {
+	    case R.id.do_edit:
+			Bundle b = new Bundle();
+			b.putString("attachmentKey", att.key);
+			b.putString("itemKey", att.parentKey);
+			b.putString("content", att.content.optString("note", ""));
+			removeDialog(DIALOG_NOTE);
+			showDialog(DIALOG_NOTE, b);
+	        return true;
+	    default:
+	        return super.onOptionsItemSelected(item);
+	    }
+	}
+
+	/**
      * Returns urlencoded  data: URL for Unicode note string
      * @param note
      * @return
