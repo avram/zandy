@@ -49,4 +49,5 @@
 	<string name="sync_started">Started syncing...</string>
         <!-- Zotero terms -->
     <string name="note">Note</string>
+    <string name="menu_edit">Edit</string>
 </resources>

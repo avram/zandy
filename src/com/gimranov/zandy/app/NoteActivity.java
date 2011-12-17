@@ -17,14 +17,27 @@
 package com.gimranov.zandy.app;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.text.Editable;
+import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView.BufferType;
 
 import com.gimranov.zandy.app.data.Attachment;
 import com.gimranov.zandy.app.data.Database;
+import com.gimranov.zandy.app.data.Item;
+import com.gimranov.zandy.app.task.APIRequest;
 
 /**
  * This Activity handles displaying and editing of notes.
@@ -46,27 +59,18 @@ public class NoteActivity extends Activity {
 	private Database db;
     private ZWebView mWebView;
 	
-	private class HelloWebViewClient extends WebViewClient {
-	    @Override
-	    public boolean shouldOverrideUrlLoading(WebView view, String url) {
-	        view.loadUrl(url);
-	        return true;
-	    }
-	}
-	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setDefaultKeyMode(DEFAULT_KEYS_DISABLE);
+        //setDefaultKeyMode(DEFAULT_KEYS_DISABLE);
         setContentView(R.layout.note);
 
         db = new Database(this);
         
         /* Get the incoming data from the calling activity */
         final String attKey = getIntent().getStringExtra("com.gimranov.zandy.app.attKey");
-        Attachment att = Attachment.load(attKey, db);
-        this.att = att;
+        final Attachment att = Attachment.load(attKey, db);
         
         if (att == null) {
         	Log.e(TAG, "NoteActivity started without attKey; finishing.");
@@ -74,40 +78,110 @@ public class NoteActivity extends Activity {
         	return;
         }
         
-        // FIXME: why is it causing exception?
-        // this.setTitle(getResources().getString(R.string.note_for_item,att.title));
+        Item item = Item.load(att.parentKey, db);
+        this.att = att;
+        
+        setTitle(getResources().getString(R.string.note_for_item, item.getTitle()));
         //file:///android_assets/tinymce/
         mWebView = (ZWebView) findViewById(R.id.webview);
-        mWebView.getSettings().setJavaScriptEnabled(true);
-        // FIXME: can we template it somehow?
-        String data =
-        "<html xmlns=\"http://www.w3.org/1999/xhtml\">" +
-        "<head>" +
-        "<script type=\"text/javascript\" src=\"tiny_mce.js\"></script>" +
-        "<script type=\"text/javascript\">" +
-    	"tinyMCE.init({" +
-    	"	mode : \"textareas\"," +
-    	"	theme : \"simple\"" +
-    	"});" +
-        "</script>" +
-        "</head>" +
-    	"<body>" +
-        "<textarea id=\"wysiwyg\">" +
-        att.content.optString("note", "") +
-        "</textarea>" +
-        "</body>" +
-        "</html>";
+        mWebView.getSettings().setJavaScriptEnabled(false);
+		mWebView.loadUrl(dataUrlForNote(att.content.optString("note", "")));
+    }
+        
+    @Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+    	MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.note_menu, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
 
-        mWebView.loadDataWithBaseURL("file:///android_asset/tiny_mce/", data, "text/html", "UTF-8", null);
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle item selection
+	    switch (item.getItemId()) {
+	    case R.id.do_edit:
+			Bundle b = new Bundle();
+			b.putString("attachmentKey", att.key);
+			b.putString("itemKey", att.parentKey);
+			b.putString("content", att.content.optString("note", ""));
+			removeDialog(DIALOG_NOTE);
+			showDialog(DIALOG_NOTE, b);
+	        return true;
+	    default:
+	        return super.onOptionsItemSelected(item);
+	    }
+	}
+
+	/**
+     * Returns urlencoded  data: URL for Unicode note string
+     * @param note
+     * @return
+     */
+    private static String dataUrlForNote(String note) {
+    	String data =
+    	        "<html xmlns=\"http://www.w3.org/1999/xhtml\">" +
+    	"<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>"+
+    	        "<head>" +
+    	        "</script>" +
+    	        "</head>" +
+    	    	"<body>" +
+    	        note +
+    	        "</body>" +
+    	        "</html>";
+    	String b64 = new String(Base64.encode(data.getBytes(), Base64.DEFAULT));
+		return "data:text/html;base64,"+b64;
     }
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if ((keyCode == KeyEvent.KEYCODE_BACK) && mWebView.canGoBack()) {
-            mWebView.goBack();
-            return true;
+        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
+        	finish();
+        	return true;
         }
-        return true;
-//        return super.onKeyDown(keyCode, event);
-    }    
+       return super.onKeyDown(keyCode, event);
+    }
+    
+    protected Dialog onCreateDialog(int id, Bundle b) {
+		final String attachmentKey = b.getString("attachmentKey");
+		final String itemKey = b.getString("itemKey");
+		final String content = b.getString("content");
+		final String mode = b.getString("mode");
+		AlertDialog dialog;
+		switch (id) {			
+		case DIALOG_NOTE:
+			final EditText input = new EditText(this);
+			input.setText(content, BufferType.EDITABLE);
+			
+			AlertDialog.Builder builder = new AlertDialog.Builder(this)
+	    	    .setTitle(getResources().getString(R.string.note))
+	    	    .setView(input)
+	    	    .setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+	    	            Editable value = input.getText();
+						if (mode != null && mode.equals("new")) {
+							Log.d(TAG, "Attachment created with parent key: "+itemKey);
+							Attachment att = new Attachment(getBaseContext(), "note", itemKey);
+		    	            att.setNoteText(value.toString());
+		    	            att.save(db);
+						} else {
+							Attachment att = Attachment.load(attachmentKey, db);
+		    	            att.setNoteText(value.toString());
+		    	            att.dirty = APIRequest.API_DIRTY;
+		    	            att.save(db);
+						}
+						mWebView.loadUrl(dataUrlForNote(att.content.optString("note", "")));
+					}
+	    	    }).setNeutralButton(getResources().getString(R.string.cancel),
+	    	    		new DialogInterface.OnClickListener() {
+	    	        public void onClick(DialogInterface dialog, int whichButton) {
+	    	        	// do nothing
+	    	        }
+	    	    });
+			dialog = builder.create();
+			return dialog;
+		default:
+			Log.e(TAG, "Invalid dialog requested");
+			return null;
+		}
+	}
 }

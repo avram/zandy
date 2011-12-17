@@ -25,6 +25,7 @@ public class ZWebView extends WebView {
 		super(context, attrs, defStyle);
 		// TODO Auto-generated constructor stub
 	}
+	/*
 	// FIXME: Find out how to send key events to TinyMCE without default WebView bahavior
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -37,5 +38,6 @@ public class ZWebView extends WebView {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         return true;
-    }    
+    }
+    */    
 }
