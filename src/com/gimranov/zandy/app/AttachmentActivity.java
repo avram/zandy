@@ -367,7 +367,6 @@ public class AttachmentActivity extends ListActivity {
 			mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 			mProgressDialog.setMessage(getResources().getString(R.string.attachment_downloading, b.getString("title")));
 			mProgressDialog.setIndeterminate(true);
-			mProgressDialog.setMax(100);
 			return mProgressDialog;
 		default:
 			Log.e(TAG, "Invalid dialog requested");
@@ -378,7 +377,6 @@ public class AttachmentActivity extends ListActivity {
 	protected void onPrepareDialog(int id, Dialog dialog, Bundle b) {
 		switch(id) {
 		case DIALOG_FILE_PROGRESS:
-			mProgressDialog.setProgress(0);
 			mProgressDialog.setMessage(getResources().getString(R.string.attachment_downloading, b.getString("title")));
 			progressThread = new ProgressThread(handler, b);
 			progressThread.start();
@@ -438,25 +436,28 @@ public class AttachmentActivity extends ListActivity {
 	
 	final Handler handler = new Handler() {
 		public void handleMessage(Message msg) {
-			if (ProgressThread.STATE_DONE == msg.arg2) {
+			switch (msg.arg2) {
+			case ProgressThread.STATE_DONE:
 				if(mProgressDialog.isShowing())
 					dismissDialog(DIALOG_FILE_PROGRESS);
 				refreshView();
 				if (null != msg.obj)
 					showAttachment((Attachment)msg.obj);
-				return;
-			}
-			
-			if (ProgressThread.STATE_UNZIPPING == msg.arg2) {
+				break;
+			case ProgressThread.STATE_UNZIPPING:
+				mProgressDialog.setMax(msg.arg1);
+				mProgressDialog.setProgress(0);
 				mProgressDialog.setMessage(getResources().getString(R.string.attachment_unzipping));
-				return;
-			}
-			
-			int total = msg.arg1;
-			mProgressDialog.setProgress(total);
-			if (total >= 100) {
-				dismissDialog(DIALOG_FILE_PROGRESS);
-				progressThread.setState(ProgressThread.STATE_DONE);
+				break;
+			case ProgressThread.STATE_RUNNING:
+				mProgressDialog.setMax(msg.arg1);
+				mProgressDialog.setProgress(0);
+				mProgressDialog.setIndeterminate(false);
+				break;
+			default:
+				mProgressDialog.setProgress(msg.arg1);
+				break;
+
 			}
 		}
 	};
@@ -467,7 +468,6 @@ public class AttachmentActivity extends ListActivity {
 		final static int STATE_DONE = 5;
 		final static int STATE_RUNNING = 1;
 		final static int STATE_UNZIPPING = 6;
-		int mState;
 		
 		ProgressThread(Handler h, Bundle b) {
 			mHandler = h;
@@ -476,8 +476,7 @@ public class AttachmentActivity extends ListActivity {
 		
 		@SuppressWarnings("unchecked")
 		public void run() {
-			mState = STATE_RUNNING;
-			
+
 			// Setup
 			final String attachmentKey = arguments.getString("attachmentKey");
 			final String mode = arguments.getString("mode");
@@ -530,6 +529,10 @@ public class AttachmentActivity extends ListActivity {
                 URLConnection ucon = url.openConnection();
                 ucon.setRequestProperty("User-Agent","Mozilla/5.0 ( compatible ) ");
                 ucon.setRequestProperty("Accept","*/*");
+                Message msg = mHandler.obtainMessage();
+                msg.arg1 = ucon.getContentLength();
+                msg.arg2 = STATE_RUNNING;
+                mHandler.sendMessage(msg);
 
                 /*
                  * Define InputStreams to read from the URLConnection.
@@ -542,18 +545,16 @@ public class AttachmentActivity extends ListActivity {
                 
                 /*
                  * Read bytes to the Buffer until there is nothing more to read(-1).
+                 * TODO read in chunks instead of byte by byte
                  */
-    			while (mState == STATE_RUNNING 
-    					&& (current = bis.read()) != -1) {
+                while ((current = bis.read()) != -1) {
                         baf.append((byte) current);
                         
-                        if (baf.length() % 2048 == 0) {
-                        	Message msg = mHandler.obtainMessage();
-                        	// XXX do real length later
-//                        	Log.d(TAG, baf.length() + " downloaded so far");
-                        	msg.arg1 = baf.length() % 100;
-                        	mHandler.sendMessage(msg);
-                        }
+                    if (baf.length() % 2048 == 0) {
+                        msg = mHandler.obtainMessage();
+                        msg.arg1 = baf.length();
+                        mHandler.sendMessage(msg);
+                    }
                 }
 
     			/* Save to temporary directory for WebDAV */
@@ -567,14 +568,15 @@ public class AttachmentActivity extends ListActivity {
                     fos.close();
                     ZipFile zf = new ZipFile(tmpFile);
                     
-                    // Change the message to reflect that we're unzipping now
-                    Message msg = mHandler.obtainMessage();
-                	msg.arg2 = STATE_UNZIPPING;
-                	mHandler.sendMessage(msg);
-                    
                 	Enumeration<ZipEntry> entries = (Enumeration<ZipEntry>) zf.entries();
                     do {
                     	ZipEntry entry = entries.nextElement();
+                        // Change the message to reflect that we're unzipping now
+                        msg = mHandler.obtainMessage();
+                        msg.arg1 = (int) entry.getSize();
+                        msg.arg2 = STATE_UNZIPPING;
+                        mHandler.sendMessage(msg);
+
                     	String name64 = entry.getName();
                     	byte[] byteName = Base64.decode(name64.getBytes(), 0, name64.length() - 5, Base64.DEFAULT);
                     	String name = new String(byteName);
@@ -588,6 +590,12 @@ public class AttachmentActivity extends ListActivity {
                             ByteArrayBuffer baf2 = new ByteArrayBuffer(100);
                             while ((current = entryStream.read()) != -1) {
                             	baf2.append((byte) current);
+
+								if (baf2.length() % 2048 == 0) {
+									msg = mHandler.obtainMessage();
+									msg.arg1 = baf2.length();
+									mHandler.sendMessage(msg);
+								}
                             }
                             fos2.write(baf2.toByteArray());
                             fos2.close();
@@ -628,10 +636,6 @@ public class AttachmentActivity extends ListActivity {
 			att.save(db);
         	msg.arg2 = STATE_DONE;
         	mHandler.sendMessage(msg);
-		}
-		
-		public void setState(int state) {
-			mState = state;
 		}
 	}
                
