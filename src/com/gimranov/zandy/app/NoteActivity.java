@@ -22,16 +22,14 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
-import android.util.Base64;
+import android.text.Html;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.TextView.BufferType;
 
 import com.gimranov.zandy.app.data.Attachment;
@@ -49,21 +47,16 @@ public class NoteActivity extends Activity {
 
 	private static final String TAG = "com.gimranov.zandy.app.NoteActivity";
 	
-	static final int DIALOG_CONFIRM_NAVIGATE = 4;	
-	static final int DIALOG_FILE_PROGRESS = 6;	
-	static final int DIALOG_CONFIRM_DELETE = 5;	
 	static final int DIALOG_NOTE = 3;
-	static final int DIALOG_NEW = 1;
 	
 	public Attachment att;
 	private Database db;
-    private ZWebView mWebView;
 	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setDefaultKeyMode(DEFAULT_KEYS_DISABLE);
+
         setContentView(R.layout.note);
 
         db = new Database(this);
@@ -82,75 +75,32 @@ public class NoteActivity extends Activity {
         this.att = att;
         
         setTitle(getResources().getString(R.string.note_for_item, item.getTitle()));
-        //file:///android_assets/tinymce/
-        mWebView = (ZWebView) findViewById(R.id.webview);
-        mWebView.getSettings().setJavaScriptEnabled(false);
-		mWebView.loadUrl(dataUrlForNote(att.content.optString("note", "")));
-    }
+
+        TextView text = (TextView) findViewById(R.id.noteText);
+        TextView title = (TextView) findViewById(R.id.noteTitle);
+        title.setText(att.title);
+        text.setText(Html.fromHtml(att.content.optString("note", "")));
         
-    @Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-    	MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.note_menu, menu);
-		return super.onCreateOptionsMenu(menu);
-	}
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle item selection
-	    switch (item.getItemId()) {
-	    case R.id.do_edit:
-			Bundle b = new Bundle();
-			b.putString("attachmentKey", att.key);
-			b.putString("itemKey", att.parentKey);
-			b.putString("content", att.content.optString("note", ""));
-			removeDialog(DIALOG_NOTE);
-			showDialog(DIALOG_NOTE, b);
-	        return true;
-	    default:
-	        return super.onOptionsItemSelected(item);
-	    }
-	}
-
-	/**
-     * Returns urlencoded  data: URL for Unicode note string
-     * @param note
-     * @return
-     */
-    private static String dataUrlForNote(String note) {
-    	String data =
-    	        "<html xmlns=\"http://www.w3.org/1999/xhtml\">" +
-    	"<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>"+
-    	        "<head>" +
-    	        "</script>" +
-    	        "</head>" +
-    	    	"<body>" +
-    	        note +
-    	        "</body>" +
-    	        "</html>";
-    	String b64 = new String(Base64.encode(data.getBytes(), Base64.DEFAULT));
-		return "data:text/html;base64,"+b64;
-    }
-    
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
-        	finish();
-        	return true;
+        Button editButton = (Button) findViewById(R.id.editNote);
+		editButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View arg0) {
+				showDialog(DIALOG_NOTE);
+			}
+		});
+		
+        /* Warn that this won't propagate for attachment notes */
+        if (!"note".equals(att.getType())) {
+			Toast.makeText(this, R.string.attachment_note_warning, Toast.LENGTH_LONG).show();
         }
-       return super.onKeyDown(keyCode, event);
-    }
+    } 
     
-    protected Dialog onCreateDialog(int id, Bundle b) {
-		final String attachmentKey = b.getString("attachmentKey");
-		final String itemKey = b.getString("itemKey");
-		final String content = b.getString("content");
-		final String mode = b.getString("mode");
+    protected Dialog onCreateDialog(int id) {
 		AlertDialog dialog;
-		switch (id) {			
+		switch (id) {
 		case DIALOG_NOTE:
 			final EditText input = new EditText(this);
-			input.setText(content, BufferType.EDITABLE);
+			input.setText(att.content.optString("note", ""), BufferType.EDITABLE);
 			
 			AlertDialog.Builder builder = new AlertDialog.Builder(this)
 	    	    .setTitle(getResources().getString(R.string.note))
@@ -158,19 +108,16 @@ public class NoteActivity extends Activity {
 	    	    .setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int whichButton) {
 	    	            Editable value = input.getText();
-						if (mode != null && mode.equals("new")) {
-							Log.d(TAG, "Attachment created with parent key: "+itemKey);
-							Attachment att = new Attachment(getBaseContext(), "note", itemKey);
-		    	            att.setNoteText(value.toString());
-		    	            att.save(db);
-						} else {
-							Attachment att = Attachment.load(attachmentKey, db);
-		    	            att.setNoteText(value.toString());
-		    	            att.dirty = APIRequest.API_DIRTY;
-		    	            att.save(db);
-						}
-						mWebView.loadUrl(dataUrlForNote(att.content.optString("note", "")));
-					}
+	    	            Log.d(TAG, "New text: "+value.toString());
+	    	            att.setNoteText(value.toString());
+	    	            att.dirty = APIRequest.API_DIRTY;
+	    	            att.save(db);
+	    	            
+				        TextView text = (TextView) findViewById(R.id.noteText);
+				        TextView title = (TextView) findViewById(R.id.noteTitle);
+				        title.setText(att.title);
+				        text.setText(Html.fromHtml(att.content.optString("note", "")));
+	    	        }
 	    	    }).setNeutralButton(getResources().getString(R.string.cancel),
 	    	    		new DialogInterface.OnClickListener() {
 	    	        public void onClick(DialogInterface dialog, int whichButton) {

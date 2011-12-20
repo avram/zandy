@@ -95,12 +95,10 @@ this.LINK_MODE_LINKED_URL = 3;
 	}
 	
 	public void setNoteText (String text) {
-		if (getType().equals("note")) {
-			try {
-				content.put("note", text);
-			} catch (JSONException e) {
-				Log.e(TAG, "JSON exception setting note text",e);
-			}
+		try {
+			content.put("note", text);
+		} catch (JSONException e) {
+			Log.e(TAG, "JSON exception setting note text",e);
 		}
 	}
 	
