@@ -20,7 +20,7 @@ import java.util.ArrayList;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ListActivity;
+import android.app.ExpandableListActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -28,18 +28,20 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.Html;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.ArrayAdapter;
+import android.widget.AbsListView;
+import android.widget.BaseExpandableListAdapter;
 import android.widget.EditText;
-import android.widget.ListView;
+import android.widget.ExpandableListView;
 import android.widget.TextView;
 import android.widget.TextView.BufferType;
 import android.widget.Toast;
@@ -50,7 +52,7 @@ import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
 
 
-public class ItemDataActivity extends ListActivity {
+public class ItemDataActivity extends ExpandableListActivity {
 
 	private static final String TAG = "com.gimranov.zandy.app.ItemDataActivity";
 	
@@ -66,7 +68,6 @@ public class ItemDataActivity extends ListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.list_data);
         
         db = new Database(this);
         
@@ -93,151 +94,121 @@ public class ItemDataActivity extends ListActivity {
         	this.setTitle(getResources().getString(R.string.item_details));
         
         ArrayList<Bundle> rows = item.toBundleArray(db);
+
+        BundleListAdapter mBundleListAdapter = new BundleListAdapter();
+        mBundleListAdapter.bundles = rows;
+        setListAdapter(mBundleListAdapter);
+        registerForContextMenu(getExpandableListView());
         
-        /* 
-         * We use the standard ArrayAdapter, passing in our data as a Bundle.
-         * Since it's no longer a simple TextView, we need to override getView, but
-         * we can do that anonymously.
-         */
-        setListAdapter(new ArrayAdapter<Bundle>(this, R.layout.list_data, rows) {
-        	@Override
-        	public View getView(int position, View convertView, ViewGroup parent) {
-        		View row;
-        		
-        		Bundle b = getItem(position);
-        		String label = b.getString("label");
-        		String content = "";
-
-        		if ("children".equals(label)) {
-        			int notes = b.getInt("noteCount", 0);
-        			int atts = b.getInt("attachmentCount", 0);
-	        		if (notes == 0 && atts == 0) getResources().getString(R.string.item_attachment_info_none);
-	    			else content = getResources().getString(R.string.item_attachment_info_template, notes, atts);
-        		} else if ("collections".equals(getItem(position).getString("label"))) {
-        			int count = b.getInt("collectionCount", 0);
-	        		content = getResources().getString(R.string.item_collection_count, count);
-        		} else {
-        			content = b.getString("content");
-        		}
-        	     		
-                // We are reusing views, but we need to initialize it if null
-        		if (null == convertView) {
-                    LayoutInflater inflater = getLayoutInflater();
-        			row = inflater.inflate(R.layout.list_data, null);
-        		} else {
-        			row = convertView;
-        		}
-
-        		/* Our layout has just two fields */
-        		TextView tvLabel = (TextView) row.findViewById(R.id.data_label);
-        		TextView tvContent = (TextView) row.findViewById(R.id.data_content);
-
-        		/* Since the field names are the API / internal form, we
-	        	 * attempt to get a localized, human-readable version. */
-        		tvLabel.setText(Item.localizedStringForString(label));
-        		if ("title".equals(label) || "note".equals(label)) {
-        			tvContent.setText(Html.fromHtml(content));
-        		} else {
-            		tvContent.setText(content);
-        		}
-         
-        		return row;
-        	}
-        });
-        
-        ListView lv = getListView();
+        ExpandableListView lv = getExpandableListView();
         lv.setTextFilterEnabled(true);
-        lv.setOnItemClickListener(new OnItemClickListener() {
+        lv.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+			@Override
+			public boolean onChildClick(ExpandableListView parent, View v,
+					int groupPosition, int childPosition, long id) {
+				Log.d(TAG, "child click");
+				return false;
+			}        	
+        });
+        lv.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
         	// Warning here because Eclipse can't tell whether my ArrayAdapter is
         	// being used with the correct parametrization.
-        	@SuppressWarnings("unchecked")
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-     			// If we have a click on an entry, do something...
-        		ArrayAdapter<Bundle> adapter = (ArrayAdapter<Bundle>) parent.getAdapter();
-        		Bundle row = adapter.getItem(position);
+			public boolean onGroupClick(ExpandableListView parent, View view, int position, long id) {
+     			Log.d(TAG, "group clicked");
+				// If we have a click on an entry, do something...
+        		BundleListAdapter adapter = (BundleListAdapter) parent.getExpandableListAdapter();
+        		Bundle row = adapter.getGroup(position);
         		if (row.getString("label").equals("url")) {
         			row.putString("url", row.getString("content"));
         			removeDialog(DIALOG_CONFIRM_NAVIGATE);
         			showDialog(DIALOG_CONFIRM_NAVIGATE, row);
-        			return;
+        			return true;
         		} else if (row.getString("label").equals("DOI")) {
         			String url = "http://dx.doi.org/"+Uri.encode(row.getString("content"));
         			row.putString("url", url);
         			removeDialog(DIALOG_CONFIRM_NAVIGATE);
         			showDialog(DIALOG_CONFIRM_NAVIGATE, row);
-        			return;
+        			return true;
         		}  else if (row.getString("label").equals("creators")) {
         	    	Log.d(TAG, "Trying to start creators activity");
         	    	Intent i = new Intent(getBaseContext(), CreatorActivity.class);
     		    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
         	    	startActivity(i);
-        	    	return;
+        	    	return true;
         		} else if (row.getString("label").equals("tags")) {
         	    	Log.d(TAG, "Trying to start tag activity");
         	    	Intent i = new Intent(getBaseContext(), TagActivity.class);
         	    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
         	    	startActivity(i);
-        			return;
+        			return true;
 	    		} else if (row.getString("label").equals("children")) {
 	    	    	Log.d(TAG, "Trying to start attachment activity");
 	    	    	Intent i = new Intent(getBaseContext(), AttachmentActivity.class);
 	    	    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
 	    	    	startActivity(i);
-	    			return;
+	    			return true;
 	    		} else if (row.getString("label").equals("collections")) {
 	    	    	Log.d(TAG, "Trying to start collection membership activity");
 	    	    	Intent i = new Intent(getBaseContext(), CollectionMembershipActivity.class);
 	    	    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
 	    	    	startActivity(i);
-	    			return;
+	    			return true;
 	    		}
-        		
 				Toast.makeText(getApplicationContext(), row.getString("content"), 
         				Toast.LENGTH_SHORT).show();
+        		return false;
         	}
         });
         
         /*
          * On long click, we bring up an edit dialog.
          */
-        lv.setOnItemLongClickListener(new OnItemLongClickListener() {
-        	/*
-        	 * Same annotation as in onItemClick(..), above.
-        	 */
-        	@SuppressWarnings("unchecked")
-			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-     			// If we have a long click on an entry, we'll provide a way of editing it
-        		ArrayAdapter<Bundle> adapter = (ArrayAdapter<Bundle>) parent.getAdapter();
-        		Bundle row = adapter.getItem(position);
-        		// Show the right type of dialog for the row in question
-        		if (row.getString("label").equals("itemType")) {
-        			// XXX don't need i18n, since this should be overcome
-                	Toast.makeText(getApplicationContext(), "Item type cannot be changed.", 
-            				Toast.LENGTH_SHORT).show();
-        			//removeDialog(DIALOG_ITEM_TYPE);
-        			//showDialog(DIALOG_ITEM_TYPE, row);
-        			return true;
-        		} else if (row.getString("label").equals("children")) {
-        	    	Log.d(TAG, "Not starting children activity on click-and-hold");
-        	    	return true;
-        		} else if (row.getString("label").equals("creators")) {
-        	    	Log.d(TAG, "Trying to start creators activity");
-        	    	Intent i = new Intent(getBaseContext(), CreatorActivity.class);
-    		    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
-        	    	startActivity(i);
-        	    	return true;
-        		} else if (row.getString("label").equals("tags")) {
-        	    	Log.d(TAG, "Trying to start tag activity");
-        	    	Intent i = new Intent(getBaseContext(), TagActivity.class);
-        	    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
-        	    	startActivity(i);
-        			return true;
+        lv.setOnCreateContextMenuListener(new OnCreateContextMenuListener() {
+        	@Override
+			public void onCreateContextMenu(ContextMenu menu, View view,
+					ContextMenuInfo menuInfo) {
+     			Log.d(TAG, "contxt menu");
+        		ExpandableListView.ExpandableListContextMenuInfo info =
+        				(ExpandableListView.ExpandableListContextMenuInfo) menuInfo;
+        		int type = ExpandableListView.getPackedPositionType(info.packedPosition);
+        		int group =	ExpandableListView.getPackedPositionGroup(info.packedPosition);
+        		int child = ExpandableListView.getPackedPositionChild(info.packedPosition);
+        		
+        		if (type == 0) {
+        			
+        			// If we have a long click on an entry, we'll provide a way of editing it
+            		BundleListAdapter adapter = (BundleListAdapter) ((ExpandableListView) info.targetView.getParent()).getExpandableListAdapter();;
+            		Bundle row = adapter.getGroup(group);
+            		// Show the right type of dialog for the row in question
+            		if (row.getString("label").equals("itemType")) {
+            			// XXX don't need i18n, since this should be overcome
+                    	Toast.makeText(getApplicationContext(), "Item type cannot be changed.", 
+                				Toast.LENGTH_SHORT).show();
+            			//removeDialog(DIALOG_ITEM_TYPE);
+            			//showDialog(DIALOG_ITEM_TYPE, row);
+            			return;
+            		} else if (row.getString("label").equals("children")) {
+            	    	Log.d(TAG, "Not starting children activity on click-and-hold");
+            	    	return;
+            		} else if (row.getString("label").equals("creators")) {
+            	    	Log.d(TAG, "Trying to start creators activity");
+            	    	Intent i = new Intent(getBaseContext(), CreatorActivity.class);
+        		    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
+            	    	startActivity(i);
+            	    	return;
+            		} else if (row.getString("label").equals("tags")) {
+            	    	Log.d(TAG, "Trying to start tag activity");
+            	    	Intent i = new Intent(getBaseContext(), TagActivity.class);
+            	    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
+            	    	startActivity(i);
+            			return;
+            		}
+        			removeDialog(DIALOG_SINGLE_VALUE);
+            		showDialog(DIALOG_SINGLE_VALUE, row);
+            		return;
         		}
-    			removeDialog(DIALOG_SINGLE_VALUE);
-        		showDialog(DIALOG_SINGLE_VALUE, row);
-        		return true;
-          }
-        });
+			}
+          });
     }
     
 	protected Dialog onCreateDialog(int id, Bundle b) {
@@ -256,7 +227,6 @@ public class ItemDataActivity extends ListActivity {
 	    	    .setTitle(getResources().getString(R.string.edit_item_field, Item.localizedStringForString(label)))
 	    	    .setView(input)
 	    	    .setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
-	    	        @SuppressWarnings("unchecked")
 					public void onClick(DialogInterface dialog, int whichButton) {
 	    	            Editable value = input.getText();
 	    	            String fixed;
@@ -267,11 +237,8 @@ public class ItemDataActivity extends ListActivity {
 	    	            }
 	    	            Item.set(itemKey, label, fixed, db);
 	    	            Item item = Item.load(itemKey, db);
-	    	            ArrayAdapter<Bundle> la = (ArrayAdapter<Bundle>) getListAdapter();
-	    	            la.clear();
-	    	            for (Bundle b : item.toBundleArray(db)) {
-	    	            	la.add(b);
-	    	            }
+	    	            BundleListAdapter la = (BundleListAdapter) getExpandableListAdapter();
+	    	            la.bundles = item.toBundleArray(db);
 	    	            la.notifyDataSetChanged();
 	    	        }
 	    	    }).setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
@@ -286,15 +253,11 @@ public class ItemDataActivity extends ListActivity {
 	    	    .setTitle(getResources().getString(R.string.item_type_change))
 	    	    // XXX i18n
 	    	    .setItems(Item.ITEM_TYPES_EN, new DialogInterface.OnClickListener() {
-	    	        @SuppressWarnings("unchecked")
 					public void onClick(DialogInterface dialog, int pos) {
 	    	            Item.set(itemKey, label, Item.ITEM_TYPES[pos], db);
 	    	            Item item = Item.load(itemKey, db);
-	    	            ArrayAdapter<Bundle> la = (ArrayAdapter<Bundle>) getListAdapter();
-	    	            la.clear();
-	    	            for (Bundle b : item.toBundleArray(db)) {
-	    	            	la.add(b);
-	    	            }
+	    	            BundleListAdapter la = (BundleListAdapter) getExpandableListAdapter();
+	    	            la.bundles = item.toBundleArray(db);
 	    	            la.notifyDataSetChanged();
 	    	        }
 	    	    }).create();
@@ -400,5 +363,117 @@ public class ItemDataActivity extends ListActivity {
         default:
             return super.onOptionsItemSelected(i);
         }
+    }
+    
+    /**
+     * List adapter that provides our bundles in the appropriate way
+     */
+    public class BundleListAdapter extends BaseExpandableListAdapter {
+        
+        public ArrayList<Bundle> bundles;
+
+        public Bundle getChild(int groupPosition, int childPosition) {
+        	return bundles.get(groupPosition);
+        }
+
+        public long getChildId(int groupPosition, int childPosition) {
+            return childPosition;
+        }
+
+        public int getChildrenCount(int groupPosition) {
+            return bundles.get(groupPosition).size();
+        }
+
+        public TextView getGenericView() {
+            // Layout parameters for the ExpandableListView
+            AbsListView.LayoutParams lp = new AbsListView.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, 64);
+
+            TextView textView = new TextView(ItemDataActivity.this);
+            textView.setLayoutParams(lp);
+            // Center the text vertically
+            textView.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
+            // Set the text starting position
+            textView.setPadding(36, 0, 0, 0);
+            return textView;
+        }
+
+        public View getChildView(int groupPosition, int childPosition, boolean isLastChild,
+                View convertView, ViewGroup parent) {
+        	Log.d(TAG, "childview: "+childPosition);
+            TextView textView = getGenericView();
+            textView.setText(getChild(groupPosition, childPosition).getString("content"));
+            return textView;
+        }
+
+        public Bundle getGroup(int groupPosition) {
+            return bundles.get(groupPosition);
+        }
+
+        public int getGroupCount() {
+            return bundles.size();
+        }
+
+        public long getGroupId(int groupPosition) {
+            return groupPosition;
+        }
+
+        public View getGroupView(int groupPosition, boolean isExpanded, View convertView,
+                ViewGroup parent) {
+        	
+        	Log.d(TAG, "groupview: "+groupPosition);
+        	
+    		View row;
+    		
+    		Bundle b = getGroup(groupPosition);
+    		String label = b.getString("label");
+    		String content = "";
+
+    		if ("children".equals(label)) {
+    			int notes = b.getInt("noteCount", 0);
+    			int atts = b.getInt("attachmentCount", 0);
+        		if (notes == 0 && atts == 0) getResources().getString(R.string.item_attachment_info_none);
+    			else content = getResources().getString(R.string.item_attachment_info_template, notes, atts);
+    		} else if ("collections".equals((getGroup(groupPosition).getString("label")))) {
+    			int count = b.getInt("collectionCount", 0);
+        		content = getResources().getString(R.string.item_collection_count, count);
+    		} else {
+    			content = b.getString("content");
+    		}
+    	     		
+            // We are reusing views, but we need to initialize it if null
+    		if (null == convertView) {
+                LayoutInflater inflater = getLayoutInflater();
+    			row = inflater.inflate(R.layout.list_data, null);
+    		} else {
+    			row = convertView;
+    		}
+
+    		/* Our layout has just two fields */
+    		TextView tvLabel = (TextView) row.findViewById(R.id.data_label);
+            tvLabel.setPadding(36, 0, 0, 0);
+    		TextView tvContent = (TextView) row.findViewById(R.id.data_content);
+            tvContent.setPadding(36, 0, 0, 0);
+
+    		/* Since the field names are the API / internal form, we
+        	 * attempt to get a localized, human-readable version. */
+    		tvLabel.setText(Item.localizedStringForString(label));
+    		if ("title".equals(label) || "note".equals(label)) {
+    			tvContent.setText(Html.fromHtml(content));
+    		} else {
+        		tvContent.setText(content);
+    		}
+     
+    		return row;
+        }
+
+        public boolean isChildSelectable(int groupPosition, int childPosition) {
+            return true;
+        }
+
+        public boolean hasStableIds() {
+            return true;
+        }
+
     }
 }

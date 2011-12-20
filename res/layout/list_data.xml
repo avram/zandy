@@ -40,11 +40,6 @@
 	        android:text=""
 	        android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <WebView
-        android:id="@+id/data_content_web"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="3dip" />
 	    </TableRow>
 </TableLayout>
     
