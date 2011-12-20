@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -33,8 +34,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -62,14 +61,6 @@ public class ItemDataActivity extends ListActivity {
 	
 	public Item item;
 	private Database db;
-
-	private class HelloWebViewClient extends WebViewClient {
-	    @Override
-	    public boolean shouldOverrideUrlLoading(WebView view, String url) {
-	        view.loadUrl(url);
-	        return true;
-	    }
-	}
 	
     /** Called when the activity is first created. */
     @Override
@@ -137,26 +128,15 @@ public class ItemDataActivity extends ListActivity {
         			row = convertView;
         		}
 
-        		/*
-                LayoutInflater inflater = getLayoutInflater();
-                if (web) {
-        			row = inflater.inflate(R.layout.list_data_web, null);
-                } else {
-        			row = inflater.inflate(R.layout.list_data, null);
-                }*/
-
         		/* Our layout has just two fields */
         		TextView tvLabel = (TextView) row.findViewById(R.id.data_label);
         		TextView tvContent = (TextView) row.findViewById(R.id.data_content);
-        		WebView tvWeb = (WebView) row.findViewById(R.id.data_content_web);
-        		tvWeb.setVisibility(View.INVISIBLE);
 
         		/* Since the field names are the API / internal form, we
 	        	 * attempt to get a localized, human-readable version. */
         		tvLabel.setText(Item.localizedStringForString(label));
-        		if ("note".equals(label)) {
-        			tvWeb.loadData(content, "text/html", "UTF-8");
-            		tvWeb.setVisibility(View.VISIBLE);
+        		if ("title".equals(label) || "note".equals(label)) {
+        			tvContent.setText(Html.fromHtml(content));
         		} else {
             		tvContent.setText(content);
         		}
@@ -258,14 +238,6 @@ public class ItemDataActivity extends ListActivity {
         		return true;
           }
         });
-        /*
-        LayoutInflater inflater = getLayoutInflater();
-		View row = inflater.inflate(R.layout.list_data, null);
-		WebView tvWeb = (WebView) row.findViewById(R.id.webView1);
-		tvWeb.getSettings().setJavaScriptEnabled(true);
-		tvWeb.loadUrl("http://www.google.com");
-		tvWeb.setWebViewClient(new HelloWebViewClient());
-		*/
     }
     
 	protected Dialog onCreateDialog(int id, Bundle b) {
@@ -287,7 +259,13 @@ public class ItemDataActivity extends ListActivity {
 	    	        @SuppressWarnings("unchecked")
 					public void onClick(DialogInterface dialog, int whichButton) {
 	    	            Editable value = input.getText();
-	    	            Item.set(itemKey, label, value.toString(), db);
+	    	            String fixed;
+	    	            if ("note".equals(label)) {
+		    	            fixed = value.toString().replaceAll("\n\n", "\n<br>");
+	    	            } else {
+	    	            	fixed = value.toString();
+	    	            }
+	    	            Item.set(itemKey, label, fixed, db);
 	    	            Item item = Item.load(itemKey, db);
 	    	            ArrayAdapter<Bundle> la = (ArrayAdapter<Bundle>) getListAdapter();
 	    	            la.clear();
