@@ -29,8 +29,8 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.TextView.BufferType;
+import android.widget.Toast;
 
 import com.gimranov.zandy.app.data.Attachment;
 import com.gimranov.zandy.app.data.Database;
@@ -108,8 +108,8 @@ public class NoteActivity extends Activity {
 	    	    .setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int whichButton) {
 	    	            Editable value = input.getText();
-	    	            Log.d(TAG, "New text: "+value.toString());
-	    	            att.setNoteText(value.toString());
+	    	            String fixed = value.toString().replaceAll("\n\n", "\n<br>");
+	    	            att.setNoteText(fixed);
 	    	            att.dirty = APIRequest.API_DIRTY;
 	    	            att.save(db);
 	    	            

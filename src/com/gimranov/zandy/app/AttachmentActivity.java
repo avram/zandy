@@ -324,16 +324,17 @@ public class AttachmentActivity extends ListActivity {
 	    	    .setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
 					@SuppressWarnings("unchecked")
 					public void onClick(DialogInterface dialog, int whichButton) {
-	    	            Editable value = input.getText();
-						if (mode != null && mode.equals("new")) {
+						Editable value = input.getText();
+	    	            String fixed = value.toString().replaceAll("\n\n", "\n<br>");
+	    	            if (mode != null && mode.equals("new")) {
 							Log.d(TAG, "Attachment created with parent key: "+itemKey);
 							Attachment att = new Attachment(getBaseContext(), "note", itemKey);
-		    	            att.setNoteText(value.toString());
+		    	            att.setNoteText(fixed);
 		    	            att.dirty = APIRequest.API_NEW;
 		    	            att.save(db);
 						} else {
 							Attachment att = Attachment.load(attachmentKey, db);
-		    	            att.setNoteText(value.toString());
+		    	            att.setNoteText(fixed);
 		    	            att.dirty = APIRequest.API_DIRTY;
 		    	            att.save(db);
 						}
