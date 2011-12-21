@@ -40,10 +40,10 @@
     <string name="attachment_zfs_available">Available for download</string>
     <string name="attachment_zfs_local">Downloaded</string>
     <string name="attachment_unknown">Status unknown</string>
-    <string name="attachment_downloading">Downloading attachment for %s$1</string>
+    <string name="attachment_downloading">Downloading attachment for %s</string>
 	<string name="attachment_download_initiated">File download initiated.</string>
 	<string name="attachment_download_failed">File download may have failed; try again.</string>
-	<string name="attachment_intent_failed">No application available to open files of type %s$1.</string>
+	<string name="attachment_intent_failed">No application available to open files of type %s.</string>
 		<!-- Syncing -->
 	<string name="sync_log_in_first">Log in to sync</string>
 	<string name="sync_started">Started syncing...</string>
