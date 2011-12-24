@@ -56,7 +56,7 @@
     <string name="attachment_zfs_local">Downloaded</string>
     <string name="attachment_unknown">Status unknown</string>
     <string name="attachment_downloading">Downloading attachment for %s</string>
-    <string name="attachment_unzipping">Unzipping...</string>
+    <string name="attachment_unzipping">Unzipping&#8230;</string>
     <string name="attachment_no_download_url">No download URL for attachment. Try syncing again.</string>
 	<string name="attachment_download_initiated">File download initiated.</string>
 	<string name="attachment_download_failed">File download may have failed; try again.</string>
@@ -83,7 +83,7 @@
 	<string name="collection_remove_item">Remove item</string>
 	<!-- Syncing -->
 	<string name="sync_log_in_first">Log in to sync</string>
-	<string name="sync_started">Started syncing...</string>
+	<string name="sync_started">Started syncing&#8230;</string>
 	<string name="sync_collection">Started syncing; refreshing collection list</string>
 	<!-- Settings -->
 	<string name="settings_basic">Basic</string>

@@ -56,7 +56,7 @@
     <string name="attachment_zfs_local">Téléchargé</string>
     <string name="attachment_unknown">Statut inconnu</string>
     <string name="attachment_downloading">En cours de téléchargement de la pièce jointe pour %s</string>
-    <string name="attachment_unzipping">Décompression...</string>
+    <string name="attachment_unzipping">Décompression&#8230;</string>
     <string name="attachment_no_download_url">Pas d\'URL de téléchargement pour cet attachement. Essayez de synchroniser à nouveau.</string>
 	<string name="attachment_download_initiated">Téléchargement débuté.</string>
 	<string name="attachment_download_failed">Le téléchargement a probablement échoué. Essayez à nouveau.</string>
@@ -83,7 +83,7 @@
 	<string name="collection_remove_item">Supprimer l\'objet</string>
 	<!-- Syncing -->
 	<string name="sync_log_in_first">Identifiez-vous pour la synchronisation</string>
-	<string name="sync_started">Synchronisation démarrée...</string>
+	<string name="sync_started">Synchronisation démarrée&#8230;</string>
 	<string name="sync_collection">Synchronisation démarrée; la liste des collection est en cours de rafraîchissement</string>
 	<!-- Settings -->
 	<string name="settings_basic">Simple</string>

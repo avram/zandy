@@ -46,7 +46,7 @@
 	<string name="attachment_intent_failed">No application available to open files of type %s.</string>
 		<!-- Syncing -->
 	<string name="sync_log_in_first">Log in to sync</string>
-	<string name="sync_started">Started syncing...</string>
+	<string name="sync_started">Started syncing&#8230;</string>
         <!-- Zotero terms -->
     <string name="note">Note</string>
     <string name="menu_edit">Edit</string>
