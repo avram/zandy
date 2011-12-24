@@ -28,13 +28,13 @@
             android:id="@+id/noteTitleLabel"
             android:layout_width="78dp"
             android:layout_height="wrap_content"
-            android:text="Title"
+            android:text=""
             android:textAppearance="?android:attr/textAppearanceMedium" />
         <TextView
             android:id="@+id/noteTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Default note title"
+            android:text=""
             android:textAppearance="?android:attr/textAppearanceLarge" />
     </LinearLayout>
 
@@ -43,7 +43,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0.82"
-        android:text="Default note text"
+        android:text=""
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <Button
@@ -51,6 +51,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0.05"
-        android:text="Edit" />
+        android:text="@string/note_edit" />
 
 </LinearLayout>

@@ -46,6 +46,7 @@
     <string name="item_attachment_info_template">%1$d notes, %2$d attachments</string>
     <string name="item_attachment_info_none">No attachments or notes.</string>
     <string name="item_collection_count">%1$d collections</string>
+    <string name="item_more">%s. Tap for full view.</string>
     <!-- Button labels for dialogs -->
     <string name="ok">Ok</string>
     <string name="cancel">Cancel</string>

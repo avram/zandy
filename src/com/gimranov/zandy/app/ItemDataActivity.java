@@ -27,6 +27,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.Html;
+import android.text.InputType;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -101,6 +103,7 @@ public class ItemDataActivity extends ExpandableListActivity {
         registerForContextMenu(getExpandableListView());
         
         ExpandableListView lv = getExpandableListView();
+        lv.setGroupIndicator(getResources().getDrawable(R.drawable.list_child_indicator));
         lv.setTextFilterEnabled(true);
         lv.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
 			@Override
@@ -172,10 +175,10 @@ public class ItemDataActivity extends ExpandableListActivity {
         				(ExpandableListView.ExpandableListContextMenuInfo) menuInfo;
         		int type = ExpandableListView.getPackedPositionType(info.packedPosition);
         		int group =	ExpandableListView.getPackedPositionGroup(info.packedPosition);
-        		int child = ExpandableListView.getPackedPositionChild(info.packedPosition);
+        		@SuppressWarnings("unused")
+				int child = ExpandableListView.getPackedPositionChild(info.packedPosition);
         		
-        		if (type == 0) {
-        			
+        		if (type == 0) {	
         			// If we have a long click on an entry, we'll provide a way of editing it
             		BundleListAdapter adapter = (BundleListAdapter) ((ExpandableListView) info.targetView.getParent()).getExpandableListAdapter();;
             		Bundle row = adapter.getGroup(group);
@@ -222,6 +225,10 @@ public class ItemDataActivity extends ExpandableListActivity {
 		case DIALOG_SINGLE_VALUE:			
 			final EditText input = new EditText(this);
 			input.setText(content, BufferType.EDITABLE);
+			
+			if ("url".equals(label)) {
+				input.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
+			}
 			
 			dialog = new AlertDialog.Builder(this)
 	    	    .setTitle(getResources().getString(R.string.edit_item_field, Item.localizedStringForString(label)))
@@ -381,7 +388,11 @@ public class ItemDataActivity extends ExpandableListActivity {
         }
 
         public int getChildrenCount(int groupPosition) {
-            return bundles.get(groupPosition).size();
+        	if ("abstractNote".equals(bundles.get(groupPosition).getString("label"))) {
+        		return 1;
+        	} else {
+        		return 0;
+        	}
         }
 
         public TextView getGenericView() {
@@ -394,7 +405,7 @@ public class ItemDataActivity extends ExpandableListActivity {
             // Center the text vertically
             textView.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
             // Set the text starting position
-            textView.setPadding(36, 0, 0, 0);
+            textView.setPadding(0, 0, 0, 0);
             return textView;
         }
 
@@ -402,7 +413,15 @@ public class ItemDataActivity extends ExpandableListActivity {
                 View convertView, ViewGroup parent) {
         	Log.d(TAG, "childview: "+childPosition);
             TextView textView = getGenericView();
-            textView.setText(getChild(groupPosition, childPosition).getString("content"));
+    		Bundle b = getGroup(groupPosition);
+    		String label = b.getString("label");
+    		String content = b.getString("content");
+            if ("title".equals(label) 
+    				|| "note".equals(label)) {
+    			textView.setText(Html.fromHtml(content));
+    		} else {
+        		textView.setText(content);
+    		}
             return textView;
         }
 
@@ -451,24 +470,34 @@ public class ItemDataActivity extends ExpandableListActivity {
 
     		/* Our layout has just two fields */
     		TextView tvLabel = (TextView) row.findViewById(R.id.data_label);
-            tvLabel.setPadding(36, 0, 0, 0);
+            tvLabel.setPadding(0, 0, 0, 0);
     		TextView tvContent = (TextView) row.findViewById(R.id.data_content);
-            tvContent.setPadding(36, 0, 0, 0);
+            tvContent.setPadding(0, 0, 0, 0);
 
     		/* Since the field names are the API / internal form, we
         	 * attempt to get a localized, human-readable version. */
     		tvLabel.setText(Item.localizedStringForString(label));
-    		if ("title".equals(label) || "note".equals(label)) {
+    		
+    		if ("title".equals(label) 
+    				|| "note".equals(label)) {
     			tvContent.setText(Html.fromHtml(content));
     		} else {
         		tvContent.setText(content);
     		}
+    		
+    		if ("abstractNote".equals(label)) {
+    			tvLabel.setText(getResources().getString(R.string.item_more,
+    					Item.localizedStringForString("abstractNote")));
+    		}
+    		
+			tvContent.setMaxLines(2);    			
+    		tvContent.setEllipsize(TextUtils.TruncateAt.MARQUEE);
      
     		return row;
         }
 
         public boolean isChildSelectable(int groupPosition, int childPosition) {
-            return true;
+            return false;
         }
 
         public boolean hasStableIds() {
