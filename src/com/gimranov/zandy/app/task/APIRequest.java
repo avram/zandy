@@ -233,6 +233,20 @@ public class APIRequest {
 	}
 	
 	/**
+	 * Produces an API request for the items in a specified collection.
+	 * 
+	 * @param collection	The collection to fetch
+	 * @param c				Context
+	 */
+	public static APIRequest fetch(ItemCollection collection, Context c) {
+		APIRequest req = new APIRequest(ServerCredentials.APIBASE
+       			+ ServerCredentials.prep(c, ServerCredentials.COLLECTIONS)
+       			+"/"+collection.getKey()+"/items", "get", null);
+		req.disposition = "xml";
+		return req;
+	}
+	
+	/**
 	 * Produces an API request to remove the specified item from the collection.
 	 * This request always needs a key, but it isn't set automatically and should
 	 * be set by whatever consumes this request.

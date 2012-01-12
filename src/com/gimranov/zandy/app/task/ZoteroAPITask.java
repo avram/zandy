@@ -59,7 +59,6 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	private static final String TAG = "com.gimranov.zandy.app.task.ZoteroAPITask";
 		
 	private String key;
-	private CursorAdapter adapter;
 	private String userID;
 	
 	public ArrayList<APIRequest> deletions;
@@ -89,26 +88,6 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 			syncMode = AUTO_SYNC_STALE_COLLECTIONS;
 		deletions = APIRequest.delete(c);
 		db = new Database(c);
-	}
-
-	public ZoteroAPITask(Context c, CursorAdapter adapter)
-	{
-		this.queue = new ArrayList<APIRequest>();
-		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(c);
-		userID = settings.getString("user_id", null);
-		key = settings.getString("user_key", null);
-		if (settings.getBoolean("sync_aggressively", false))
-			syncMode = AUTO_SYNC_STALE_COLLECTIONS;
-		deletions = APIRequest.delete(c);
-		db = new Database(c);
-
-	}
-	
-	public ZoteroAPITask(String key, CursorAdapter adapter)
-	{
-		this.queue = new ArrayList<APIRequest>();
-		this.key = key;
-		this.adapter = adapter;
 	}
 	
 	@Override
@@ -266,12 +245,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	        	String text = "Error communicating with server.";	
 	        	Log.i(TAG, text);
     		} else {
-	        	if (this.adapter != null) {
-		        	this.adapter.notifyDataSetChanged();
-		        	Log.i(TAG, "Finished call, notified parent adapter!");
-	        	} else {
-		        	Log.i(TAG, "Finished call successfully, but nobody to notify");        		
-	        	}
+		        Log.i(TAG, "Finished call successfully, but nobody to notify");        		
     		}
     }
 	

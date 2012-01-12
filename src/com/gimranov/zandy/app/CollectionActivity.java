@@ -37,7 +37,6 @@ import com.gimranov.zandy.app.data.CollectionAdapter;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.ItemCollection;
 import com.gimranov.zandy.app.task.APIEvent;
-import com.gimranov.zandy.app.task.APIException;
 import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
 
@@ -126,35 +125,29 @@ public class CollectionActivity extends ListActivity {
                     				getResources().getString(R.string.collection_empty),
                     				Toast.LENGTH_SHORT).show();
                 			Log.d(TAG, "Running a request to populate missing data for collection");
-                           	APIRequest req = new APIRequest(ServerCredentials.APIBASE
-                           			+ ServerCredentials.prep(getBaseContext(), ServerCredentials.COLLECTIONS)
-                           			+"/"+coll.getKey()+"/items", "get", null);
-                    		req.disposition = "xml";
-                    		ZoteroAPITask task = new ZoteroAPITask(getBaseContext(), (CursorAdapter) getListAdapter());
+                           	APIRequest req = APIRequest.fetch(coll, getBaseContext());
+                    		ZoteroAPITask task = new ZoteroAPITask(getBaseContext());
                     		req.setHandler(new APIEvent() {
 								@Override
 								public void onComplete(APIRequest request) {
-									
+									Log.d(TAG, "APIEvent complete");
 								}
 
 								@Override
 								public void onUpdate(APIRequest request) {
-									// TODO Auto-generated method stub
-									
+									Log.d(TAG, "APIEvent update");
 								}
 
 								@Override
 								public void onError(APIRequest request,
 										Exception exception) {
-									// TODO Auto-generated method stub
-									
+									Log.e(TAG, "APIEvent error", exception);
 								}
 
 								@Override
 								public void onError(APIRequest request,
 										int error) {
-									// TODO Auto-generated method stub
-									
+									Log.e(TAG, "APIEvent error: "+error);
 								}		
                     		});
                     		task.execute(req);

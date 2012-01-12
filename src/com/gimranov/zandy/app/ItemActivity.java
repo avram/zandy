@@ -348,7 +348,7 @@ public class ItemActivity extends ListActivity {
         	}
         	// This then provides a full queue, with the locally dirty items first, followed
         	// by a scoped sync. Cool!
-			new ZoteroAPITask(getBaseContext(), (CursorAdapter) getListAdapter()).execute(reqs);
+			new ZoteroAPITask(getBaseContext()).execute(reqs);
         	Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_started), 
     				Toast.LENGTH_SHORT).show();
             return true;
