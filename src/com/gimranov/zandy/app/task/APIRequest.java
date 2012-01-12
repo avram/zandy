@@ -36,6 +36,9 @@ import com.gimranov.zandy.app.data.ItemCollection;
  * Represents a request to the Zotero API. These can be consumed by
  * other things like ZoteroAPITask. These should be queued up for many purposes.
  * 
+ * The APIRequest should include the HttpPost / HttpGet / etc. that it needs
+ * to be executed, and optionally a callback to be called when it completes.
+ * 
  * See http://www.zotero.org/support/dev/server_api for information.
  * 
  * @author ajlyon
@@ -51,6 +54,19 @@ public class APIRequest {
 	public static final String API_STALE = "Stale data";
 	public static final String API_WIP  = 	"Sync attempted";
 	public static final String API_CLEAN =	"No unsynced change";	
+	
+	/**
+	 * These are constants represented by integers.
+	 * 
+	 * The above should be moving down here some time.
+	 */
+	public static final int API_ERROR_CONFLICT = 412;
+	public static final int API_ERROR_UNSPECIFIED = 400;
+	
+	/**
+	 * Callback handler
+	 */
+	private APIEvent handler;
 	
 	/**
 	 * Base query to send.
@@ -101,17 +117,7 @@ public class APIRequest {
 	 * the UUIDs / local keys of locally-created items. I know, it's a hack.
 	 */
 	public String updateType;
-	
-	/**
-	 * Database query to run upon success
-	 */
-	public String onSuccess;
-	
-	/**
-	 * Arguments to database query to run upon success
-	 */
-	public String[] onSuccessArgs;
-	
+		
 	/**
 	 * Creates a basic APIRequest item. Augment the item using instance methods for more complex
 	 * requests, or pass it to ZoteroAPITask for simpler ones.
@@ -129,26 +135,49 @@ public class APIRequest {
 	}
 	
 	/**
-	 * Runs the request's onSuccess query.
-	 * This should later be implemented as a callback, to get more flexibility
-	 * @param db
+	 * Getter for the request's implementation of the APIEvent interface,
+	 * used for call-backs, usually tying into the UI.
+	 * 
+	 * Returns a no-op, logging handler if none specified
+	 * 
+	 * @return
 	 */
-	public void onSuccess(Database db) {
-		if (onSuccess != null) {
-			Log.d(TAG, "Running onSuccess for request");
-			db.rawQuery(onSuccess, onSuccessArgs);
+	public APIEvent getHandler() {
+		if (handler == null) {
+			/*
+			 * We have to fall back on a no-op event handler to prevent null exceptions
+			 */
+			return new APIEvent() {
+				@Override
+				public void onComplete(APIRequest request) {
+					Log.d(TAG, "onComplete called but no handler");
+				}
+				@Override
+				public void onUpdate(APIRequest request) {
+					Log.d(TAG, "onUpdate called but no handler");				
+				}
+				@Override
+				public void onError(APIRequest request, Exception exception) {
+					Log.d(TAG, "onError called but no handler");					
+				}
+				@Override
+				public void onError(APIRequest request, int error) {
+					Log.d(TAG, "onError called but no handler");
+				}
+			};
 		}
+		return handler;
 	}
-	
-	/**
-	 * Runs the request's onFailure query.
-	 * This should later be implemented as a callback, to get more flexibility
-	 * @param db
-	 */
-	public void onFailure(Database db) {
-		// TODO
+
+	public void setHandler(APIEvent handler) {
+		if (this.handler == null) {
+			this.handler = handler;
+			return;
+		}
+		
+		Log.e(TAG, "APIEvent handler for request cannot be replaced");
 	}
-	
+
 	/**
 	 * Populates the body with a JSON representation of 
 	 * the specified item.
@@ -223,9 +252,10 @@ public class APIRequest {
 								null);
 		templ.disposition = "none";
 		
-		templ.onSuccess = "DELETE FROM itemtocollections where collection_id=? AND item_id=?";
-		String[] args = {collection.dbId, item.dbId};
-		templ.onSuccessArgs = args;
+		// TODO make into a callback
+		//templ.onSuccess = "DELETE FROM itemtocollections where collection_id=? AND item_id=?";
+		//String[] args = {collection.dbId, item.dbId};
+		//templ.onSuccessArgs = args;
 		
 		return templ;
 	}

@@ -367,10 +367,10 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 					BasicResponseHandler brh = new BasicResponseHandler();
 					try {
 						resp = client.execute(request, brh);
-						req.onSuccess(db);
+						req.getHandler().onComplete(req);
 					} catch (ClientProtocolException e) {
 						Log.e(TAG, "Exception thrown issuing POST request: ", e);
-						req.onFailure(db);
+						req.getHandler().onError(req, e);
 					}
 				}
 			} else if (method.equals("put")) {
@@ -399,31 +399,30 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 						XMLResponseParser parse = new XMLResponseParser(in);
 						parse.parse(XMLResponseParser.MODE_ENTRY, uri.toString(), db);
 						resp = "XML was parsed.";
-						// TODO
-						req.onSuccess(db);
+						req.getHandler().onComplete(req);
 					} else {
 						Log.e(TAG, "Not parsing non-XML response, code >= 400");
 						ByteArrayOutputStream ostream = new ByteArrayOutputStream();
 						hr.getEntity().writeTo(ostream);
 						Log.e(TAG,"Error Body: "+ ostream.toString());
 						Log.e(TAG,"Put Body:"+ req.body);
-						// TODO
-						req.onFailure(db);
+						req.getHandler().onError(req, APIRequest.API_ERROR_UNSPECIFIED);
 						// "Precondition Failed"
 						// The item changed server-side, so we have a conflict to resolve...
 						// XXX This is a hard problem.
 						if (code == 412) {
 							Log.e(TAG, "Skipping dirtied item with server-side changes as well");
+							req.getHandler().onError(req, APIRequest.API_ERROR_CONFLICT);
 						}
 					}
 				} else {
 					BasicResponseHandler brh = new BasicResponseHandler();
 					try {
 						resp = client.execute(request, brh);
-						req.onSuccess(db);
+						req.getHandler().onComplete(req);
 					} catch (ClientProtocolException e) {
 						Log.e(TAG, "Exception thrown issuing PUT request: ", e);
-						req.onFailure(db);
+						req.getHandler().onError(req, e);
 					}
 				}
 			} else if (method.equals("delete")) {
@@ -436,10 +435,10 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 				BasicResponseHandler brh = new BasicResponseHandler();
 				try {
 					resp = client.execute(request, brh);
-					req.onSuccess(db);
+					req.getHandler().onComplete(req);
 				} catch (ClientProtocolException e) {
 					Log.e(TAG, "Exception thrown issuing DELETE request: ", e);
-					req.onFailure(db);
+					req.getHandler().onError(req, e);
 				}
 			} else {
 				HttpGet request = new HttpGet();
@@ -463,31 +462,30 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 											XMLResponseParser.MODE_ENTRY : XMLResponseParser.MODE_FEED;
 						parse.parse(mode, uri.toString(), db);
 						resp = "XML was parsed.";
-						// TODO
-						req.onSuccess(db);
+						req.getHandler().onComplete(req);
 					} else {
 						Log.e(TAG, "Not parsing non-XML response, code >= 400");
 						ByteArrayOutputStream ostream = new ByteArrayOutputStream();
 						hr.getEntity().writeTo(ostream);
 						Log.e(TAG,"Error Body: "+ ostream.toString());
 						Log.e(TAG,"Put Body:"+ req.body);
-						// TODO
-						req.onFailure(db);
+						req.getHandler().onError(req, APIRequest.API_ERROR_UNSPECIFIED);
 						// "Precondition Failed"
 						// The item changed server-side, so we have a conflict to resolve...
 						// XXX This is a hard problem.
 						if (code == 412) {
 							Log.e(TAG, "Skipping dirtied item with server-side changes as well");
+							req.getHandler().onError(req, APIRequest.API_ERROR_CONFLICT);
 						}
 					}
 				} else {
 					BasicResponseHandler brh = new BasicResponseHandler();
 					try {
 						resp = client.execute(request, brh);
-						req.onSuccess(db);
+						req.getHandler().onComplete(req);
 					} catch (ClientProtocolException e) {
 						Log.e(TAG, "Exception thrown issuing GET request: ", e);
-						req.onFailure(db);
+						req.getHandler().onError(req, e);
 					}
 				}
 			}

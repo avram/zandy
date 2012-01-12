@@ -36,6 +36,8 @@ import android.widget.Toast;
 import com.gimranov.zandy.app.data.CollectionAdapter;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.ItemCollection;
+import com.gimranov.zandy.app.task.APIEvent;
+import com.gimranov.zandy.app.task.APIException;
 import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
 
@@ -112,7 +114,13 @@ public class CollectionActivity extends ListActivity {
         			// and replace the cursor with one for the selected collection
         			ItemCollection coll = ItemCollection.load(cur);
         			if (coll != null && coll.getKey() != null) {
+        		    	Intent i = new Intent(getBaseContext(), ItemActivity.class);
         				if (coll.getSize() == 0) {
+        					// Send a message that we need to refresh the collection
+            		    	i.putExtra("com.gimranov.zandy.app.rerequest", true);
+            		    	
+        					// XXX Move logic to ItemActivity, triggered by the Extra
+            		    	// above.
             				Log.d(TAG, "Collection with key: "+coll.getKey()+ " is empty.");
                     		Toast.makeText(getApplicationContext(),
                     				getResources().getString(R.string.collection_empty),
@@ -122,12 +130,38 @@ public class CollectionActivity extends ListActivity {
                            			+ ServerCredentials.prep(getBaseContext(), ServerCredentials.COLLECTIONS)
                            			+"/"+coll.getKey()+"/items", "get", null);
                     		req.disposition = "xml";
-                    		// TODO Introduce a callback to update UI when ready
-                    		new ZoteroAPITask(getBaseContext(), (CursorAdapter) getListAdapter()).execute(req);
+                    		ZoteroAPITask task = new ZoteroAPITask(getBaseContext(), (CursorAdapter) getListAdapter());
+                    		req.setHandler(new APIEvent() {
+								@Override
+								public void onComplete(APIRequest request) {
+									
+								}
+
+								@Override
+								public void onUpdate(APIRequest request) {
+									// TODO Auto-generated method stub
+									
+								}
+
+								@Override
+								public void onError(APIRequest request,
+										Exception exception) {
+									// TODO Auto-generated method stub
+									
+								}
+
+								@Override
+								public void onError(APIRequest request,
+										int error) {
+									// TODO Auto-generated method stub
+									
+								}		
+                    		});
+                    		task.execute(req);
         				}
+        				
         				Log.d(TAG, "Loading items for collection with key: "+coll.getKey());
         				// We create and issue a specified intent with the necessary data
-        		    	Intent i = new Intent(getBaseContext(), ItemActivity.class);
         		    	i.putExtra("com.gimranov.zandy.app.collectionKey", coll.getKey());
         		    	startActivity(i);
         			} else {
@@ -188,6 +222,34 @@ public class CollectionActivity extends ListActivity {
         			+ ServerCredentials.prep(getBaseContext(), ServerCredentials.COLLECTIONS),
         			"get", null);
 			req.disposition = "xml";
+			req.setHandler(new APIEvent() {
+				@Override
+				public void onComplete(APIRequest request) {
+					CollectionAdapter adapter = (CollectionAdapter) getListAdapter();
+					Cursor newCursor = (collection == null) ? create() : create(collection);
+					adapter.changeCursor(newCursor);
+					adapter.notifyDataSetChanged();
+				}
+
+				@Override
+				public void onUpdate(APIRequest request) {
+					// Do nothing
+				}
+
+				@Override
+				public void onError(APIRequest request, Exception exception) {
+					Log.e(TAG, "APIException caught", exception);
+					Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_error), 
+		    				Toast.LENGTH_SHORT).show();
+				}
+
+				@Override
+				public void onError(APIRequest request, int error) {
+					Log.e(TAG, "API error caught");
+					Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_error), 
+		    				Toast.LENGTH_SHORT).show();
+				}
+			});
 			new ZoteroAPITask(getBaseContext(), (CursorAdapter) getListAdapter()).execute(req);	
         	Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_collection), 
     				Toast.LENGTH_SHORT).show();
