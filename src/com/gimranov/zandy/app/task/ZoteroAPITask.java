@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -44,9 +45,10 @@ import org.json.JSONArray;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.CursorAdapter;
 
 import com.gimranov.zandy.app.ServerCredentials;
 import com.gimranov.zandy.app.XMLResponseParser;
@@ -55,7 +57,19 @@ import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
 import com.gimranov.zandy.app.data.ItemCollection;
 
-public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
+/**
+ * Executes one or more API requests asynchronously.
+ * 
+ * Steps in migration:
+ *  1. Move the logic on what kind of request is handled how into the APIRequest itself
+ *  2. Throw exceptions when we have errors
+ *  3. Call the handlers when provided
+ *  4. Move aggressive syncing logic out of ZoteroAPITask itself; it should be elsewhere.
+ * 
+ * @author ajlyon
+ *
+ */
+public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 	private static final String TAG = "com.gimranov.zandy.app.task.ZoteroAPITask";
 		
 	private String key;
@@ -71,6 +85,8 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 	public boolean autoMode = false;
 	
 	private Database db;
+	
+	private Handler handler;
 	
 	public ZoteroAPITask(String key)
 	{
@@ -90,12 +106,25 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 		db = new Database(c);
 	}
 	
+	public void setHandler(Handler h) {
+		handler = h;
+	}
+	
+	
+	private Handler getHandler() {
+		if (handler == null) {
+			handler = new Handler() {};
+		}
+		
+		return handler;
+	}
+
 	@Override
-	protected JSONArray[] doInBackground(APIRequest... params) {
+	protected Message doInBackground(APIRequest... params) {
         return doFetch(params);
 	} 
 	
-	public JSONArray[] doFetch(APIRequest... reqs)
+	public Message doFetch(APIRequest... reqs)
 	{	
 		int count = reqs.length;
 		
@@ -145,14 +174,14 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
         	Log.i(TAG, "Now: "+queue.size());
 
     		this.doFetch(requests);
-        	// XXX FOR TESTING FOR NOW
-        	return null;
+        	return getHandler().obtainMessage(APIRequest.API_UPDATE_UI);
         }
 
         
     	// Here's where we tie in to periodic housekeeping syncs        
     	// If we're already in auto mode (that is, here), just move on
-    	if (this.autoMode) return ret;
+        // XXX need new message here
+    	if (this.autoMode) return getHandler().obtainMessage(APIRequest.API_UPDATE_UI);
     	
     	Log.d(TAG, "Sending local changes");
     	Item.queue(db);
@@ -231,23 +260,16 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
     	// We're in auto mode...
     	this.autoMode = true;
     	this.doInBackground(mReqs);
-         
-        return ret;
+        // TODO be more specific in message
+        return getHandler().obtainMessage(APIRequest.API_UPDATE_UI);
 	}
 	
 	
 	@Override
-	protected void onPostExecute(JSONArray[] result) {
-		// invoked on the UI thread
-    		if (result == null) {
-	        	Log.e(TAG, "Returned NULL; looks like a problem communicating with server; review stack trace.");
-	        	// there was an error
-	        	String text = "Error communicating with server.";	
-	        	Log.i(TAG, text);
-    		} else {
-		        Log.i(TAG, "Finished call successfully, but nobody to notify");        		
-    		}
-    }
+	protected void onPostExecute(Message result) {
+		getHandler().sendMessage(result);
+	}
+	
 	
 	/**
 	 * Executes the specified APIRequest and handles the response
@@ -466,8 +488,10 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Integer, JSONArray[]> {
 			Log.i(TAG, "Response: " + resp);
 		} catch (IOException e) {
 			Log.e(TAG, "Connection error", e);
+			req.getHandler().onError(req, e);
 		} catch (URISyntaxException e) {
 			Log.e(TAG, "URI error", e);
+			req.getHandler().onError(req, e);
 		}
 		return resp;
 	}

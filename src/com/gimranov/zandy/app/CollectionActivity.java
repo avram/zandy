@@ -20,6 +20,8 @@ import android.app.ListActivity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,11 +30,12 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.CursorAdapter;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gimranov.zandy.app.data.Attachment;
 import com.gimranov.zandy.app.data.CollectionAdapter;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.ItemCollection;
@@ -46,6 +49,27 @@ public class CollectionActivity extends ListActivity {
 	private static final String TAG = "com.gimranov.zandy.app.CollectionActivity";
 	private ItemCollection collection;
 	private Database db;
+	
+	final Handler handler = new Handler() {
+		public void handleMessage(Message msg) {
+			Log.d(TAG,"received message: "+msg.arg1);
+			refreshView();
+			
+		}
+	};
+	
+	/**
+	 * Refreshes the current list adapter
+	 */
+	private void refreshView() {
+		CollectionAdapter adapter = (CollectionAdapter) getListAdapter();
+		Cursor newCursor = (collection == null) ? create() : create(collection);
+		adapter.changeCursor(newCursor);
+		adapter.notifyDataSetChanged();
+		Toast.makeText(getApplicationContext(), "Updating UI", 
+				Toast.LENGTH_SHORT).show();
+		Log.d(TAG, "refreshing view on request");
+	}
 	
     /** Called when the activity is first created. */
     @Override
@@ -218,10 +242,9 @@ public class CollectionActivity extends ListActivity {
 			req.setHandler(new APIEvent() {
 				@Override
 				public void onComplete(APIRequest request) {
-					CollectionAdapter adapter = (CollectionAdapter) getListAdapter();
-					Cursor newCursor = (collection == null) ? create() : create(collection);
-					adapter.changeCursor(newCursor);
-					adapter.notifyDataSetChanged();
+					handler.sendEmptyMessage(APIRequest.API_UPDATE_UI);
+					Log.d(TAG, "fired oncomplete");
+					//refreshView();
 				}
 
 				@Override
@@ -243,7 +266,9 @@ public class CollectionActivity extends ListActivity {
 		    				Toast.LENGTH_SHORT).show();
 				}
 			});
-			new ZoteroAPITask(getBaseContext(), (CursorAdapter) getListAdapter()).execute(req);	
+			ZoteroAPITask task = new ZoteroAPITask(getBaseContext());
+			task.setHandler(handler);
+			task.execute(req);	
         	Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_collection), 
     				Toast.LENGTH_SHORT).show();
             return true;

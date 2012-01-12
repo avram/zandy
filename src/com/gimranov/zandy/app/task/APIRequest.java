@@ -24,6 +24,7 @@ import org.json.JSONObject;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.os.Handler;
 import android.util.Log;
 
 import com.gimranov.zandy.app.ServerCredentials;
@@ -62,6 +63,11 @@ public class APIRequest {
 	 */
 	public static final int API_ERROR_CONFLICT = 412;
 	public static final int API_ERROR_UNSPECIFIED = 400;
+	/**
+	 * The following are used when passing things back to the UI
+	 * from the API request service / thread.
+	 */
+	public static final int API_UPDATE_UI = 1000;
 	
 	/**
 	 * Callback handler
@@ -175,6 +181,36 @@ public class APIRequest {
 			return;
 		}
 		
+		Log.e(TAG, "APIEvent handler for request cannot be replaced");
+	}
+	
+	/**
+	 * Set an Android standard handler to be used for the APIEvents
+	 * @param handler
+	 */
+	public void setHandler(Handler handler) {
+		final Handler mHandler = handler;
+		if (this.handler == null) {
+			this.handler = new APIEvent() {
+				@Override
+				public void onComplete(APIRequest request) {
+					mHandler.sendEmptyMessage(API_UPDATE_UI);
+				}
+				@Override
+				public void onUpdate(APIRequest request) {
+					mHandler.sendEmptyMessage(API_UPDATE_UI);				
+				}
+				@Override
+				public void onError(APIRequest request, Exception exception) {
+					mHandler.sendEmptyMessage(API_UPDATE_UI);					
+				}
+				@Override
+				public void onError(APIRequest request, int error) {
+					mHandler.sendEmptyMessage(API_UPDATE_UI);
+				}
+			};
+			return;
+		}
 		Log.e(TAG, "APIEvent handler for request cannot be replaced");
 	}
 
