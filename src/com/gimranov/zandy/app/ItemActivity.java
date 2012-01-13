@@ -46,7 +46,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.CursorAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -240,21 +239,18 @@ public class ItemActivity extends ListActivity {
 			mProgressDialog = new ProgressDialog(this);
 			mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 			mProgressDialog.setIndeterminate(true);
-			// XXX i18n
-			mProgressDialog.setMessage("Looking up item...");
+			mProgressDialog.setMessage(getResources().getString(R.string.identifier_looking_up));
 			return mProgressDialog;
 		case DIALOG_IDENTIFIER:
 			final EditText input = new EditText(this);
-			// XXX i18n
-			input.setHint("Enter identifier");
+			input.setHint(getResources().getString(R.string.identifier_hint));
 			
 			final ItemActivity current = this;
 			
 			dialog = new AlertDialog.Builder(this)
-				// XXX i18n
-	    	    .setTitle("Look up item by identifier")
+	    	    .setTitle(getResources().getString(R.string.identifier_message))
 	    	    .setView(input)
-	    	    .setPositiveButton("Search", new DialogInterface.OnClickListener() {
+	    	    .setPositiveButton(getResources().getString(R.string.menu_search), new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int whichButton) {
 	    	            Editable value = input.getText();
 	    	            // run search
@@ -264,7 +260,7 @@ public class ItemActivity extends ListActivity {
 	    	            removeDialog(DIALOG_PROGRESS);
 	    	            showDialog(DIALOG_PROGRESS, c);
 	    	        }
-	    	    }).setNeutralButton("Scan", new DialogInterface.OnClickListener() {
+	    	    }).setNeutralButton(getResources().getString(R.string.scan), new DialogInterface.OnClickListener() {
 	    	        public void onClick(DialogInterface dialog, int whichButton) {
 	    	        		IntentIntegrator integrator = new IntentIntegrator(current);
 	    	        		integrator.initiateScan();
@@ -439,15 +435,13 @@ public class ItemActivity extends ListActivity {
 				removeDialog(DIALOG_PROGRESS);			
 				showDialog(DIALOG_PROGRESS, b);
 			} else {
-				// XXX i18n
 				Toast.makeText(getApplicationContext(),
-						"Scan canceled or failed", 
+						getResources().getString(R.string.identifier_scan_failed), 
 	    				Toast.LENGTH_SHORT).show();
 			}
 		} else {
-			// XXX i18n
 			Toast.makeText(getApplicationContext(),
-					"Scan canceled or failed", 
+					getResources().getString(R.string.identifier_scan_failed), 
     				Toast.LENGTH_SHORT).show();
 		}
 	}
@@ -479,14 +473,14 @@ public class ItemActivity extends ListActivity {
 			}
 			
 			if (ProgressThread.STATE_PARSING == msg.arg2) {
-				mProgressDialog.setMessage("Parsing item data...");
+				mProgressDialog.setMessage(getResources().getString(R.string.identifier_processing));
 				return;
 			}
 			
 			if (ProgressThread.STATE_ERROR == msg.arg2) {
 				dismissDialog(DIALOG_PROGRESS);
-				// XXX i18n
-				Toast.makeText(getBaseContext(), "Error fetching metadata", 
+				Toast.makeText(getApplicationContext(),
+						getResources().getString(R.string.identifier_lookup_failed), 
 	    				Toast.LENGTH_SHORT).show();
 				progressThread.setState(ProgressThread.STATE_DONE);
 				return;

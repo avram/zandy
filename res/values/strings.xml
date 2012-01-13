@@ -32,6 +32,15 @@
     <string name="search_hint">Search items</string>
     <string name="choose_parent_collection">Choose parent collection</string>
     <string name="status">Status:</string>
+    <!-- Scanning / add by identifier -->
+    <string name="scan">Scan</string>
+    <!-- we use menu_search here too -->
+    <string name="identifier_message">Look up item by identifier</string>
+    <string name="identifier_hint">Enter identifier</string>
+    <string name="identifier_looking_up">Looking up item&#8230;</string>
+    <string name="identifier_lookup_failed">Error fetching metadata</string>
+    <string name="identifier_processing">Parsing item data&#8230;</string>
+    <string name="identifier_scan_failed">Scan cancelled or failed.</string>
     <!-- ItemActivity (item lists) -->
     <string name="all_items">All items</string>
     <string name="cant_open_item">Can\'t open %s</string>
