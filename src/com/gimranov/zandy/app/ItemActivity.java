@@ -71,6 +71,9 @@ public class ItemActivity extends ListActivity {
 	static final int DIALOG_IDENTIFIER = 3;
 	static final int DIALOG_PROGRESS = 6;
 
+	/**
+	 * Allowed sort orderings
+	 */
 	static final String[] SORTS = {
 		"item_year, item_title",
 		"item_creator, item_year",
@@ -78,13 +81,15 @@ public class ItemActivity extends ListActivity {
 		"timestamp ASC, item_title"
 	};
 
-	// XXX i8n
-	static final String[] SORTS_EN = {
-		"Year, then title",
-		"Creator, then year",
-		"Title, then year",
-		"Date modified, then title"
-	};	
+	/**
+	 * Strings providing the names of each ordering, respectively
+	 */
+	static final int[] SORT_NAMES = {
+		R.string.sort_year_title,
+		R.string.sort_creator_year,
+		R.string.sort_title_year,
+		R.string.sort_modified_title
+	};
 	
 	private String collectionKey;
 	private String query;
@@ -214,10 +219,16 @@ public class ItemActivity extends ListActivity {
 			AlertDialog dialog = builder.create();
 			return dialog;
 		case DIALOG_SORT:
+			
+			// We generate the sort name list for our current locale
+			String[] sorts = new String[SORT_NAMES.length];
+			for (int j = 0; j < SORT_NAMES.length; j++) {
+				sorts[j] = getResources().getString(SORT_NAMES[j]);
+			}
+			
 			AlertDialog.Builder builder2 = new AlertDialog.Builder(this);
 			builder2.setTitle(getResources().getString(R.string.set_sort_order))
-					// XXX i18n
-		    	    .setItems(SORTS_EN, new DialogInterface.OnClickListener() {
+		    	    .setItems(sorts, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int pos) {
 							Cursor cursor;
 							setSortBy(SORTS[pos]);

@@ -41,6 +41,11 @@
     <string name="identifier_lookup_failed">Error fetching metadata</string>
     <string name="identifier_processing">Parsing item data&#8230;</string>
     <string name="identifier_scan_failed">Scan cancelled or failed.</string>
+    <!-- Sorting -->
+    <string name="sort_year_title">Year, then title</string>
+    <string name="sort_creator_year">Creator, then year</string>
+    <string name="sort_title_year">Title, then year</string>
+    <string name="sort_modified_title">Date modified, then title</string>
     <!-- ItemActivity (item lists) -->
     <string name="all_items">All items</string>
     <string name="cant_open_item">Can\'t open %s</string>
