@@ -53,8 +53,7 @@ public class CollectionActivity extends ListActivity {
 	final Handler handler = new Handler() {
 		public void handleMessage(Message msg) {
 			Log.d(TAG,"received message: "+msg.arg1);
-			refreshView();
-			
+			refreshView();		
 		}
 	};
 	
@@ -149,7 +148,7 @@ public class CollectionActivity extends ListActivity {
                     				getResources().getString(R.string.collection_empty),
                     				Toast.LENGTH_SHORT).show();
                 			Log.d(TAG, "Running a request to populate missing data for collection");
-                           	APIRequest req = APIRequest.fetch(coll, getBaseContext());
+                           	APIRequest req = APIRequest.fetchItems(coll, getBaseContext());
                     		ZoteroAPITask task = new ZoteroAPITask(getBaseContext());
                     		req.setHandler(new APIEvent() {
 								@Override
@@ -242,9 +241,8 @@ public class CollectionActivity extends ListActivity {
 			req.setHandler(new APIEvent() {
 				@Override
 				public void onComplete(APIRequest request) {
-					handler.sendEmptyMessage(APIRequest.API_UPDATE_UI);
+					handler.sendEmptyMessage(APIRequest.UPDATED_DATA);
 					Log.d(TAG, "fired oncomplete");
-					//refreshView();
 				}
 
 				@Override

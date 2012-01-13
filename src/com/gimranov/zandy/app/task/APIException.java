@@ -22,11 +22,22 @@ public class APIException extends Exception {
 	 * Don't know what this is for.
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * Exception types
+	 */
+	public static final int INVALID_METHOD = 10;
 
 	public APIRequest request;
+	public int type;
 	
-	public APIException(APIRequest request) {
+	public APIException(int type, String message, APIRequest request) {
+		super(message);
 		this.request = request;
 	}
 	
+	public APIException(int type, APIRequest request) {
+		super();
+		this.request = request;
+	}
 }

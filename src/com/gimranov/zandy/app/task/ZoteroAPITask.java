@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -40,7 +39,6 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.json.JSONArray;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -127,9 +125,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 	public Message doFetch(APIRequest... reqs)
 	{	
 		int count = reqs.length;
-		
-		JSONArray[] ret = new JSONArray[count];
-        
+		        
         for (int i = 0; i < count; i++) {
         	if (reqs[i] == null) {
         		Log.d(TAG, "Skipping null request");
@@ -144,12 +140,13 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
         		
         		reqs[i].key = key;
         		
-        		issue(reqs[i], db);
+        		issue(reqs[i], db, handler);
 				
 				Log.i(TAG, "Succesfully retrieved API call: " + reqs[i].query);
 				
-			} catch (Exception e) {
+			} catch (APIException e) {
 				// TODO: determine if this is due to needing re-auth
+				// We should do that by just bubbling up an subclassed exception from issue(..)
 				Log.e(TAG, "Failed to execute API call: " + reqs[i].query, e);
 				return null;
 			}
@@ -172,16 +169,20 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
     		APIRequest[] requests = queue.toArray(templ);
         	queue.clear();
         	Log.i(TAG, "Now: "+queue.size());
-
     		this.doFetch(requests);
-        	return getHandler().obtainMessage(APIRequest.API_UPDATE_UI);
+    		
+    		// Return a message with the number of requests added to the queue
+        	Message msg = getHandler().obtainMessage(APIRequest.QUEUED_MORE);
+        	msg.arg1 = msg.what;
+        	msg.arg2 = requests.length;
+        	return msg;
         }
 
         
     	// Here's where we tie in to periodic housekeeping syncs        
     	// If we're already in auto mode (that is, here), just move on
         // XXX need new message here
-    	if (this.autoMode) return getHandler().obtainMessage(APIRequest.API_UPDATE_UI);
+    	if (this.autoMode) return getHandler().obtainMessage(APIRequest.UPDATED_DATA);
     	
     	Log.d(TAG, "Sending local changes");
     	Item.queue(db);
@@ -260,8 +261,12 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
     	// We're in auto mode...
     	this.autoMode = true;
     	this.doInBackground(mReqs);
-        // TODO be more specific in message
-        return getHandler().obtainMessage(APIRequest.API_UPDATE_UI);
+
+    	// Return a message noting that we've queued more requests
+    	Message msg = getHandler().obtainMessage(APIRequest.QUEUED_MORE);
+    	msg.arg1 = msg.what;
+    	msg.arg2 = mReqs.length;
+    	return msg;
 	}
 	
 	
@@ -279,8 +284,9 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 	 * 
 	 * @param req
 	 * @return
+	 * @throws APIException 
 	 */
-	public static String issue(APIRequest req, Database db) {
+	public static String issue(APIRequest req, Database db, Handler handler) throws APIException {
 		// Check that the method makes sense
 		String method = req.method.toLowerCase();
 		if (!method.equals("get")
@@ -288,13 +294,13 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 			&& !method.equals("delete")
 			&& !method.equals("put")
 		) {
-			// TODO Throw an exception here.
-			Log.e(TAG, "Invalid method: "+method);
-			return null;
+			throw new APIException(APIException.INVALID_METHOD, req);
 		}
 		String resp = "";
 		try {
 			// Append content=json everywhere, if we don't have it yet
+			// TODO Remove this when we start trusting the routines in APIRequest
+			// to reliably generate complete requests.
 			if (req.query.indexOf("content=json") == -1) {
 				if (req.query.indexOf("?") != -1) {
 					req.query += "&content=json";
@@ -322,6 +328,9 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 			client.getParams().setParameter("http.protocol.content-charset", "UTF-8");
 
 			/* It would be good to rework this mess to be less repetitive */
+			// TODO As soon as we put the full request info into APIRequest, we
+			// can simplify this. In fact, we can make APIRequest run itself using
+			// its own methods and just spit out a response.
 			if (method.equals("post")) {
 				HttpPost request = new HttpPost();
 				request.setURI(uri);
@@ -405,7 +414,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 						req.getHandler().onError(req, APIRequest.API_ERROR_UNSPECIFIED);
 						// "Precondition Failed"
 						// The item changed server-side, so we have a conflict to resolve...
-						// XXX This is a hard problem.
+						// Cf. issue #18
 						if (code == 412) {
 							Log.e(TAG, "Skipping dirtied item with server-side changes as well");
 							req.getHandler().onError(req, APIRequest.API_ERROR_CONFLICT);

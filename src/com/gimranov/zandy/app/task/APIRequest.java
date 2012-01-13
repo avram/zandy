@@ -48,6 +48,10 @@ import com.gimranov.zandy.app.data.ItemCollection;
 public class APIRequest {
 	private static final String TAG = "com.gimranov.zandy.app.task.APIRequest";
 
+	/**
+	 * Statuses used for items and collections. They are currently strings, but
+	 * they should change to integers. These statuses may be stored in the database.
+	 */
 	// XXX i18n
 	public static final String API_DIRTY =	"Unsynced change";
 	public static final String API_NEW =	"New item / collection";
@@ -67,7 +71,34 @@ public class APIRequest {
 	 * The following are used when passing things back to the UI
 	 * from the API request service / thread.
 	 */
-	public static final int API_UPDATE_UI = 1000;
+	/** Used to indicate database data has changed. */
+	public static final int UPDATED_DATA	= 1000;
+	/** Current set of requests completed. */
+	public static final int BATCH_DONE		= 2000;
+	/** Used to indicate database data has changed. */
+	public static final int ERROR_UNKNOWN	= 4000;
+	/** Queued more requests */
+	public static final int QUEUED_MORE		= 3000;
+	
+	/**
+	 * Request types
+	 */
+	public static final int ITEMS_ALL				= 10000;
+	public static final int ITEMS_FOR_COLLECTION	= 10001;
+	public static final int ITEMS_CHILDREN			= 10002;
+
+	public static final int COLLECTIONS_ALL			= 20000;
+
+	public static final int ITEM_FIELDS				= 30000;
+	public static final int CREATOR_TYPES			= 30001;
+	public static final int ITEM_FIELDS_L10N		= 30002;
+	public static final int CREATOR_TYPES_L10N		= 30003;
+	
+	/**
+	 * Type of request we're sending. This should be one of
+	 * the request types listed above.
+	 */
+	public int type;
 	
 	/**
 	 * Callback handler
@@ -194,19 +225,19 @@ public class APIRequest {
 			this.handler = new APIEvent() {
 				@Override
 				public void onComplete(APIRequest request) {
-					mHandler.sendEmptyMessage(API_UPDATE_UI);
+					mHandler.sendEmptyMessage(BATCH_DONE);
 				}
 				@Override
 				public void onUpdate(APIRequest request) {
-					mHandler.sendEmptyMessage(API_UPDATE_UI);				
+					mHandler.sendEmptyMessage(UPDATED_DATA);				
 				}
 				@Override
 				public void onError(APIRequest request, Exception exception) {
-					mHandler.sendEmptyMessage(API_UPDATE_UI);					
+					mHandler.sendEmptyMessage(ERROR_UNKNOWN);					
 				}
 				@Override
 				public void onError(APIRequest request, int error) {
-					mHandler.sendEmptyMessage(API_UPDATE_UI);
+					mHandler.sendEmptyMessage(ERROR_UNKNOWN);
 				}
 			};
 			return;
@@ -274,11 +305,26 @@ public class APIRequest {
 	 * @param collection	The collection to fetch
 	 * @param c				Context
 	 */
-	public static APIRequest fetch(ItemCollection collection, Context c) {
+	public static APIRequest fetchItems(ItemCollection collection, Context c) {
 		APIRequest req = new APIRequest(ServerCredentials.APIBASE
        			+ ServerCredentials.prep(c, ServerCredentials.COLLECTIONS)
        			+"/"+collection.getKey()+"/items", "get", null);
 		req.disposition = "xml";
+		req.type = APIRequest.ITEMS_FOR_COLLECTION;
+		return req;
+	}
+	
+	/**
+	 * Produces an API request for all items
+	 * 
+	 * @param c				Context
+	 */
+	public static APIRequest fetchItems(Context c) {
+		APIRequest req = new APIRequest(ServerCredentials.APIBASE
+       			+ ServerCredentials.prep(c, ServerCredentials.ITEMS)
+       			+"/top", "get", null);
+		req.disposition = "xml";
+		req.type = APIRequest.ITEMS_ALL;
 		return req;
 	}
 	
@@ -301,11 +347,6 @@ public class APIRequest {
 								"DELETE",
 								null);
 		templ.disposition = "none";
-		
-		// TODO make into a callback
-		//templ.onSuccess = "DELETE FROM itemtocollections where collection_id=? AND item_id=?";
-		//String[] args = {collection.dbId, item.dbId};
-		//templ.onSuccessArgs = args;
 		
 		return templ;
 	}
