@@ -101,6 +101,8 @@
 	<string name="sync_started">Started syncing&#8230;</string>
 	<string name="sync_collection">Started syncing; refreshing collection list</string>
 	<string name="sync_error">Synchronization error</string>
+	<string name="sync_complete">Synchronization complete</string>
+	<string name="sync_queued_more">Added %1$d requests to queue</string>
 	<!-- Settings -->
 	<string name="settings_basic">Basic</string>
 	<string name="settings_aggressive_syncing">Aggressive Syncing</string>

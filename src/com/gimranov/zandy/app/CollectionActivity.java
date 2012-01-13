@@ -30,12 +30,10 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.gimranov.zandy.app.data.Attachment;
 import com.gimranov.zandy.app.data.CollectionAdapter;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.ItemCollection;
@@ -53,7 +51,28 @@ public class CollectionActivity extends ListActivity {
 	final Handler handler = new Handler() {
 		public void handleMessage(Message msg) {
 			Log.d(TAG,"received message: "+msg.arg1);
-			refreshView();		
+			refreshView();
+			
+			if (msg.arg1 == APIRequest.QUEUED_MORE) {
+				Toast.makeText(getApplicationContext(),
+						getResources().getString(R.string.sync_queued_more, msg.arg2), 
+        				Toast.LENGTH_SHORT).show();
+				return;
+			}
+			
+			if (msg.arg1 == APIRequest.BATCH_DONE) {
+				Toast.makeText(getApplicationContext(),
+						getResources().getString(R.string.sync_complete), 
+        				Toast.LENGTH_SHORT).show();
+				return;
+			}
+			
+			if (msg.arg1 == APIRequest.ERROR_UNKNOWN) {
+				Toast.makeText(getApplicationContext(),
+						getResources().getString(R.string.sync_error), 
+        				Toast.LENGTH_SHORT).show();
+				return;
+			}
 		}
 	};
 	
@@ -65,8 +84,6 @@ public class CollectionActivity extends ListActivity {
 		Cursor newCursor = (collection == null) ? create() : create(collection);
 		adapter.changeCursor(newCursor);
 		adapter.notifyDataSetChanged();
-		Toast.makeText(getApplicationContext(), "Updating UI", 
-				Toast.LENGTH_SHORT).show();
 		Log.d(TAG, "refreshing view on request");
 	}
 	
@@ -234,10 +251,7 @@ public class CollectionActivity extends ListActivity {
             	return true;
         	}
         	Log.d(TAG, "Making sync request for all collections");
-        	APIRequest req = new APIRequest(ServerCredentials.APIBASE 
-        			+ ServerCredentials.prep(getBaseContext(), ServerCredentials.COLLECTIONS),
-        			"get", null);
-			req.disposition = "xml";
+        	APIRequest req = APIRequest.fetchCollections(getApplicationContext());
 			req.setHandler(new APIEvent() {
 				@Override
 				public void onComplete(APIRequest request) {
