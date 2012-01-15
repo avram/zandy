@@ -45,17 +45,17 @@ public class RequestActivity extends ListActivity {
         
         db = new Database(this);
         
-        setContentView(R.layout.collections);
+        setContentView(R.layout.requests);
         
-        this.setTitle(getResources().getString(R.string.collections));
+        this.setTitle(getResources().getString(R.string.sync_pending_requests));
         
-        setListAdapter(new ResourceCursorAdapter(this, R.layout.list_collection, create()) {
+        setListAdapter(new ResourceCursorAdapter(this, android.R.layout.simple_list_item_2, create()) {
 
 			@Override
 			public void bindView(View view, Context c, Cursor cur) {
 				APIRequest req = new APIRequest(cur);
-				TextView tvTitle = (TextView)view.findViewById(R.id.collection_title);
-				TextView tvInfo = (TextView)view.findViewById(R.id.collection_info);
+				TextView tvTitle = (TextView)view.findViewById(android.R.id.text1);
+				TextView tvInfo = (TextView)view.findViewById(android.R.id.text2);
 							
 				tvTitle.setText(req.query);
 				// Set to an html-formatted representation of the request

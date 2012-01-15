@@ -103,7 +103,9 @@
 	<string name="sync_error">Synchronization error</string>
 	<string name="sync_complete">Synchronization complete</string>
 	<string name="sync_queued_more">Added %1$d requests to queue</string>
-	<!-- Settings -->
+	<string name="sync_no_queued">No pending requests.</string>
+	<string name="sync_pending_requests">Pending Requests</string>
+		<!-- Settings -->
 	<string name="settings_basic">Basic</string>
 	<string name="settings_aggressive_syncing">Aggressive Syncing</string>
 	<string name="settings_aggressive_syncing_desc">Check to have Zandy attempt to keep all collections synced</string>
@@ -120,6 +122,8 @@
 	<string name="settings_webdav_username_desc">Username for WebDAV server. This is separate from your Zotero username.</string>
 	<string name="settings_webdav_password">Password</string>
 	<string name="settings_webdav_password_desc">Password for WebDAV server. This is separate from your Zotero password.</string>
+	<string name="settings_reset_database">Clear local database</string>
+
 	<!-- Zotero terms -->
     <string name="note">Note</string>
     <string name="note_for_item">Note for %s</string>

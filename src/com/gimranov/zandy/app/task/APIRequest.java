@@ -768,24 +768,25 @@ public class APIRequest {
 	}
 	
 	/**
-	 * Returns array of APIRequest objects from the database
+	 * Returns APIRequest objects from the database
 	 * @return
 	 */
-	public static APIRequest[] queue(Database db) {
+	public static ArrayList<APIRequest> queue(Database db) {
 		ArrayList<APIRequest> list = new ArrayList<APIRequest>();
 		String[] cols = Database.REQUESTCOLS;
 		String[] args = { };
-		APIRequest[] templ = {};
+		//APIRequest[] templ = {};
 
 		Cursor cur = db.query("apirequests", cols, "", args, null, null,
 				null, null);
-		if (cur == null) return templ;
+		if (cur == null) return list;
 		
 		do {
 			APIRequest req = new APIRequest(cur);
 			list.add(req);
 		} while (cur.moveToNext() != false);
 		
-		return list.toArray(templ);
+		//return list.toArray(templ);
+		return list;
 	}
 }

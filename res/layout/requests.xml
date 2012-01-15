@@ -16,21 +16,16 @@
   along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent"
-              android:orientation="vertical">
-    <ListView android:id="@android:id/list"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent"
-              android:layout_weight="10" />
-    <Button android:text="@string/sync_pending_requests"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:id="@+id/requestQueue" />
-    <Button android:text="@string/reset_database"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:id="@+id/resetDatabase" />
+	android:orientation="vertical" android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:id="@+id/collections">
+
+	<ListView android:id="@android:id/list" android:layout_width="fill_parent"
+		android:layout_height="0dip"
+		android:layout_weight="1" android:drawSelectorOnTop="false" />
+
+	<!-- What to do if there's no data to show in the list  -->
+	<TextView android:id="@android:id/empty" android:layout_width="fill_parent"
+		android:layout_height="fill_parent" android:textAppearance="?android:attr/textAppearanceMedium"
+		android:text="@string/sync_no_queued" />
 </LinearLayout>

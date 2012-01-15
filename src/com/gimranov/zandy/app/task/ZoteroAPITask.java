@@ -211,7 +211,9 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
     				APIRequest.update(a, db)));
     	}
     	
-    	list.addAll(deletions);
+    	// This queue has deletions, collection memberships, and failing requests
+    	// We may want to filter it in the future
+    	list.addAll(APIRequest.queue(db));
     	
     	// We're in auto mode...
     	this.autoMode = true;
