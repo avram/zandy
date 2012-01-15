@@ -22,7 +22,7 @@ public class Database {
 		"dirty", "content" };
 	public static final String[] REQUESTCOLS = {"_id", "uuid", "type",
 		"query", "key", "method", "disposition", "if_match", "update_key",
-		"update_type", "created", "last_attempt", "status"};
+		"update_type", "created", "last_attempt", "status", "body"};
 
 	// the database version; increment to call update
 	private static final int DATABASE_VERSION = 20;
@@ -192,7 +192,8 @@ public class Database {
 			    + "update_type string, "
 			    + "created string, "
 			    + "last_attempt string, "
-			    + "status integer);";
+			    + "status integer,"
+			    + "body string);";
 		
 		/* We don't use this table right now */
 		private static final String NOTES_CREATE =

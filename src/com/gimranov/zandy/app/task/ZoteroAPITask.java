@@ -147,7 +147,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 				Log.e(TAG, "Failed to execute API call: " + e.request.query, e);
 				e.request.status = APIRequest.REQ_FAILING + e.request.getHttpStatus();
 				e.request.save(db);
-				Message msg = handler.obtainMessage();
+				Message msg = Message.obtain();
 				msg.arg1 = APIRequest.ERROR_UNKNOWN + e.request.getHttpStatus();
 				return msg;
 			}
@@ -255,38 +255,26 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 	 */
 	public static String issue(APIRequest req, Database db, Handler handler) throws APIException {
 		// Check that the method makes sense
-		String method = req.method.toLowerCase();
-		if (!method.equals("get")
-			&& !method.equals("post")
-			&& !method.equals("delete")
-			&& !method.equals("put")
+		String method = req.method == null ? null : req.method.toLowerCase();
+		if (!"get".equals(method)
+			&& !"post".equals(method)
+			&& !"delete".equals(method)
+			&& !"put".equals(method)
 		) {
+			Log.d(TAG, "Invalid method: "+method + " in request "+req.query);
 			throw new APIException(APIException.INVALID_METHOD, req);
 		}
 		String resp = "";
 		try {
 			XMLResponseParser parse = new XMLResponseParser();
 			
-			// Append content=json everywhere, if we don't have it yet
-			
-			// TODO Remove this when we start trusting the routines in APIRequest
-			// to reliably generate complete requests.
-			if (req.query.indexOf("content=json") == -1) {
-				if (req.query.indexOf("?") != -1) {
-					req.query += "&content=json";
-				} else {
-					req.query += "?content=json";
-				}
-			}
-			
 			// Append the key, if defined, to all requests
 			if (req.key != null && req.key != "") {
-				req.query += "&key=" + req.key;
+				String symbol = req.query.indexOf("?") == -1 ? "?" : "&";
+				req.query += symbol + "key=" + req.key;
 
 			}
-			if (method.equals("put")) {
-				req.query = req.query.replace("content=json&", "");
-			}
+
 			Log.i(TAG, "Request "+ req.method +": " + req.query);		
 
 			URI uri = new URI(req.query);
@@ -349,6 +337,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 						req.getHandler().onComplete(req);
 					} catch (ClientProtocolException e) {
 						Log.e(TAG, "Exception thrown issuing POST request: ", e);
+						Log.e(TAG,"Post Body: "+ req.body);
 						req.getHandler().onError(req, e);
 						throw new APIException(APIException.HTTP_ERROR, req);
 					}

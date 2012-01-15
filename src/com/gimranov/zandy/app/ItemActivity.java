@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 
 import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONArray;
@@ -55,11 +56,11 @@ import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
 import com.gimranov.zandy.app.data.ItemAdapter;
 import com.gimranov.zandy.app.data.ItemCollection;
+import com.gimranov.zandy.app.task.APIEvent;
 import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
-
 
 public class ItemActivity extends ListActivity {
 
@@ -99,6 +100,45 @@ public class ItemActivity extends ListActivity {
 	private ProgressThread progressThread;
 	
 	public String sortBy = "item_year, item_title";
+	
+	final Handler syncHandler = new Handler() {
+		public void handleMessage(Message msg) {
+			Log.d(TAG,"received message: "+msg.arg1);
+			refreshView();
+			
+			if (msg.arg1 == APIRequest.QUEUED_MORE) {
+				Toast.makeText(getApplicationContext(),
+						getResources().getString(R.string.sync_queued_more, msg.arg2), 
+        				Toast.LENGTH_SHORT).show();
+				return;
+			}
+			
+			if (msg.arg1 == APIRequest.BATCH_DONE) {
+				Toast.makeText(getApplicationContext(),
+						getResources().getString(R.string.sync_complete), 
+        				Toast.LENGTH_SHORT).show();
+				return;
+			}
+			
+			if (msg.arg1 == APIRequest.ERROR_UNKNOWN) {
+				Toast.makeText(getApplicationContext(),
+						getResources().getString(R.string.sync_error), 
+        				Toast.LENGTH_SHORT).show();
+				return;
+			}
+		}
+	};
+	
+	/**
+	 * Refreshes the current list adapter
+	 */
+	private void refreshView() {
+		ItemAdapter adapter = (ItemAdapter) getListAdapter();
+		Cursor newCursor = prepareCursor();
+		adapter.changeCursor(newCursor);
+		adapter.notifyDataSetChanged();
+		Log.d(TAG, "refreshing view on request");
+	}
 	
     /** Called when the activity is first created. */
     @Override
@@ -327,35 +367,75 @@ public class ItemActivity extends ListActivity {
         				Toast.LENGTH_SHORT).show();
             	return true;
         	}
+        	
+        	APIEvent mEvent = new APIEvent() {
+				private int updates = 0;
+				
+				@Override
+				public void onComplete(APIRequest request) {
+					Message msg = syncHandler.obtainMessage();
+					msg.arg1 = APIRequest.UPDATED_DATA;
+					syncHandler.sendMessage(msg);
+					Log.d(TAG, "fired oncomplete");
+				}
+
+				@Override
+				public void onUpdate(APIRequest request) {
+					updates++;
+					
+					if (updates % 10 == 0) {
+						Message msg = syncHandler.obtainMessage();
+						msg.arg1 = APIRequest.UPDATED_DATA;
+						syncHandler.sendMessage(msg);
+					} else {
+						// do nothing
+					}
+				}
+
+				@Override
+				public void onError(APIRequest request, Exception exception) {
+					Log.e(TAG, "APIException caught", exception);
+					Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_error), 
+		    				Toast.LENGTH_SHORT).show();
+				}
+
+				@Override
+				public void onError(APIRequest request, int error) {
+					Log.e(TAG, "API error caught");
+					Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_error), 
+		    				Toast.LENGTH_SHORT).show();
+				}
+			};
+        	
         	// Make this a collection-specific sync, preceding by de-dirtying
-        	// De-dirtying
         	Item.queue(db);
-        	APIRequest[] reqs = new APIRequest[Item.queue.size() + 1];
-        	for (int j = 0; j < Item.queue.size(); j++) {
-        		Log.d(TAG, "Adding dirty item to sync: "+Item.queue.get(j).getTitle());
-        		reqs[j] = ServerCredentials.prep(getBaseContext(), APIRequest.update(Item.queue.get(j)));
-        	}
+			ArrayList<APIRequest> list = new ArrayList<APIRequest>();
+			APIRequest[] templ = {};
+	    	for (Item i : Item.queue) {
+        		Log.d(TAG, "Adding dirty item to sync: "+i.getTitle());
+	    		list.add(ServerCredentials.prep(getBaseContext(), 
+	    				APIRequest.update(i)));
+	    	}
+        	
+        	
         	if (collectionKey == null) {
             	Log.d(TAG, "Adding sync request for all items");
-            	APIRequest req = new APIRequest(ServerCredentials.APIBASE 
-            			+ ServerCredentials.prep(getBaseContext(), ServerCredentials.ITEMS +"/top"),
-            			"get", null);
-    			req.disposition = "xml";
-    			reqs[Item.queue.size()] = req;
+            	APIRequest req = APIRequest.fetchItems(getBaseContext());
+    			req.setHandler(mEvent);
+    			list.add(req);
         	} else {
             	Log.d(TAG, "Adding sync request for collection: " + collectionKey);
-            	APIRequest req = new APIRequest(ServerCredentials.APIBASE
-							+ ServerCredentials.prep(getBaseContext(), ServerCredentials.COLLECTIONS)
-							+"/"
-							+ collectionKey + "/items",
-						"get",
-						null);
-    			req.disposition = "xml";
-    			reqs[Item.queue.size()] = req;
+            	APIRequest req = APIRequest.fetchItems(collectionKey, getBaseContext());
+            	req.setHandler(mEvent);
+            	list.add(req);
         	}
+        	APIRequest[] reqs = list.toArray(templ);
+        	
         	// This then provides a full queue, with the locally dirty items first, followed
         	// by a scoped sync. Cool!
-			new ZoteroAPITask(getBaseContext()).execute(reqs);
+			ZoteroAPITask task = new ZoteroAPITask(getBaseContext());
+			task.setHandler(syncHandler);
+			task.execute(reqs);
         	Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_started), 
     				Toast.LENGTH_SHORT).show();
             return true;

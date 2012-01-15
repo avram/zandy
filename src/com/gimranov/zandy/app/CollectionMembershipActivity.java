@@ -58,7 +58,8 @@ public class CollectionMembershipActivity extends ListActivity {
 	static final int DIALOG_CONFIRM_NAVIGATE = 4;
 	static final int DIALOG_COLLECTION_LIST = 1;
 	
-	private Item item;
+	private String itemKey;
+	private String itemTitle;
 	
 	private Database db;
 	
@@ -70,11 +71,15 @@ public class CollectionMembershipActivity extends ListActivity {
         db = new Database(this);
                 
         /* Get the incoming data from the calling activity */
-        String itemKey = getIntent().getStringExtra("com.gimranov.zandy.app.itemKey");
-        final Item item = Item.load(itemKey, db);
-        this.item = item;
+        itemKey = getIntent().getStringExtra("com.gimranov.zandy.app.itemKey");
+        Item item = Item.load(itemKey, db);
+        if (item == null) {
+        	Log.e(TAG, "Null item for key: "+itemKey);
+        	finish();
+        }
+        itemTitle = item.getTitle();
         
-        this.setTitle(getResources().getString(R.string.collections_for_item, item.getTitle()));
+        this.setTitle(getResources().getString(R.string.collections_for_item, itemTitle));
         
         ArrayList<ItemCollection> rows = ItemCollection.getCollections(item, db);
         
@@ -113,7 +118,7 @@ public class CollectionMembershipActivity extends ListActivity {
         		ArrayAdapter<ItemCollection> adapter = (ArrayAdapter<ItemCollection>) parent.getAdapter();
         		ItemCollection row = adapter.getItem(position);
         		Bundle b = new Bundle();
-        		b.putString("itemKey", item.getKey());
+        		b.putString("itemKey", itemKey);
         		b.putString("collectionKey", row.getKey());
       			removeDialog(DIALOG_CONFIRM_NAVIGATE);
        			showDialog(DIALOG_CONFIRM_NAVIGATE, b);
@@ -153,11 +158,8 @@ public class CollectionMembershipActivity extends ListActivity {
 						@SuppressWarnings("unchecked")
 						public void onClick(DialogInterface dialog, int pos) {
 		    	            Item item = Item.load(itemKey, db);
-							collections.get(pos).add(item);
+							collections.get(pos).add(item, false, db);
 							collections.get(pos).saveChildren(db);
-		    	        	// XXX temporary, no i18n
-		    	        	Toast.makeText(getApplicationContext(), "Sync soon to make this stick.", 
-		    	    				Toast.LENGTH_SHORT).show();
 							ArrayAdapter<ItemCollection> la = (ArrayAdapter<ItemCollection>) getListAdapter();
 		    	            la.clear();
 		    	            for (ItemCollection b : ItemCollection.getCollections(item,db)) {
@@ -187,9 +189,6 @@ public class CollectionMembershipActivity extends ListActivity {
 		    	        	Item item = Item.load(itemKey, db);
 		    	        	ItemCollection coll = ItemCollection.load(collectionKey, db);
 		    	        	coll.remove(item, db);
-		    	        	// XXX temporary, no i18n
-		    	        	Toast.makeText(getApplicationContext(), "Sync soon to make this stick.", 
-		    	    				Toast.LENGTH_SHORT).show();
 							ArrayAdapter<ItemCollection> la = (ArrayAdapter<ItemCollection>) getListAdapter();
 		    	            la.clear();
 		    	            for (ItemCollection b : ItemCollection.getCollections(item,db)) {
@@ -223,13 +222,13 @@ public class CollectionMembershipActivity extends ListActivity {
             	return true;
         	}
         	Log.d(TAG, "Preparing sync requests");
-        	new ZoteroAPITask(getBaseContext()).execute(APIRequest.update(this.item));
+        	new ZoteroAPITask(getBaseContext()).execute(APIRequest.update(Item.load(itemKey, db)));
         	Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_started), 
     				Toast.LENGTH_SHORT).show();
         	return true;
         case R.id.do_new:
     		Bundle b = new Bundle();
-    		b.putString("itemKey", this.item.getKey());
+    		b.putString("itemKey", itemKey);
     		removeDialog(DIALOG_COLLECTION_LIST);
     		showDialog(DIALOG_COLLECTION_LIST, b);
             return true;

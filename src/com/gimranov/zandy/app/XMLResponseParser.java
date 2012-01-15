@@ -349,7 +349,7 @@ public class XMLResponseParser extends DefaultHandler {
             	item.setEtag(etag);
             	collection.setEtag(etag);
             	attachment.etag = etag;
-            	Log.d(TAG, etag);
+            	Log.d(TAG, "etag: "+etag);
             }
         });
         entry.getChild(ATOM_NAMESPACE, "content").setEndTextElementListener(new EndTextElementListener(){

@@ -167,27 +167,42 @@ public class CollectionActivity extends ListActivity {
                            	APIRequest req = APIRequest.fetchItems(coll, getBaseContext());
                     		ZoteroAPITask task = new ZoteroAPITask(getBaseContext());
                     		req.setHandler(new APIEvent() {
-								@Override
-								public void onComplete(APIRequest request) {
-									Log.d(TAG, "APIEvent complete");
-								}
+                				private int updates = 0;
+                				
+                				@Override
+                				public void onComplete(APIRequest request) {
+                					Message msg = handler.obtainMessage();
+                					msg.arg1 = APIRequest.UPDATED_DATA;
+                					handler.sendMessage(msg);
+                					Log.d(TAG, "fired oncomplete");
+                				}
 
-								@Override
-								public void onUpdate(APIRequest request) {
-									Log.d(TAG, "APIEvent update");
-								}
+                				@Override
+                				public void onUpdate(APIRequest request) {
+                					updates++;
+                					
+                					if (updates % 10 == 0) {
+                						Message msg = handler.obtainMessage();
+                						msg.arg1 = APIRequest.UPDATED_DATA;
+                						handler.sendMessage(msg);
+                					} else {
+                						// do nothing
+                					}
+                				}
 
-								@Override
-								public void onError(APIRequest request,
-										Exception exception) {
-									Log.e(TAG, "APIEvent error", exception);
-								}
+                				@Override
+                				public void onError(APIRequest request, Exception exception) {
+                					Log.e(TAG, "APIException caught", exception);
+                					Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_error), 
+                		    				Toast.LENGTH_SHORT).show();
+                				}
 
-								@Override
-								public void onError(APIRequest request,
-										int error) {
-									Log.e(TAG, "APIEvent error: "+error);
-								}		
+                				@Override
+                				public void onError(APIRequest request, int error) {
+                					Log.e(TAG, "API error caught");
+                					Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_error), 
+                		    				Toast.LENGTH_SHORT).show();
+                				}	
                     		});
                     		task.execute(req);
         				}
@@ -249,18 +264,29 @@ public class CollectionActivity extends ListActivity {
         				Toast.LENGTH_SHORT).show();
             	return true;
         	}
-        	Log.d(TAG, "Making sync request for all collections");
         	APIRequest req = APIRequest.fetchCollections(getApplicationContext());
 			req.setHandler(new APIEvent() {
+				private int updates = 0;
+				
 				@Override
 				public void onComplete(APIRequest request) {
-					handler.sendEmptyMessage(APIRequest.UPDATED_DATA);
+					Message msg = handler.obtainMessage();
+					msg.arg1 = APIRequest.UPDATED_DATA;
+					handler.sendMessage(msg);
 					Log.d(TAG, "fired oncomplete");
 				}
 
 				@Override
 				public void onUpdate(APIRequest request) {
-					// Do nothing
+					updates++;
+					
+					if (updates % 10 == 0) {
+						Message msg = handler.obtainMessage();
+						msg.arg1 = APIRequest.UPDATED_DATA;
+						handler.sendMessage(msg);
+					} else {
+						// do nothing
+					}
 				}
 
 				@Override

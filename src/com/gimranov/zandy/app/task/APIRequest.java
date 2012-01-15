@@ -85,7 +85,7 @@ public class APIRequest {
 	public static final int UPDATED_DATA	= 1000;
 	/** Current set of requests completed. */
 	public static final int BATCH_DONE		= 2000;
-	/** Used to indicate database data has changed. */
+	/** Used to indicate an error with no more details. */
 	public static final int ERROR_UNKNOWN	= 4000;
 	/** Queued more requests */
 	public static final int QUEUED_MORE		= 3000;
@@ -235,6 +235,7 @@ public class APIRequest {
 		this.lastAttempt = new Date();
 		this.lastAttempt.setTime(cur.getLong(11));
 		this.status = cur.getInt(12);
+		this.body = cur.getString(13);
 	}
 	
 	/**
@@ -243,22 +244,26 @@ public class APIRequest {
 	 */
 	public void save(Database db) {
 		try {
-			SQLiteStatement insert = db.compileStatement("insert or replace into collections " +
-				"(uuid, type, query, key, method, disposition, if_match, update_key, update_type " +
-				"created, last_attempt, status)" +
-				" values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			Log.d(TAG, "Saving APIRequest to database: "+uuid+" "+query);
+			SQLiteStatement insert = db.compileStatement("insert or replace into apirequests " +
+				"(uuid, type, query, key, method, disposition, if_match, update_key, update_type, " +
+				"created, last_attempt, status, body)" +
+				" values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)");
 			// Why, oh why does bind* use 1-based indexing? And cur.get* uses 0-based!
 			insert.bindString(1, uuid);
 			insert.bindLong(2, (long) type);
 			
 			String createdUnix = Long.toString(created.getTime());
-			String lastAttemptUnix = Long.toString(lastAttempt.getTime());
+			String lastAttemptUnix;
+			if (lastAttempt == null) lastAttemptUnix = null;
+			else lastAttemptUnix = Long.toString(lastAttempt.getTime());
 			String status = Integer.toString(this.status);
 			
 			// Iterate through null-allowed strings and bind them
-			String[] strings = {query, method, disposition, ifMatch, updateKey, updateType,
-					createdUnix, lastAttemptUnix, status};
+			String[] strings = {query, key, method, disposition, ifMatch, updateKey, updateType,
+					createdUnix, lastAttemptUnix, status, body};
 			for (int i = 0; i < strings.length; i++) {
+				Log.d(TAG, (3+i)+":"+strings[i]);
 				if (strings[i] == null) insert.bindNull(3+i);
 				else insert.bindString(3+i, strings[i]);
 			}
@@ -266,7 +271,6 @@ public class APIRequest {
 			insert.executeInsert();
 			insert.clearBindings();
 			insert.close();
-			Log.d(TAG, "Saved collection with key: "+key);
 		} catch (SQLiteException e) {
 			Log.e(TAG, "Exception compiling or running insert statement", e);
 			throw e;
@@ -473,8 +477,8 @@ public class APIRequest {
 		sb.append("<h1>");
 		sb.append(this.status);
 		sb.append("</h1>");
-		sb.append("<p>");
-		sb.append(this.query);
+		sb.append("<p><i>");
+		sb.append(this.method + "</i> : "+this.query);
 		sb.append("</p>");
 		sb.append("<p>");
 		sb.append(this.body);
@@ -498,9 +502,19 @@ public class APIRequest {
 	 * @param c				Context
 	 */
 	public static APIRequest fetchItems(ItemCollection collection, Context c) {
+		return fetchItems(collection.getKey(), c);
+	}
+	
+	/**
+	 * Produces an API request for the items in a specified collection.
+	 * 
+	 * @param collectionKey	The collection to fetch
+	 * @param c				Context
+	 */
+	public static APIRequest fetchItems(String collectionKey, Context c) {
 		APIRequest req = new APIRequest(ServerCredentials.APIBASE
        			+ ServerCredentials.prep(c, ServerCredentials.COLLECTIONS)
-       			+"/"+collection.getKey()+"/items", "get", null);
+       			+"/"+collectionKey+"/items?content=json", "get", null);
 		req.disposition = "xml";
 		req.type = APIRequest.ITEMS_FOR_COLLECTION;
 		return req;
@@ -514,7 +528,7 @@ public class APIRequest {
 	public static APIRequest fetchItems(Context c) {
 		APIRequest req = new APIRequest(ServerCredentials.APIBASE
        			+ ServerCredentials.prep(c, ServerCredentials.ITEMS)
-       			+"/top", "get", null);
+       			+"/top?content=json", "get", null);
 		req.disposition = "xml";
 		req.type = APIRequest.ITEMS_ALL;
 		return req;
@@ -527,7 +541,8 @@ public class APIRequest {
 	 */
 	public static APIRequest fetchCollections(Context c) {
 		APIRequest req = new APIRequest(ServerCredentials.APIBASE 
-    			+ ServerCredentials.prep(c, ServerCredentials.COLLECTIONS),
+    			+ ServerCredentials.prep(c, ServerCredentials.COLLECTIONS)
+    			+ "?content=json",
     			"get", null);
 		req.disposition = "xml";
 		req.type = APIRequest.COLLECTIONS_ALL;
@@ -608,7 +623,8 @@ public class APIRequest {
 	 */
 	public static APIRequest add(ArrayList<Item> items) {
 		APIRequest templ = new APIRequest(ServerCredentials.APIBASE
-								+ ServerCredentials.ITEMS,
+								+ ServerCredentials.ITEMS
+								+ "?content=json",
 								"POST",
 								null);
 		templ.setBody(items);
@@ -633,7 +649,7 @@ public class APIRequest {
 	public static APIRequest add(Item item, ArrayList<Attachment> attachments) {
 		APIRequest templ = new APIRequest(ServerCredentials.APIBASE
 								+ ServerCredentials.ITEMS
-								+ "/" + item.getKey() + "/children",
+								+ "/" + item.getKey() + "/children?content=json",
 								"POST",
 								null);
 		templ.setBodyWithNotes(attachments);
@@ -654,7 +670,7 @@ public class APIRequest {
 	 */
 	public static APIRequest children(Item item) {
 		APIRequest templ = new APIRequest(ServerCredentials.APIBASE
-								+ ServerCredentials.ITEMS+"/"+item.getKey()+"/children",
+								+ ServerCredentials.ITEMS+"/"+item.getKey()+"/children?content=json",
 								"GET",
 								null);
 		templ.disposition = "xml";
