@@ -25,7 +25,6 @@ import android.view.View;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
 
-import com.gimranov.zandy.app.data.CollectionAdapter;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.task.APIRequest;
 
@@ -65,15 +64,6 @@ public class RequestActivity extends ListActivity {
         	
         });
         
-    }
-    
-    protected void onResume() {
-		CollectionAdapter adapter = (CollectionAdapter) getListAdapter();
-		Cursor newCursor = create();
-		adapter.changeCursor(newCursor);
-		adapter.notifyDataSetChanged();
-		if (db == null) db = new Database(this);
-    	super.onResume();
     }
     
 	public Cursor create() {

@@ -39,7 +39,7 @@ public class Database {
 	 */
 	public void resetAllData() {
 		Log.d(TAG, "Dropping tables to reset database");
-		String[] tables = {"collection", "items", "creators", "children", 
+		String[] tables = {"collections", "items", "creators", "children", 
 				"itemtocreators", "itemtocollections", "deleteditems", "attachments",
 				"apirequests", "notes"};
 		String[] args = {};

@@ -179,8 +179,8 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
     		this.doFetch(requests);
     		
     		// Return a message with the number of requests added to the queue
-        	Message msg = getHandler().obtainMessage(APIRequest.QUEUED_MORE);
-        	msg.arg1 = msg.what;
+        	Message msg = Message.obtain();
+        	msg.arg1 = APIRequest.QUEUED_MORE;
         	msg.arg2 = requests.length;
         	return msg;
         }
@@ -189,8 +189,8 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
     	// Here's where we tie in to periodic housekeeping syncs        
     	// If we're already in auto mode (that is, here), just move on
     	if (this.autoMode) {
-    		Message msg = getHandler().obtainMessage(APIRequest.UPDATED_DATA);
-    		msg.arg1 = msg.what;
+    		Message msg = Message.obtain();
+    		msg.arg1 = APIRequest.UPDATED_DATA;
     		return msg;
     	}
     	
@@ -218,8 +218,8 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
     	this.doInBackground(list.toArray(templ));
 
     	// Return a message noting that we've queued more requests
-    	Message msg = getHandler().obtainMessage(APIRequest.QUEUED_MORE);
-    	msg.arg1 = msg.what;
+		Message msg = Message.obtain();
+    	msg.arg1 = APIRequest.QUEUED_MORE;
     	msg.arg2 = list.size();
     	return msg;
 	}
