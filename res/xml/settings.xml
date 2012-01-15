@@ -23,7 +23,11 @@
                 android:key="sync_aggressively"
                 android:title="@string/settings_aggressive_syncing"
                 android:summary="@string/settings_aggressive_syncing_desc" />
-
+    <!--    <CheckBoxPreference
+                android:key="sync_read_only"
+                android:title="@string/settings_read_only"
+                android:summary="@string/settings_read_only_desc" />-->
+        
         <EditTextPreference
                 android:key="user_id"
                 android:title="@string/settings_user_id"

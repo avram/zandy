@@ -253,6 +253,8 @@ public class XMLResponseParser extends DefaultHandler {
             			} else {
             				// Collection hasn't changed!
             				collection = ic;
+            				// We also don't need the next page, if we already saw this one
+            				followNext = false;
             			}
             		} else {
             			// This means that we haven't seen the collection before, so it must be

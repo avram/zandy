@@ -16,9 +16,7 @@
  ******************************************************************************/
 package com.gimranov.zandy.app.task;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
@@ -31,7 +29,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Handler;
-import android.text.format.DateFormat;
 import android.util.Log;
 
 import com.gimranov.zandy.app.ServerCredentials;

@@ -52,6 +52,11 @@ public class CollectionActivity extends ListActivity {
 			Log.d(TAG,"received message: "+msg.arg1);
 			refreshView();
 			
+			if (msg.arg1 == APIRequest.UPDATED_DATA) {
+				refreshView();
+				return;
+			}
+			
 			if (msg.arg1 == APIRequest.QUEUED_MORE) {
 				Toast.makeText(getApplicationContext(),
 						getResources().getString(R.string.sync_queued_more, msg.arg2), 
