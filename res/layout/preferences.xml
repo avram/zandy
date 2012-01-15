@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:id="@+id/requestQueue" />
-    <Button android:text="@string/reset_database"
+    <Button android:text="@string/settings_reset_database"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"

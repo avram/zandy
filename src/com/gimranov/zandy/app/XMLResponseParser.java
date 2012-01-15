@@ -50,6 +50,8 @@ public class XMLResponseParser extends DefaultHandler {
 	private String updateKey;
 	private boolean items = false;
 	
+	public static boolean followNext = true;
+	
 	public static ArrayList<APIRequest> queue;
 	
 	public static final int MODE_ITEMS = 1; 
@@ -65,9 +67,20 @@ public class XMLResponseParser extends DefaultHandler {
 	static final String Z_NAMESPACE = "http://zotero.org/ns/api";
 
 	public XMLResponseParser(InputStream in) {
+		followNext = true;
 		input = in;
 		// Initialize the request queue if needed
 		if (queue == null) queue = new ArrayList<APIRequest>();
+	}
+	
+	public XMLResponseParser() {
+		followNext = true;
+		// Initialize the request queue if needed
+		if (queue == null) queue = new ArrayList<APIRequest>();
+	}
+	
+	public void setInputStream(InputStream in) {
+		input = in;
 	}
 	
 	public void update(String type, String key) {
@@ -178,15 +191,24 @@ public class XMLResponseParser extends DefaultHandler {
 	            				|| attachment.content.optInt("linkMode") == Attachment.MODE_IMPORTED_URL)
 	            			attachment.status = Attachment.AVAILABLE;
 	            		
-	            		// Don't touch ZFS status here
-	            		Attachment existing = Attachment.load(attachment.key, db);
-	            		if (existing != null) attachment.status = existing.status;
             			
 	            		if (!item.getType().equals("attachment")
-            					&& !item.getType().equals("note"))
+            					&& !item.getType().equals("note")) {
+	            			Item oldItem = Item.load(item.getKey(), db);
+	            			// Check timestamps to see if it's different; if not, we should
+	            			// stop following the Atom continuation links
+	            			if (oldItem != null && oldItem.getTimestamp().equals(item.getTimestamp())) {
+	            				followNext = false;
+	            			}
             				item.save(db);
-            			else
+	            		} else {
+	            			// Don't touch ZFS status here
+		            		Attachment existing = Attachment.load(attachment.key, db);
+		            		if (existing != null) {
+		            			attachment.status = existing.status;
+		            		}
             				attachment.save(db);
+	            		}
             		}
             		
             		if (!item.getType().equals("attachment")

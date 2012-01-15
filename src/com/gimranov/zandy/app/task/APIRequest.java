@@ -658,6 +658,7 @@ public class APIRequest {
 								"GET",
 								null);
 		templ.disposition = "xml";
+		templ.type = ITEMS_CHILDREN;
 		return templ;
 	}
 	

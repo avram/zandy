@@ -167,6 +167,16 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
         
         // 
         if (queue.size() > 0) {
+        	// If the last batch saw unchanged items, don't follow the Atom
+        	// continuations; just run the child requests
+        	if (!XMLResponseParser.followNext) {
+        		for (APIRequest r : queue) {
+        			if (r.type != APIRequest.ITEMS_CHILDREN) {
+        				Log.d(TAG, "Removing request from queue since last page had old items: "+r.query);
+        				queue.remove(r);
+        			}
+        		}
+        	}
         	Log.i(TAG, "Starting queued requests: " + queue.size() + " requests");
     		APIRequest[] templ = { };
     		APIRequest[] requests = queue.toArray(templ);
@@ -255,6 +265,8 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 		}
 		String resp = "";
 		try {
+			XMLResponseParser parse = new XMLResponseParser();
+			
 			// Append content=json everywhere, if we don't have it yet
 			
 			// TODO Remove this when we start trusting the routines in APIRequest
@@ -318,7 +330,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 					if (code < 400) {
 						HttpEntity he = hr.getEntity();
 						InputStream in = he.getContent();
-						XMLResponseParser parse = new XMLResponseParser(in);
+						parse.setInputStream(in);
 						if (req.updateKey != null && req.updateType != null)
 							parse.update(req.updateType, req.updateKey);
 						// The response on POST in XML mode (new item) is a feed
@@ -369,7 +381,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 					if (code < 400) {
 						HttpEntity he = hr.getEntity();
 						InputStream in = he.getContent();
-						XMLResponseParser parse = new XMLResponseParser(in);
+						parse.setInputStream(in);
 						parse.parse(XMLResponseParser.MODE_ENTRY, uri.toString(), db);
 						req.getHandler().onComplete(req);
 					} else {
@@ -432,7 +444,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 					if (code < 400) {
 						HttpEntity he = hr.getEntity();
 						InputStream in = he.getContent();
-						XMLResponseParser parse = new XMLResponseParser(in);
+						parse.setInputStream(in);
 						// We can tell from the URL whether we have a single item or a feed
 						int mode = (uri.toString().indexOf("/items?") == -1
 										&& uri.toString().indexOf("/top?") == -1

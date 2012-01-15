@@ -65,7 +65,7 @@ public class SettingsActivity extends PreferenceActivity implements OnClickListe
 		case DIALOG_CONFIRM_DELETE:
 			dialog = new AlertDialog.Builder(this)
 			// TODO i18n
-		    	    .setTitle("Are you sure you want to erase all local data? This cannot be undone.")
+		    	    .setTitle(getResources().getString(R.string.settings_reset_database_warning))
 		    	    .setPositiveButton(getResources().getString(R.string.menu_delete), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int whichButton) {
 							Database db = new Database(getBaseContext());

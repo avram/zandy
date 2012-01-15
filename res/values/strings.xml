@@ -123,6 +123,7 @@
 	<string name="settings_webdav_password">Password</string>
 	<string name="settings_webdav_password_desc">Password for WebDAV server. This is separate from your Zotero password.</string>
 	<string name="settings_reset_database">Clear local database</string>
+	<string name="settings_reset_database_warning">Are you sure you want to erase all local data? This cannot be undone.</string>
 
 	<!-- Zotero terms -->
     <string name="note">Note</string>
