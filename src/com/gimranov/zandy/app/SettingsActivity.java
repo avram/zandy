@@ -54,7 +54,7 @@ public class SettingsActivity extends PreferenceActivity implements OnClickListe
 			Intent i = new Intent(getApplicationContext(), RequestActivity.class);
 			startActivity(i);
 		} else if (v.getId() == R.id.resetDatabase) {
-			
+			showDialog(DIALOG_CONFIRM_DELETE);
 		}
 	}
 	
