@@ -464,6 +464,31 @@ public class APIRequest {
 		db.rawQuery("delete from apirequests where uuid=?", args);
 	}
 	
+	/**
+	 * Returns HTML-formatted string of the request
+	 * @return
+	 */
+	public String toHtmlString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("<h1>");
+		sb.append(this.status);
+		sb.append("</h1>");
+		sb.append("<p>");
+		sb.append(this.query);
+		sb.append("</p>");
+		sb.append("<p>");
+		sb.append(this.body);
+		sb.append("</p>");
+		sb.append("<p>Created: ");
+		sb.append(this.created.toString());
+		sb.append("</p>");
+		sb.append("<p>Attempted: ");
+		sb.append(this.lastAttempt.toString());
+		sb.append("</p>");
+
+		return sb.toString();
+	}
+	
 	/** NEXT SECTION: Static methods for generating APIRequests */
 	
 	/**
@@ -731,6 +756,7 @@ public class APIRequest {
 			templ.disposition = "none";
 			templ.ifMatch = cur.getString(1);
 			Log.d(TAG, "Adding deleted item: "+cur.getString(0) + " : " + templ.ifMatch);
+			// Save the request to the database to be dispatched later
 			templ.save(db);
 			list.add(templ);
 		} while (cur.moveToNext() != false);

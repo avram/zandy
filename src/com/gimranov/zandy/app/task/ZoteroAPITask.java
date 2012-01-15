@@ -188,62 +188,39 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
         
     	// Here's where we tie in to periodic housekeeping syncs        
     	// If we're already in auto mode (that is, here), just move on
-        // XXX need new message here
-    	if (this.autoMode) return getHandler().obtainMessage(APIRequest.UPDATED_DATA);
+    	if (this.autoMode) {
+    		Message msg = getHandler().obtainMessage(APIRequest.UPDATED_DATA);
+    		msg.arg1 = msg.what;
+    		return msg;
+    	}
     	
     	Log.d(TAG, "Sending local changes");
     	Item.queue(db);
     	Attachment.queue(db);
-    	Log.d(TAG, Item.queue.size() + " items");
-    	int length = Item.queue.size();
-    	Log.d(TAG, Attachment.queue.size() + " attachments");
-    	length += Attachment.queue.size();
-    	length += deletions.size();
-    	int basicLength = length;
-    	// We pref this off
-    	if (syncMode == AUTO_SYNC_STALE_COLLECTIONS) {
-        	ItemCollection.queue(db);
-        	length += ItemCollection.queue.size();
-    	}
-    	APIRequest[] mReqs = new APIRequest[length];
-    	for (int j = 0; j < basicLength; j++) {
-    		if (j < Item.queue.size()) {
-    			Log.d(TAG, "Queueing dirty item ("+j+"): "+Item.queue.get(j).getTitle());
-    			mReqs[j] = ServerCredentials.prep(userID, APIRequest.update(Item.queue.get(j)));
-    		} else if (j < Item.queue.size()
-    					+ Attachment.queue.size()) {
-        			Log.d(TAG, "Queueing dirty attachment ("+j+"): "+Attachment.queue.get(j - Item.queue.size()).key);
-        			mReqs[j] = ServerCredentials.prep(userID, APIRequest.update(Attachment.queue.get(j - Item.queue.size()), db));
-    		} else if (j < Item.queue.size() 
-    					+ Attachment.queue.size()
-    					+ deletions.size()) {
-    			Log.d(TAG, "Queueing deletion ("+j+")");
-    			mReqs[j] = ServerCredentials.prep(userID,
-						deletions.get(j 
-								- Item.queue.size() 
-								- Attachment.queue.size()));
-    		}
+    	
+    	APIRequest[] templ = {};
+    	
+    	ArrayList<APIRequest> list = new ArrayList<APIRequest>();
+    	for (Item i : Item.queue) {
+    		list.add(ServerCredentials.prep(userID, 
+    				APIRequest.update(i)));
     	}
     	
-    	// We pref this off
-    	if (syncMode == AUTO_SYNC_STALE_COLLECTIONS) {
-        	for (int j = 0; j < ItemCollection.queue.size(); j++) {
-       			Log.d(TAG, "Syncing dirty or stale collection: "+ItemCollection.queue.get(j).getTitle());
-        		mReqs[basicLength + j] = new APIRequest(ServerCredentials.APIBASE
-							+ ServerCredentials.prep(userID, ServerCredentials.COLLECTIONS)
-							+"/"+ItemCollection.queue.get(j).getKey() + "/items",
-							"get",
-							key);
-        	}
+    	for (Attachment a : Attachment.queue) {
+    		list.add(ServerCredentials.prep(userID, 
+    				APIRequest.update(a, db)));
     	}
+    	
+    	list.addAll(deletions);
+    	
     	// We're in auto mode...
     	this.autoMode = true;
-    	this.doInBackground(mReqs);
+    	this.doInBackground(list.toArray(templ));
 
     	// Return a message noting that we've queued more requests
     	Message msg = getHandler().obtainMessage(APIRequest.QUEUED_MORE);
     	msg.arg1 = msg.what;
-    	msg.arg2 = mReqs.length;
+    	msg.arg2 = list.size();
     	return msg;
 	}
 	

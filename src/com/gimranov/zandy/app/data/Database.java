@@ -34,6 +34,23 @@ public class Database {
 		mDatabaseOpenHelper = DatabaseOpenHelper.getHelper(context);
 	}
 	
+	/**
+	 * Deletes the entire contents of the database by dropping the tables and re-adding them
+	 */
+	public void resetAllData() {
+		Log.d(TAG, "Dropping tables to reset database");
+		String[] tables = {"collection", "items", "creators", "children", 
+				"itemtocreators", "itemtocollections", "deleteditems", "attachments",
+				"apirequests", "notes"};
+		String[] args = {};
+		for (int i = 0; i < tables.length; i++) {
+			rawQuery("DROP TABLE IF EXISTS " + tables[i], args);
+		}
+		Log.d(TAG, "Recreating database tables");		
+		SQLiteDatabase db = mDatabaseOpenHelper.getWritableDatabase();
+		mDatabaseOpenHelper.onCreate(db);
+	}
+	
 	public Cursor query(String table, String[] columns, String selection,
 			String[] selectionArgs, String groupBy, String having, String orderBy, String limit) {
 		SQLiteDatabase db = mDatabaseOpenHelper.getWritableDatabase();
