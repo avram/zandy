@@ -108,12 +108,10 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 		handler = h;
 	}
 	
-	
 	private Handler getHandler() {
 		if (handler == null) {
 			handler = new Handler() {};
 		}
-		
 		return handler;
 	}
 
@@ -143,14 +141,19 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
         		issue(reqs[i], db, handler);
 				
 				Log.i(TAG, "Succesfully retrieved API call: " + reqs[i].query);
+				reqs[i].succeeded(db);
 				
 			} catch (APIException e) {
-				// TODO: determine if this is due to needing re-auth
-				// We should do that by just bubbling up an subclassed exception from issue(..)
-				Log.e(TAG, "Failed to execute API call: " + reqs[i].query, e);
-				return null;
+				Log.e(TAG, "Failed to execute API call: " + e.request.query, e);
+				e.request.status = APIRequest.REQ_FAILING + e.request.getHttpStatus();
+				e.request.save(db);
+				Message msg = handler.obtainMessage();
+				msg.arg1 = APIRequest.ERROR_UNKNOWN + e.request.getHttpStatus();
+				return msg;
 			}
 			
+        	// The XML parser's queue is simply from following continuations in the paged
+        	// feed. We shouldn't split out its requests...
 	    	if (XMLResponseParser.queue != null && !XMLResponseParser.queue.isEmpty()) {
 	        	Log.i(TAG, "Finished call, but adding " +
 	        				XMLResponseParser.queue.size() +
@@ -169,6 +172,10 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
     		APIRequest[] requests = queue.toArray(templ);
         	queue.clear();
         	Log.i(TAG, "Now: "+queue.size());
+        	// XXX I suspect that this calling of doFetch from doFetch might be the cause of our
+        	// out-of-memory situations. We may be able to accomplish the same thing by expecting
+        	// the code listening to our handler to fetch again if QUEUED_MORE is received. In that
+        	// case, we could just save our queue here and really return.
     		this.doFetch(requests);
     		
     		// Return a message with the number of requests added to the queue
@@ -191,10 +198,6 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
     	int length = Item.queue.size();
     	Log.d(TAG, Attachment.queue.size() + " attachments");
     	length += Attachment.queue.size();
-    	Log.d(TAG, ItemCollection.additions.size() + " new memberships");
-    	length += ItemCollection.additions.size();
-    	Log.d(TAG, ItemCollection.removals.size() + " removed membership");
-    	length += ItemCollection.removals.size();
     	length += deletions.size();
     	int basicLength = length;
     	// We pref this off
@@ -211,41 +214,16 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
     					+ Attachment.queue.size()) {
         			Log.d(TAG, "Queueing dirty attachment ("+j+"): "+Attachment.queue.get(j - Item.queue.size()).key);
         			mReqs[j] = ServerCredentials.prep(userID, APIRequest.update(Attachment.queue.get(j - Item.queue.size()), db));
-    		} else if (j < Item.queue.size()
-    					+ Attachment.queue.size()
-    					+ ItemCollection.additions.size()) {
-    			Log.d(TAG, "Queueing new collection membership ("+j+")");
-    			mReqs[j] = ServerCredentials.prep(userID,
-    							ItemCollection.additions.get(j
-    								- Item.queue.size()
-    								- Attachment.queue.size()));
     		} else if (j < Item.queue.size() 
     					+ Attachment.queue.size()
-    					+ ItemCollection.additions.size() 
-    					+ ItemCollection.removals.size()) {
-    			Log.d(TAG, "Queueing removed collection membership ("+j+")");
-    			mReqs[j] = ServerCredentials.prep(userID,
-    						ItemCollection.removals.get(j 
-    								- Item.queue.size()
-    								- Attachment.queue.size()
-    								- ItemCollection.additions.size()));
-    		} else if (j < Item.queue.size() 
-    					+ Attachment.queue.size()
-    					+ ItemCollection.additions.size() 
-    					+ ItemCollection.removals.size()
     					+ deletions.size()) {
     			Log.d(TAG, "Queueing deletion ("+j+")");
     			mReqs[j] = ServerCredentials.prep(userID,
 						deletions.get(j 
 								- Item.queue.size() 
-								- Attachment.queue.size()
-								- ItemCollection.additions.size()
-								- ItemCollection.removals.size()));
+								- Attachment.queue.size()));
     		}
     	}
-    	// We'll clear the collection change queues; we may need to re-add failed requests later
-		ItemCollection.additions.clear();
-		ItemCollection.removals.clear();
     	
     	// We pref this off
     	if (syncMode == AUTO_SYNC_STALE_COLLECTIONS) {
@@ -299,6 +277,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 		String resp = "";
 		try {
 			// Append content=json everywhere, if we don't have it yet
+			
 			// TODO Remove this when we start trusting the routines in APIRequest
 			// to reliably generate complete requests.
 			if (req.query.indexOf("content=json") == -1) {
@@ -348,10 +327,15 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 					StringEntity entity = new StringEntity(req.body,"UTF-8");
 					request.setEntity(entity);
 				}
+				
 				if (req.disposition.equals("xml")) {
 					HttpResponse hr = client.execute(request);
 					int code = hr.getStatusLine().getStatusCode();
 					Log.d(TAG, code + " : "+ hr.getStatusLine().getReasonPhrase());
+					
+					// Set the status to the received code
+					req.status = code;
+					
 					if (code < 400) {
 						HttpEntity he = hr.getEntity();
 						InputStream in = he.getContent();
@@ -360,13 +344,12 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 							parse.update(req.updateType, req.updateKey);
 						// The response on POST in XML mode (new item) is a feed
 						parse.parse(XMLResponseParser.MODE_FEED, uri.toString(), db);
-						resp = "XML was parsed.";
 					} else {
-						Log.e(TAG, "Not parsing non-XML response, code >= 400");
 						ByteArrayOutputStream ostream = new ByteArrayOutputStream();
 						hr.getEntity().writeTo(ostream);
 						Log.e(TAG,"Error Body: "+ ostream.toString());
 						Log.e(TAG,"Post Body:"+ req.body);
+						throw new APIException(APIException.HTTP_ERROR, ostream.toString(), req);
 					}
 				} else {
 					BasicResponseHandler brh = new BasicResponseHandler();
@@ -376,6 +359,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 					} catch (ClientProtocolException e) {
 						Log.e(TAG, "Exception thrown issuing POST request: ", e);
 						req.getHandler().onError(req, e);
+						throw new APIException(APIException.HTTP_ERROR, req);
 					}
 				}
 			} else if (method.equals("put")) {
@@ -396,29 +380,33 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 				}
 				if (req.disposition.equals("xml")) {
 					HttpResponse hr = client.execute(request);
+					
 					int code = hr.getStatusLine().getStatusCode();
 					Log.d(TAG, code + " : "+ hr.getStatusLine().getReasonPhrase());
+					
+					// Set the status to the received code
+					req.status = code;
+					
 					if (code < 400) {
 						HttpEntity he = hr.getEntity();
 						InputStream in = he.getContent();
 						XMLResponseParser parse = new XMLResponseParser(in);
 						parse.parse(XMLResponseParser.MODE_ENTRY, uri.toString(), db);
-						resp = "XML was parsed.";
 						req.getHandler().onComplete(req);
 					} else {
-						Log.e(TAG, "Not parsing non-XML response, code >= 400");
 						ByteArrayOutputStream ostream = new ByteArrayOutputStream();
 						hr.getEntity().writeTo(ostream);
 						Log.e(TAG,"Error Body: "+ ostream.toString());
 						Log.e(TAG,"Put Body:"+ req.body);
-						req.getHandler().onError(req, APIRequest.API_ERROR_UNSPECIFIED);
+						req.getHandler().onError(req, APIRequest.HTTP_ERROR_UNSPECIFIED);
 						// "Precondition Failed"
 						// The item changed server-side, so we have a conflict to resolve...
 						// Cf. issue #18
 						if (code == 412) {
-							Log.e(TAG, "Skipping dirtied item with server-side changes as well");
-							req.getHandler().onError(req, APIRequest.API_ERROR_CONFLICT);
+							Log.e(TAG, "Dirtied item with server-side changes as well");
+							req.getHandler().onError(req, APIRequest.HTTP_ERROR_CONFLICT);
 						}
+						throw new APIException(APIException.HTTP_ERROR, ostream.toString(), req);
 					}
 				} else {
 					BasicResponseHandler brh = new BasicResponseHandler();
@@ -428,6 +416,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 					} catch (ClientProtocolException e) {
 						Log.e(TAG, "Exception thrown issuing PUT request: ", e);
 						req.getHandler().onError(req, e);
+						throw new APIException(APIException.HTTP_ERROR, req);
 					}
 				}
 			} else if (method.equals("delete")) {
@@ -444,6 +433,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 				} catch (ClientProtocolException e) {
 					Log.e(TAG, "Exception thrown issuing DELETE request: ", e);
 					req.getHandler().onError(req, e);
+					throw new APIException(APIException.HTTP_ERROR, req);
 				}
 			} else {
 				HttpGet request = new HttpGet();
@@ -453,8 +443,13 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 				}
 				if (req.disposition.equals("xml")) {
 					HttpResponse hr = client.execute(request);
+					
 					int code = hr.getStatusLine().getStatusCode();
 					Log.d(TAG, code + " : "+ hr.getStatusLine().getReasonPhrase());
+					
+					// Set the status to the received code
+					req.status = code;
+					
 					if (code < 400) {
 						HttpEntity he = hr.getEntity();
 						InputStream in = he.getContent();
@@ -466,22 +461,25 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 										&& uri.toString().indexOf("/children?") == -1) ?
 											XMLResponseParser.MODE_ENTRY : XMLResponseParser.MODE_FEED;
 						parse.parse(mode, uri.toString(), db);
-						resp = "XML was parsed.";
 						req.getHandler().onComplete(req);
+						
 					} else {
-						Log.e(TAG, "Not parsing non-XML response, code >= 400");
 						ByteArrayOutputStream ostream = new ByteArrayOutputStream();
 						hr.getEntity().writeTo(ostream);
+						
 						Log.e(TAG,"Error Body: "+ ostream.toString());
 						Log.e(TAG,"Put Body:"+ req.body);
-						req.getHandler().onError(req, APIRequest.API_ERROR_UNSPECIFIED);
+						
 						// "Precondition Failed"
 						// The item changed server-side, so we have a conflict to resolve...
-						// XXX This is a hard problem.
 						if (code == 412) {
-							Log.e(TAG, "Skipping dirtied item with server-side changes as well");
-							req.getHandler().onError(req, APIRequest.API_ERROR_CONFLICT);
+							Log.e(TAG, "Dirtied item with server-side changes as well");
+							req.getHandler().onError(req, APIRequest.HTTP_ERROR_CONFLICT);
+						} else {
+							req.getHandler().onError(req, APIRequest.HTTP_ERROR_UNSPECIFIED);
 						}
+						
+						throw new APIException(APIException.HTTP_ERROR, ostream.toString(), req);
 					}
 				} else {
 					BasicResponseHandler brh = new BasicResponseHandler();
@@ -491,6 +489,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 					} catch (ClientProtocolException e) {
 						Log.e(TAG, "Exception thrown issuing GET request: ", e);
 						req.getHandler().onError(req, e);
+						throw new APIException(APIException.HTTP_ERROR, req);
 					}
 				}
 			}
@@ -498,9 +497,11 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 		} catch (IOException e) {
 			Log.e(TAG, "Connection error", e);
 			req.getHandler().onError(req, e);
+			throw new APIException(APIException.HTTP_ERROR, req);
 		} catch (URISyntaxException e) {
 			Log.e(TAG, "URI error", e);
 			req.getHandler().onError(req, e);
+			throw new APIException(APIException.INVALID_URI, req);
 		}
 		return resp;
 	}

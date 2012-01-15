@@ -199,7 +199,7 @@ public class XMLResponseParser extends DefaultHandler {
             		}
             		
             		// Add to containing collection
-                	if (!item.getType().equals("attachment") && parent != null) parent.add(item, true);
+                	if (!item.getType().equals("attachment") && parent != null) parent.add(item, true, db);
             		
                 	Log.d(TAG, "Done parsing item entry.");
             		return;

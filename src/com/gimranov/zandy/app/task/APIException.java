@@ -27,6 +27,9 @@ public class APIException extends Exception {
 	 * Exception types
 	 */
 	public static final int INVALID_METHOD = 10;
+	public static final int INVALID_UUID = 11;
+	public static final int INVALID_URI = 12;
+	public static final int HTTP_ERROR = 13;
 
 	public APIRequest request;
 	public int type;

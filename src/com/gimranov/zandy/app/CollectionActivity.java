@@ -41,7 +41,6 @@ import com.gimranov.zandy.app.task.APIEvent;
 import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
 
-/* Rework for collections only, then make another one for items */
 public class CollectionActivity extends ListActivity {
 
 	private static final String TAG = "com.gimranov.zandy.app.CollectionActivity";

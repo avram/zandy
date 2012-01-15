@@ -16,7 +16,11 @@
  ******************************************************************************/
 package com.gimranov.zandy.app.task;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.UUID;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,7 +28,10 @@ import org.json.JSONObject;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteException;
+import android.database.sqlite.SQLiteStatement;
 import android.os.Handler;
+import android.text.format.DateFormat;
 import android.util.Log;
 
 import com.gimranov.zandy.app.ServerCredentials;
@@ -65,8 +72,11 @@ public class APIRequest {
 	 * 
 	 * The above should be moving down here some time.
 	 */
-	public static final int API_ERROR_CONFLICT = 412;
-	public static final int API_ERROR_UNSPECIFIED = 400;
+	/**
+	 * HTTP response codes that we are used to
+	 */
+	public static final int HTTP_ERROR_CONFLICT = 412;
+	public static final int HTTP_ERROR_UNSPECIFIED = 400;
 	/**
 	 * The following are used when passing things back to the UI
 	 * from the API request service / thread.
@@ -93,6 +103,12 @@ public class APIRequest {
 	public static final int CREATOR_TYPES			= 30001;
 	public static final int ITEM_FIELDS_L10N		= 30002;
 	public static final int CREATOR_TYPES_L10N		= 30003;
+	
+	/**
+	 * Request status for use within the database
+	 */
+	public static final int REQ_NEW					= 40000;
+	public static final int REQ_FAILING				= 41000;
 	
 	/**
 	 * Type of request we're sending. This should be one of
@@ -154,6 +170,28 @@ public class APIRequest {
 	 * the UUIDs / local keys of locally-created items. I know, it's a hack.
 	 */
 	public String updateType;
+	
+	/**
+	 * Status code for the request. Codes should be constants defined in APIRequest;
+	 * take the REQ_* code and add the response code if applicable.
+	 */
+	public int status;
+
+	/**
+	 * UUID for this request. We use this for DB lookups and as the write token when
+	 * appropriate. Every request should have one.
+	 */
+	private String uuid;
+	
+	/**
+	 * Timestamp when this request was first created.
+	 */
+	private Date created;
+	
+	/**
+	 * Timestamp when this request was last attempted to be run.
+	 */
+	private Date lastAttempt;
 		
 	/**
 	 * Creates a basic APIRequest item. Augment the item using instance methods for more complex
@@ -169,6 +207,70 @@ public class APIRequest {
 		this.key = key;
 		// default to XML processing
 		this.disposition = "xml";
+		this.uuid = UUID.randomUUID().toString();
+		created = new Date();
+	}
+	
+	/**
+	 * Load an APIRequest from its serialized form in the database
+	 * 	public static final String[] REQUESTCOLS = {"_id", "uuid", "type",
+		"query", "key", "method", "disposition", "if_match", "update_key",
+		"update_type", "created", "last_attempt", "status"};
+	 * @param uuid
+	 * @throws APIException If the provided uuid isn't in the database
+	 */
+	public APIRequest(Cursor cur) {
+		// N.B.: getString and such use 0-based indexing
+		this.uuid = cur.getString(1);
+		this.type = cur.getInt(2);
+		this.query = cur.getString(3);
+		this.key = cur.getString(4);
+		this.method = cur.getString(5);
+		this.disposition = cur.getString(6);
+		this.ifMatch = cur.getString(7);
+		this.updateKey = cur.getString(8);
+		this.updateType = cur.getString(9);
+		this.created = new Date();
+		this.created.setTime(cur.getLong(10));
+		this.lastAttempt = new Date();
+		this.lastAttempt.setTime(cur.getLong(11));
+		this.status = cur.getInt(12);
+	}
+	
+	/**
+	 * Saves the APIRequest's basic info to the database. Does not maintain handler information.
+	 * @param db
+	 */
+	public void save(Database db) {
+		try {
+			SQLiteStatement insert = db.compileStatement("insert or replace into collections " +
+				"(uuid, type, query, key, method, disposition, if_match, update_key, update_type " +
+				"created, last_attempt, status)" +
+				" values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			// Why, oh why does bind* use 1-based indexing? And cur.get* uses 0-based!
+			insert.bindString(1, uuid);
+			insert.bindLong(2, (long) type);
+			
+			String createdUnix = Long.toString(created.getTime());
+			String lastAttemptUnix = Long.toString(lastAttempt.getTime());
+			String status = Integer.toString(this.status);
+			
+			// Iterate through null-allowed strings and bind them
+			String[] strings = {query, method, disposition, ifMatch, updateKey, updateType,
+					createdUnix, lastAttemptUnix, status};
+			for (int i = 0; i < strings.length; i++) {
+				if (strings[i] == null) insert.bindNull(3+i);
+				else insert.bindString(3+i, strings[i]);
+			}
+			
+			insert.executeInsert();
+			insert.clearBindings();
+			insert.close();
+			Log.d(TAG, "Saved collection with key: "+key);
+		} catch (SQLiteException e) {
+			Log.e(TAG, "Exception compiling or running insert statement", e);
+			throw e;
+		}
 	}
 	
 	/**
@@ -284,6 +386,13 @@ public class APIRequest {
 		}
 	}
 	
+	/**
+	 * Populates the body with a JSON representation of specified
+	 * attachments; note that this is will not work with non-note
+	 * attachments until the server API supports them.
+	 * 
+	 * @param attachments
+	 */
 	public void setBodyWithNotes(ArrayList<Attachment> attachments) {
 		try {
 			JSONArray array = new JSONArray();
@@ -298,6 +407,64 @@ public class APIRequest {
 			Log.e(TAG, "Error setting body for attachments", e);
 		}
 	}
+	
+	/**
+	 * Getter for the request's UUID
+	 * @return
+	 */
+	public String getUuid() {
+		return uuid;
+	}
+	
+	/**
+	 * Sets the HTTP response code portion of the request's status
+	 * 
+	 * @param code
+	 * @return		The new status
+	 */
+	public int setHttpStatus(int code) {
+		status = (status - status % 1000) + code;
+		return status;
+	}
+	
+	/**
+	 * Gets the HTTP response code portion of the request's status;
+	 * returns 0 if there was no code set.
+	 */
+	public int getHttpStatus() {
+		return status % 1000;
+	}
+	
+	/**
+	 * Record a failed attempt to run the request.
+	 * 
+	 * Saves the APIRequest in its current state.
+	 * 
+	 * @param db	Database object
+	 * @return	Date object with new lastAttempt value
+	 */
+	public Date recordAttempt(Database db) {
+		lastAttempt = new Date();
+		save(db);
+		return lastAttempt;
+	}
+	
+	/**
+	 * To be called when the request succeeds. Currently just
+	 * deletes the corresponding row from the database.
+	 * 
+	 * @param db	Database object
+	 */
+	public void succeeded(Database db) {
+		// We can short-circuit here if the status doesn't
+		// indicate that the request was ever in the database.
+		if (status < 10000) return;
+		
+		String[] args = { uuid };
+		db.rawQuery("delete from apirequests where uuid=?", args);
+	}
+	
+	/** NEXT SECTION: Static methods for generating APIRequests */
 	
 	/**
 	 * Produces an API request for the items in a specified collection.
@@ -394,6 +561,13 @@ public class APIRequest {
 		return templ;
 	}
 	
+	/**
+	 * Craft a request to add a single item to the server
+	 * 
+	 * @param item
+	 * @param collection
+	 * @return
+	 */
 	public static APIRequest add(Item item, ItemCollection collection) {
 		ArrayList<Item> items = new ArrayList<Item>();
 		items.add(item);
@@ -557,6 +731,7 @@ public class APIRequest {
 			templ.disposition = "none";
 			templ.ifMatch = cur.getString(1);
 			Log.d(TAG, "Adding deleted item: "+cur.getString(0) + " : " + templ.ifMatch);
+			templ.save(db);
 			list.add(templ);
 		} while (cur.moveToNext() != false);
 		cur.close();
@@ -564,5 +739,27 @@ public class APIRequest {
 		db.rawQuery("delete from deleteditems", args);
 		db.close();
 		return list;
+	}
+	
+	/**
+	 * Returns array of APIRequest objects from the database
+	 * @return
+	 */
+	public static APIRequest[] queue(Database db) {
+		ArrayList<APIRequest> list = new ArrayList<APIRequest>();
+		String[] cols = Database.REQUESTCOLS;
+		String[] args = { };
+		APIRequest[] templ = {};
+
+		Cursor cur = db.query("apirequests", cols, "", args, null, null,
+				null, null);
+		if (cur == null) return templ;
+		
+		do {
+			APIRequest req = new APIRequest(cur);
+			list.add(req);
+		} while (cur.moveToNext() != false);
+		
+		return list.toArray(templ);
 	}
 }
