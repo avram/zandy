@@ -7,6 +7,27 @@ import android.os.Bundle;
 
 import com.gimranov.zandy.app.data.Database;
 
+/**
+ * This class is intended to provide ways of handling queries to the database.
+ * 
+ * TODO
+ * Needed functions:
+ *  - specify sets of fields and terms for those fields
+ *  	* related need for mapping of fields-- i.e., publicationTitle = journalTitle
+ *  - provide reasonable efficiency through use of indexes; in SQLite or in Java
+ *  - return data in efficient fashion, preferably by exposing a Cursor or
+ *  	some other paged access method.
+ *  - normalize queries and data to let 
+ *  - allow saving of queries
+ *  
+ *  Some of this will mean changes to other parts of Zandy's data storage model;
+ *  specifically, the raw JSON we're using now won't get us much further. We
+ *  could in theory maintain an index with tokens drawn from the JSON that
+ *  we populate on original save... Not sure about this.
+ * 
+ * @author ajlyon
+ *
+ */
 public class Query {
 	
 	private ArrayList<Bundle> parameters;

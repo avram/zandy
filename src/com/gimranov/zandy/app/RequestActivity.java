@@ -30,6 +30,10 @@ import com.gimranov.zandy.app.task.APIRequest;
 
 /**
  * This activity exists only for debugging, at least at this point
+ * 
+ * Potentially, this could let users cancel pending requests and do things
+ * like resolve sync conflicts.
+ * 
  * @author ajlyon
  *
  */

@@ -16,10 +16,23 @@
  ******************************************************************************/
 package com.gimranov.zandy.app.task;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,6 +45,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.gimranov.zandy.app.ServerCredentials;
+import com.gimranov.zandy.app.XMLResponseParser;
 import com.gimranov.zandy.app.data.Attachment;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
@@ -93,8 +107,18 @@ public class APIRequest {
 	public static final int ITEMS_ALL				= 10000;
 	public static final int ITEMS_FOR_COLLECTION	= 10001;
 	public static final int ITEMS_CHILDREN			= 10002;
+	public static final int COLLECTIONS_ALL			= 10003;
 
-	public static final int COLLECTIONS_ALL			= 20000;
+	// Requests that require write access
+	public static final int ITEM_NEW				= 20000;
+	public static final int ITEM_UPDATE				= 20001;
+	public static final int ITEM_DELETE				= 20002;
+	public static final int ITEM_MEMBERSHIP_ADD		= 20003;
+	public static final int ITEM_MEMBERSHIP_REMOVE	= 20004;
+	public static final int ITEM_ATTACHMENT_NEW		= 20005;
+	public static final int ITEM_ATTACHMENT_UPDATE	= 20006;
+	public static final int ITEM_ATTACHMENT_DELETE	= 20007;
+	
 
 	public static final int ITEM_FIELDS				= 30000;
 	public static final int CREATOR_TYPES			= 30001;
@@ -490,29 +514,136 @@ public class APIRequest {
 		return sb.toString();
 	}
 	
+	/**
+	 * Issues the specified request, calling its specified handler as appropriate
+	 * @return
+	 * @throws APIException
+	 */
+	public String issue() throws APIException {
+		
+		Log.i(TAG, "Request "+ method +": " + query);		
+		
+		try {
+			URI uri = new URI(query);
+		} catch (URISyntaxException e) {
+			throw new APIException(APIException.INVALID_URI, "Invalid URI: "+query, this);
+		}
+		
+		HttpClient client = new DefaultHttpClient();
+		// The default implementation includes an Expect: header, which
+		// confuses the Zotero servers.
+		client.getParams().setParameter("http.protocol.expect-continue", false);
+		// We also need to send our data nice and raw.
+		client.getParams().setParameter("http.protocol.content-charset", "UTF-8");
+
+		
+		HttpGet get = new HttpGet();
+		HttpPost post = new HttpPost();
+		HttpPut put = new HttpPut();
+		HttpDelete delete = new HttpDelete();
+		
+		// There are several shared initialization routines for POST and PUT
+		if ("post".equals(method) || "put".equals(method)) {
+			if(ifMatch != null) {
+				post.setHeader("If-Match", ifMatch);
+				put.setHeader("If-Match", ifMatch);
+			}
+			if(contentType != null) {
+				post.setHeader("Content-Type", contentType);
+				put.setHeader("Content-Type", contentType);
+			}
+			if (body != null) {
+				Log.d(TAG, "Request body: "+body);
+				// Force the encoding to UTF-8
+				StringEntity entity;
+				try {
+					entity = new StringEntity(body,"UTF-8");
+				} catch (UnsupportedEncodingException e) {
+					throw new APIException(APIException.INVALID_UUID,
+							"UnsupportedEncodingException. This shouldn't " +
+							"be possible-- UTF-8 is certainly supported", this);
+				}
+				post.setEntity(entity);
+				put.setEntity(entity);
+			}
+		}
+		
+		if ("get".equals(method)) {
+			if(contentType != null) {
+				get.setHeader("Content-Type", contentType);
+			}
+		}
+		
+		// Initialize the XML parser and set up the update key if appropriate
+		// Then use the parser to run appropriate requests
+		if (disposition == "xml") {
+			XMLResponseParser parse = new XMLResponseParser();
+			if (updateKey != null && updateType != null)
+				parse.update(updateType, updateKey);
+			
+			try {
+				if ("get".equals(method)) {
+					HttpResponse hr = client.execute(get);
+				}
+			} catch (IOException e) {
+				
+			}
+		}
+		
+		
+		switch (type) {
+		case ITEMS_ALL:
+		case ITEMS_FOR_COLLECTION:
+		case ITEMS_CHILDREN:
+		case COLLECTIONS_ALL:
+			
+		case ITEM_NEW:
+		case ITEM_UPDATE:
+		case ITEM_DELETE:
+		case ITEM_MEMBERSHIP_ADD:
+		case ITEM_MEMBERSHIP_REMOVE:
+		case ITEM_ATTACHMENT_NEW:
+		case ITEM_ATTACHMENT_UPDATE:
+		case ITEM_ATTACHMENT_DELETE:
+			
+		case ITEM_FIELDS:
+		case ITEM_FIELDS_L10N:
+		default:
+			return null;
+		}
+	}
+	
 	/** NEXT SECTION: Static methods for generating APIRequests */
 	
 	/**
 	 * Produces an API request for the items in a specified collection.
 	 * 
 	 * @param collection	The collection to fetch
+	 * @param keysOnly		Use format=keys rather than format=atom/content=json
 	 * @param c				Context
 	 */
-	public static APIRequest fetchItems(ItemCollection collection, Context c) {
-		return fetchItems(collection.getKey(), c);
+	public static APIRequest fetchItems(ItemCollection collection, boolean keysOnly, Context c) {
+		return fetchItems(collection.getKey(), keysOnly, c);
 	}
 	
 	/**
 	 * Produces an API request for the items in a specified collection.
 	 * 
 	 * @param collectionKey	The collection to fetch
+	 * @param keysOnly		Use format=keys rather than format=atom/content=json
 	 * @param c				Context
 	 */
-	public static APIRequest fetchItems(String collectionKey, Context c) {
+	public static APIRequest fetchItems(String collectionKey, boolean keysOnly, Context c) {
 		APIRequest req = new APIRequest(ServerCredentials.APIBASE
        			+ ServerCredentials.prep(c, ServerCredentials.COLLECTIONS)
-       			+"/"+collectionKey+"/items?content=json", "get", null);
-		req.disposition = "xml";
+       			+"/"+collectionKey+"/items", "get", null);
+		if (keysOnly) {
+			req.query = req.query + "?format=keys";
+			req.disposition = "raw";
+		} else {
+			req.query = req.query + "?content=json";
+			req.disposition = "xml";
+		}
 		req.type = APIRequest.ITEMS_FOR_COLLECTION;
 		return req;
 	}
@@ -520,13 +651,20 @@ public class APIRequest {
 	/**
 	 * Produces an API request for all items
 	 * 
+ 	 * @param keysOnly		Use format=keys rather than format=atom/content=json
 	 * @param c				Context
 	 */
-	public static APIRequest fetchItems(Context c) {
+	public static APIRequest fetchItems(boolean keysOnly, Context c) {
 		APIRequest req = new APIRequest(ServerCredentials.APIBASE
        			+ ServerCredentials.prep(c, ServerCredentials.ITEMS)
-       			+"/top?content=json", "get", null);
-		req.disposition = "xml";
+       			+"/top", "get", null);
+		if (keysOnly) {
+			req.query = req.query + "?format=keys";
+			req.disposition = "raw";
+		} else {
+			req.query = req.query + "?content=json";
+			req.disposition = "xml";
+		}
 		req.type = APIRequest.ITEMS_ALL;
 		return req;
 	}

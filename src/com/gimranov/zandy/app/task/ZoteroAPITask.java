@@ -284,7 +284,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 			client.getParams().setParameter("http.protocol.expect-continue", false);
 			// We also need to send our data nice and raw.
 			client.getParams().setParameter("http.protocol.content-charset", "UTF-8");
-
+			
 			/* It would be good to rework this mess to be less repetitive */
 			// TODO As soon as we put the full request info into APIRequest, we
 			// can simplify this. In fact, we can make APIRequest run itself using

@@ -425,12 +425,12 @@ public class ItemActivity extends ListActivity {
         	
         	if (collectionKey == null) {
             	Log.d(TAG, "Adding sync request for all items");
-            	APIRequest req = APIRequest.fetchItems(getBaseContext());
+            	APIRequest req = APIRequest.fetchItems(false, getBaseContext());
     			req.setHandler(mEvent);
     			list.add(req);
         	} else {
             	Log.d(TAG, "Adding sync request for collection: " + collectionKey);
-            	APIRequest req = APIRequest.fetchItems(collectionKey, getBaseContext());
+            	APIRequest req = APIRequest.fetchItems(collectionKey, false, getBaseContext());
             	req.setHandler(mEvent);
             	list.add(req);
         	}
