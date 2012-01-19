@@ -304,10 +304,7 @@ public class MainActivity extends Activity implements OnClickListener {
 				return true;
 			}
         	Log.d(TAG, "Making sync request for all collections");
-        	APIRequest req = new APIRequest(ServerCredentials.APIBASE 
-        			+ ServerCredentials.prep(getBaseContext(), ServerCredentials.COLLECTIONS),
-        			"get", null);
-			req.disposition = "xml";
+        	APIRequest req = APIRequest.fetchCollections(getApplicationContext());
 			new ZoteroAPITask(getBaseContext()).execute(req);
 			Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_started),
 					Toast.LENGTH_SHORT).show();

@@ -32,6 +32,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -53,7 +54,6 @@ import com.gimranov.zandy.app.XMLResponseParser;
 import com.gimranov.zandy.app.data.Attachment;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
-import com.gimranov.zandy.app.data.ItemCollection;
 
 /**
  * Executes one or more API requests asynchronously.

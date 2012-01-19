@@ -16,7 +16,9 @@
  ******************************************************************************/
 package com.gimranov.zandy.app.task;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -24,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
@@ -32,6 +35,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -108,6 +112,7 @@ public class APIRequest {
 	public static final int ITEMS_FOR_COLLECTION	= 10001;
 	public static final int ITEMS_CHILDREN			= 10002;
 	public static final int COLLECTIONS_ALL			= 10003;
+	public static final int ITEM_BY_KEY				= 10004;
 
 	// Requests that require write access
 	public static final int ITEM_NEW				= 20000;
@@ -130,6 +135,13 @@ public class APIRequest {
 	 */
 	public static final int REQ_NEW					= 40000;
 	public static final int REQ_FAILING				= 41000;
+	
+	/**
+	 * We'll request the whole collection or library rather than
+	 * individual feeds when we have less than this proportion of
+	 * the items. Used when pre-fetching keys.
+	 */
+	public static double REREQUEST_CUTOFF			= 0.7;
 	
 	/**
 	 * Type of request we're sending. This should be one of
@@ -216,7 +228,11 @@ public class APIRequest {
 		
 	/**
 	 * Creates a basic APIRequest item. Augment the item using instance methods for more complex
-	 * requests, or pass it to ZoteroAPITask for simpler ones.
+	 * requests, or pass it to ZoteroAPITask for simpler ones. The request can be run by
+	 * simply calling the instance method `issue(..)`, but not from the UI thread.
+	 * 
+	 * The constructor is not to be used directly; use the static methods in this class, or create from
+	 * a cursor. The one exception is the Atom feed continuations produced by XMLResponseParser
 	 * 
 	 * @param query		Fragment being requested, like /items
 	 * @param method	GET, POST, PUT, or DELETE
@@ -238,7 +254,6 @@ public class APIRequest {
 		"query", "key", "method", "disposition", "if_match", "update_key",
 		"update_type", "created", "last_attempt", "status"};
 	 * @param uuid
-	 * @throws APIException If the provided uuid isn't in the database
 	 */
 	public APIRequest(Cursor cur) {
 		// N.B.: getString and such use 0-based indexing
@@ -516,16 +531,18 @@ public class APIRequest {
 	
 	/**
 	 * Issues the specified request, calling its specified handler as appropriate
+	 * 
 	 * @return
 	 * @throws APIException
 	 */
-	public String issue() throws APIException {
+	public void issue(XMLResponseParser parse, Database db, Context c) throws APIException {
 		
 		Log.i(TAG, "Request "+ method +": " + query);		
+		URI uri;
 		
 		try {
-			URI uri = new URI(query);
-		} catch (URISyntaxException e) {
+			uri = new URI(query);
+		} catch (URISyntaxException e1) {
 			throw new APIException(APIException.INVALID_URI, "Invalid URI: "+query, this);
 		}
 		
@@ -537,10 +554,10 @@ public class APIRequest {
 		client.getParams().setParameter("http.protocol.content-charset", "UTF-8");
 
 		
-		HttpGet get = new HttpGet();
-		HttpPost post = new HttpPost();
-		HttpPut put = new HttpPut();
-		HttpDelete delete = new HttpDelete();
+		HttpGet get = new HttpGet(uri);
+		HttpPost post = new HttpPost(uri);
+		HttpPut put = new HttpPut(uri);
+		HttpDelete delete = new HttpDelete(uri);
 		
 		// There are several shared initialization routines for POST and PUT
 		if ("post".equals(method) || "put".equals(method)) {
@@ -574,46 +591,276 @@ public class APIRequest {
 			}
 		}
 		
-		// Initialize the XML parser and set up the update key if appropriate
-		// Then use the parser to run appropriate requests
-		if (disposition == "xml") {
-			XMLResponseParser parse = new XMLResponseParser();
-			if (updateKey != null && updateType != null)
+		/* For requests that return Atom feeds or entries (XML):
+		 * 		ITEMS_ALL				]
+		 * 		ITEMS_FOR_COLLECTION	]- Except format=keys
+		 * 		ITEMS_CHILDREN			]
+		 * 
+		 * 		ITEM_BY_KEY
+		 * 		COLLECTIONS_ALL
+		 * 		ITEM_NEW
+		 * 		ITEM_UPDATE
+		 * 		ITEM_ATTACHMENT_NEW
+		 * 		ITEM_ATTACHMENT_UPDATE
+		 */
+		if ("xml".equals(disposition)) {
+			// These types will always have a temporary key that we've
+			// been using locally, and which should be replaced by the 
+			// incoming item key.
+			if (type == ITEM_NEW
+					|| type == ITEM_ATTACHMENT_NEW) {
 				parse.update(updateType, updateKey);
+			}
 			
 			try {
-				if ("get".equals(method)) {
-					HttpResponse hr = client.execute(get);
+				HttpResponse hr;
+				if ("post".equals(method)) {
+					hr = client.execute(post);
+				} else if ("put".equals(method)) {
+					hr = client.execute(put);
+				} else {
+					// We fall back on GET here, but there really
+					// shouldn't be anything else, so we throw in that case
+					// for good measure
+					if (!"get".equals(method)) {
+						throw new APIException(APIException.INVALID_METHOD,
+								"Unexpected method: "+method, this);
+					}
+					hr = client.execute(get);
+				}
+				
+				// Record the response code
+				status = hr.getStatusLine().getStatusCode();
+				Log.d(TAG, status + " : "+ hr.getStatusLine().getReasonPhrase());
+
+				if (status < 400) {
+					HttpEntity he = hr.getEntity();
+					InputStream in = he.getContent();
+					parse.setInputStream(in);
+					// Entry mode if and only if the request is an update (PUT)
+					int mode = ("put".equals(method)) ? 
+							XMLResponseParser.MODE_ENTRY : XMLResponseParser.MODE_FEED;
+					parse.parse(mode, uri.toString(), db, c);
+				} else {
+					ByteArrayOutputStream ostream = new ByteArrayOutputStream();
+					hr.getEntity().writeTo(ostream);
+					Log.e(TAG,"Error Body: "+ ostream.toString());
+					Log.e(TAG,"Request Body:"+ body);
+
+					if (status == 412) {
+						// This is: "Precondition Failed", meaning that we provided
+						// the wrong etag to update the item. That should mean that
+						// there is a conflict between what we're sending (PUT) and
+						// the server. We mark that ourselves and save the request
+						// to the database, and also notify our handler.
+						getHandler().onError(this, APIRequest.HTTP_ERROR_CONFLICT);
+					} else {
+						Log.e(TAG, "Response status "+status+" : "+ostream.toString());						
+						getHandler().onError(this, APIRequest.HTTP_ERROR_UNSPECIFIED);
+					}
+					status = getHttpStatus() + REQ_FAILING;
+					recordAttempt(db);
+						
+					// I'm not sure whether we should throw here
+					throw new APIException(APIException.HTTP_ERROR, ostream.toString(), this);
 				}
 			} catch (IOException e) {
-				
+				StringBuilder sb = new StringBuilder();
+				for (StackTraceElement el : e.getStackTrace()) {
+					sb.append(el.toString()+"\n");
+				}
+				throw new APIException(APIException.HTTP_ERROR, 
+						"An IOException was thrown: " + sb.toString(), this);
 			}
-		}
-		
-		
-		switch (type) {
-		case ITEMS_ALL:
-		case ITEMS_FOR_COLLECTION:
-		case ITEMS_CHILDREN:
-		case COLLECTIONS_ALL:
+		} // end if ("xml".equals(disposition)) {..}
+		/* For requests that return non-XML data:
+		 * 		ITEMS_ALL				]
+		 * 		ITEMS_FOR_COLLECTION	]- For format=keys
+		 * 		ITEMS_CHILDREN			]
+		 * 
+		 * No server response:
+		 * 		ITEM_DELETE
+		 * 		ITEM_MEMBERSHIP_ADD
+		 * 		ITEM_MEMBERSHIP_REMOVE
+		 * 		ITEM_ATTACHMENT_DELETE
+		 * 
+		 * Currently not supported; return JSON:
+		 * 		ITEM_FIELDS
+		 * 		CREATOR_TYPES
+		 * 		ITEM_FIELDS_L10N
+		 * 		CREATOR_TYPES_L10N
+		 * 
+		 * These ones use BasicResponseHandler, which gives us
+		 * the response as a basic string. This is only appropriate
+		 * for smaller responses, since it means we have to wait until
+		 * the entire response is received before parsing it, so we
+		 * don't use it for the XML responses.
+		 * 
+		 * The disposition here is "none" or "raw".
+		 * 
+		 * The JSON-returning requests, such as ITEM_FIELDS, are not currently
+		 * supported; they should have a disposition of their own.
+		 */
+		else {
+			BasicResponseHandler brh = new BasicResponseHandler();
+			String resp;
 			
-		case ITEM_NEW:
-		case ITEM_UPDATE:
-		case ITEM_DELETE:
-		case ITEM_MEMBERSHIP_ADD:
-		case ITEM_MEMBERSHIP_REMOVE:
-		case ITEM_ATTACHMENT_NEW:
-		case ITEM_ATTACHMENT_UPDATE:
-		case ITEM_ATTACHMENT_DELETE:
+			try {
+				if ("post".equals(method)) {
+					resp = client.execute(post, brh);
+				} else if ("put".equals(method)) {
+					resp = client.execute(put, brh);
+				} else if ("delete".equals(method)) {
+					resp = client.execute(delete, brh);
+				} else {
+					// We fall back on GET here, but there really
+					// shouldn't be anything else, so we throw in that case
+					// for good measure
+					if (!"get".equals(method)) {
+						throw new APIException(APIException.INVALID_METHOD,
+								"Unexpected method: "+method, this);
+					}
+					resp = client.execute(get, brh);
+				}
+			} catch (IOException e) {
+				StringBuilder sb = new StringBuilder();
+				for (StackTraceElement el : e.getStackTrace()) {
+					sb.append(el.toString()+"\n");
+				}
+				throw new APIException(APIException.HTTP_ERROR, 
+						"An IOException was thrown: " + sb.toString(), this);
+			}
 			
-		case ITEM_FIELDS:
-		case ITEM_FIELDS_L10N:
-		default:
-			return null;
+			if ("raw".equals(disposition)) {
+				/* 
+				 * The output should be a newline-delimited set of alphanumeric
+				 * keys.
+				 */
+				
+				String[] keys = resp.split("\n");
+				
+				ArrayList<String> missing = new ArrayList<String>();
+				
+				if (type == ITEMS_ALL ||
+						type == ITEMS_FOR_COLLECTION) {
+					
+					// Try to get a parent collection
+            		// Our query looks like this:
+            		// /users/5770/collections/2AJUSIU9/items
+            		int colloc = query.indexOf("/collections/");
+            		int itemloc = query.indexOf("/items");
+        			// The string "/collections/" is thirteen characters long
+					ItemCollection coll = ItemCollection.load(
+							query.substring(colloc+13, itemloc), db);
+					
+					if (coll != null) {
+						coll.loadChildren(db);
+					}
+					
+					ArrayList<Item> recd = new ArrayList<Item>();
+					for (int j = 0; j < keys.length; j++) {
+						Item got = Item.load(keys[j], db);
+						if (got == null) {
+							missing.add(keys[j]);
+						} else {
+							// We can update the collection membership immediately
+							if (coll != null) coll.add(got, true, db);
+							recd.add(got);
+						}
+					}
+					
+					if (coll != null) {
+						coll.saveChildren(db);
+						coll.save(db);
+					}
+						
+					if ((double) recd.size() / keys.length < REREQUEST_CUTOFF) {
+						APIRequest mReq;
+						if (type == ITEMS_FOR_COLLECTION) {
+							mReq = fetchItems(coll, false, c);
+						} else {
+							mReq = fetchItems(false, c);
+						}
+						
+						mReq.status = REQ_NEW;
+						mReq.save(db);
+					} else {
+						APIRequest mReq;
+						for (String key : missing) {
+							// Queue request for the missing key
+							mReq = fetchItem(key, c);
+							mReq.status = REQ_NEW;
+							mReq.save(db);
+						}
+						// Queue request for the collection again
+						// XXX This is not the best way to make sure these
+						// items are put in the correct collection.
+						if (type == ITEMS_FOR_COLLECTION) {
+							fetchItems(coll, false, c).save(db);
+						}
+					}
+				} else if (type == ITEMS_CHILDREN) {
+					// Try to get a parent collection
+            		// Our query looks like this:
+            		// /users/5770/items/2AJUSIU9/children
+            		int itemloc = query.indexOf("/items/");
+            		int childloc = query.indexOf("/children");
+        			// The string "/items/" is seven characters long
+					Item item = Item.load(
+							query.substring(itemloc+7, childloc), db);
+					
+					ArrayList<Attachment> recd = new ArrayList<Attachment>();
+					for (int j = 0; j < keys.length; j++) {
+						Attachment got = Attachment.load(keys[j], db);
+						if (got == null) missing.add(keys[j]);
+						else recd.add(got);
+					}
+					
+					if ((double) recd.size() / keys.length < REREQUEST_CUTOFF) {
+						APIRequest mReq;
+						mReq = ServerCredentials.prep(c, children(item));
+						mReq.status = REQ_NEW;
+						mReq.save(db);
+					} else {
+						APIRequest mReq;
+						for (String key : missing) {
+							// Queue request for the missing key
+							mReq = fetchItem(key, c);
+							mReq.status = REQ_NEW;
+							mReq.save(db);
+						}
+					}
+				}
+			} else if ("json".equals(disposition)) {
+				// TODO
+			} else {
+				/* Here, disposition should be "none" */
+				// Nothing to be done.
+			}
+			
+			getHandler().onComplete(this);
+			succeeded(db);
 		}
 	}
 	
 	/** NEXT SECTION: Static methods for generating APIRequests */
+
+	/**
+	 * Produces an API request for the specified item key
+	 * 
+	 * @param key			Item key
+	 * @param c				Context
+	 */
+	public static APIRequest fetchItem(String key, Context c) {
+		APIRequest req = new APIRequest(ServerCredentials.APIBASE
+       			+ ServerCredentials.prep(c, ServerCredentials.ITEMS)
+       			+"/"+key, "get", null);
+
+		req.query = req.query + "?content=json";
+		req.disposition = "xml";
+		req.type = ITEM_BY_KEY;
+		return req;	
+	}
 	
 	/**
 	 * Produces an API request for the items in a specified collection.
