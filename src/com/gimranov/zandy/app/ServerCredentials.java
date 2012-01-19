@@ -63,24 +63,26 @@ public class ServerCredentials {
     public static final File sDocumentStorageDir = new File(sBaseStorageDir, "documents");
     public static final File sCacheDir = new File(sBaseStorageDir, "cache");
 	
-	public static String prep(Context c, String in) {
+    private String userID;
+    private String userKey;
+    
+    public ServerCredentials(Context c) {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(c);
-		String userID = settings.getString("user_id", null);
-		return prep(userID, in);
-	}
-	
-	public static String prep(String id, String in) {
-		return in.replace("USERID", id);
+		userID = settings.getString("user_id", null);
+		userKey = settings.getString("user_key", null);
+    }
+    
+	public String prep(String in) {
+		return in.replace("USERID", userID);
 	}
 
-	public static APIRequest prep(Context c, APIRequest req) {
-		req.query = prep(c, req.query);
+	public APIRequest prep(APIRequest req) {
+		req.query = prep(req.query);
 		return req;
 	}
 	
-	public static APIRequest prep(String id, APIRequest req) {
-		req.query = prep(id, req.query);
-		return req;
+	public String getKey() {
+		return userKey;
 	}
 	
 	public static boolean check(Context c) {

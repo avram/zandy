@@ -69,9 +69,6 @@ import com.gimranov.zandy.app.data.Item;
  */
 public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 	private static final String TAG = "com.gimranov.zandy.app.task.ZoteroAPITask";
-		
-	private String key;
-	private String userID;
 	
 	public ArrayList<APIRequest> deletions;
 	public ArrayList<APIRequest> queue;
@@ -83,23 +80,18 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 	public boolean autoMode = false;
 	
 	private Database db;
+	private ServerCredentials cred;
 	
 	private Handler handler;
-	
-	public ZoteroAPITask(String key)
-	{
-		this.queue = new ArrayList<APIRequest>();
-		this.key = key;
-	}
 
 	public ZoteroAPITask(Context c)
 	{
-		this.queue = new ArrayList<APIRequest>();
-		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(c);
-		userID = settings.getString("user_id", null);
-		key = settings.getString("user_key", null);
+		queue = new ArrayList<APIRequest>();
+		cred = new ServerCredentials(c);
+		/* TODO reenable in a working way 
 		if (settings.getBoolean("sync_aggressively", false))
 			syncMode = AUTO_SYNC_STALE_COLLECTIONS;
+		*/
 		deletions = APIRequest.delete(c);
 		db = new Database(c);
 	}
@@ -130,16 +122,14 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
         		continue;
         	}
         	
-        	// Just in case we missed something, we fix the user ID right here too
-        	if (userID != null) reqs[i] = ServerCredentials.prep(userID, reqs[i]);
+        	// Just in case we missed something, we fix the user ID right here too,
+        	// and we set the key as well.
+        	reqs[i] = cred.prep(reqs[i]);
         	
         	try {
         		Log.i(TAG, "Executing API call: " + reqs[i].query);
-        		
-        		reqs[i].key = key;
-        		
-        		issue(reqs[i], db, handler);
 				
+        		reqs[i].issue(db, cred);
 				Log.i(TAG, "Succesfully retrieved API call: " + reqs[i].query);
 				reqs[i].succeeded(db);
 				
@@ -212,13 +202,11 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
     	
     	ArrayList<APIRequest> list = new ArrayList<APIRequest>();
     	for (Item i : Item.queue) {
-    		list.add(ServerCredentials.prep(userID, 
-    				APIRequest.update(i)));
+    		list.add(cred.prep(APIRequest.update(i)));
     	}
     	
     	for (Attachment a : Attachment.queue) {
-    		list.add(ServerCredentials.prep(userID, 
-    				APIRequest.update(a, db)));
+    		list.add(cred.prep(APIRequest.update(a, db)));
     	}
     	
     	// This queue has deletions, collection memberships, and failing requests
@@ -240,249 +228,5 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
 	@Override
 	protected void onPostExecute(Message result) {
 		getHandler().sendMessage(result);
-	}
-	
-	
-	/**
-	 * Executes the specified APIRequest and handles the response
-	 * 
-	 * This is done synchronously; use the the AsyncTask interface for calls
-	 * from the UI thread.
-	 * 
-	 * @param req
-	 * @return
-	 * @throws APIException 
-	 */
-	public static String issue(APIRequest req, Database db, Handler handler) throws APIException {
-		// Check that the method makes sense
-		String method = req.method == null ? null : req.method.toLowerCase();
-		if (!"get".equals(method)
-			&& !"post".equals(method)
-			&& !"delete".equals(method)
-			&& !"put".equals(method)
-		) {
-			Log.d(TAG, "Invalid method: "+method + " in request "+req.query);
-			throw new APIException(APIException.INVALID_METHOD, req);
-		}
-		String resp = "";
-		try {
-			XMLResponseParser parse = new XMLResponseParser();
-			
-			// Append the key, if defined, to all requests
-			if (req.key != null && req.key != "") {
-				String symbol = req.query.indexOf("?") == -1 ? "?" : "&";
-				req.query += symbol + "key=" + req.key;
-
-			}
-
-			Log.i(TAG, "Request "+ req.method +": " + req.query);		
-
-			URI uri = new URI(req.query);
-			HttpClient client = new DefaultHttpClient();
-			// The default implementation includes an Expect: header, which
-			// confuses the Zotero servers.
-			client.getParams().setParameter("http.protocol.expect-continue", false);
-			// We also need to send our data nice and raw.
-			client.getParams().setParameter("http.protocol.content-charset", "UTF-8");
-			
-			/* It would be good to rework this mess to be less repetitive */
-			// TODO As soon as we put the full request info into APIRequest, we
-			// can simplify this. In fact, we can make APIRequest run itself using
-			// its own methods and just spit out a response.
-			if (method.equals("post")) {
-				HttpPost request = new HttpPost();
-				request.setURI(uri);
-				
-				// Set headers if necessary
-				if(req.ifMatch != null) {
-					request.setHeader("If-Match", req.ifMatch);
-				}
-				if(req.contentType != null) {
-					request.setHeader("Content-Type", req.contentType);
-				}
-				if(req.body != null) {
-					Log.d(TAG, "Post body: "+req.body);
-					// Force the encoding here
-					StringEntity entity = new StringEntity(req.body,"UTF-8");
-					request.setEntity(entity);
-				}
-				
-				if (req.disposition.equals("xml")) {
-					HttpResponse hr = client.execute(request);
-					int code = hr.getStatusLine().getStatusCode();
-					Log.d(TAG, code + " : "+ hr.getStatusLine().getReasonPhrase());
-					
-					// Set the status to the received code
-					req.status = code;
-					
-					if (code < 400) {
-						HttpEntity he = hr.getEntity();
-						InputStream in = he.getContent();
-						parse.setInputStream(in);
-						if (req.updateKey != null && req.updateType != null)
-							parse.update(req.updateType, req.updateKey);
-						// The response on POST in XML mode (new item) is a feed
-						parse.parse(XMLResponseParser.MODE_FEED, uri.toString(), db);
-					} else {
-						ByteArrayOutputStream ostream = new ByteArrayOutputStream();
-						hr.getEntity().writeTo(ostream);
-						Log.e(TAG,"Error Body: "+ ostream.toString());
-						Log.e(TAG,"Post Body:"+ req.body);
-						throw new APIException(APIException.HTTP_ERROR, ostream.toString(), req);
-					}
-				} else {
-					BasicResponseHandler brh = new BasicResponseHandler();
-					try {
-						resp = client.execute(request, brh);
-						req.getHandler().onComplete(req);
-					} catch (ClientProtocolException e) {
-						Log.e(TAG, "Exception thrown issuing POST request: ", e);
-						Log.e(TAG,"Post Body: "+ req.body);
-						req.getHandler().onError(req, e);
-						throw new APIException(APIException.HTTP_ERROR, req);
-					}
-				}
-			} else if (method.equals("put")) {
-				HttpPut request = new HttpPut();
-				request.setURI(uri);
-				
-				// Set headers if necessary
-				if(req.ifMatch != null) {
-					request.setHeader("If-Match", req.ifMatch);
-				}
-				if(req.contentType != null) {
-					request.setHeader("Content-Type", req.contentType);
-				}
-				if(req.body != null) {
-					// Force the encoding here
-					StringEntity entity = new StringEntity(req.body,"UTF-8");
-					request.setEntity(entity);
-				}
-				if (req.disposition.equals("xml")) {
-					HttpResponse hr = client.execute(request);
-					
-					int code = hr.getStatusLine().getStatusCode();
-					Log.d(TAG, code + " : "+ hr.getStatusLine().getReasonPhrase());
-					
-					// Set the status to the received code
-					req.status = code;
-					
-					if (code < 400) {
-						HttpEntity he = hr.getEntity();
-						InputStream in = he.getContent();
-						parse.setInputStream(in);
-						parse.parse(XMLResponseParser.MODE_ENTRY, uri.toString(), db);
-						req.getHandler().onComplete(req);
-					} else {
-						ByteArrayOutputStream ostream = new ByteArrayOutputStream();
-						hr.getEntity().writeTo(ostream);
-						Log.e(TAG,"Error Body: "+ ostream.toString());
-						Log.e(TAG,"Put Body:"+ req.body);
-						req.getHandler().onError(req, APIRequest.HTTP_ERROR_UNSPECIFIED);
-						// "Precondition Failed"
-						// The item changed server-side, so we have a conflict to resolve...
-						// Cf. issue #18
-						if (code == 412) {
-							Log.e(TAG, "Dirtied item with server-side changes as well");
-							req.getHandler().onError(req, APIRequest.HTTP_ERROR_CONFLICT);
-						}
-						throw new APIException(APIException.HTTP_ERROR, ostream.toString(), req);
-					}
-				} else {
-					BasicResponseHandler brh = new BasicResponseHandler();
-					try {
-						resp = client.execute(request, brh);
-						req.getHandler().onComplete(req);
-					} catch (ClientProtocolException e) {
-						Log.e(TAG, "Exception thrown issuing PUT request: ", e);
-						req.getHandler().onError(req, e);
-						throw new APIException(APIException.HTTP_ERROR, req);
-					}
-				}
-			} else if (method.equals("delete")) {
-				HttpDelete request = new HttpDelete();
-				request.setURI(uri);
-				if(req.ifMatch != null) {
-					request.setHeader("If-Match", req.ifMatch);
-				}
-				
-				BasicResponseHandler brh = new BasicResponseHandler();
-				try {
-					resp = client.execute(request, brh);
-					req.getHandler().onComplete(req);
-				} catch (ClientProtocolException e) {
-					Log.e(TAG, "Exception thrown issuing DELETE request: ", e);
-					req.getHandler().onError(req, e);
-					throw new APIException(APIException.HTTP_ERROR, req);
-				}
-			} else {
-				HttpGet request = new HttpGet();
-				request.setURI(uri);
-				if(req.contentType != null) {
-					request.setHeader("Content-Type", req.contentType);
-				}
-				if (req.disposition.equals("xml")) {
-					HttpResponse hr = client.execute(request);
-					
-					int code = hr.getStatusLine().getStatusCode();
-					Log.d(TAG, code + " : "+ hr.getStatusLine().getReasonPhrase());
-					
-					// Set the status to the received code
-					req.status = code;
-					
-					if (code < 400) {
-						HttpEntity he = hr.getEntity();
-						InputStream in = he.getContent();
-						parse.setInputStream(in);
-						// We can tell from the URL whether we have a single item or a feed
-						int mode = (uri.toString().indexOf("/items?") == -1
-										&& uri.toString().indexOf("/top?") == -1
-										&& uri.toString().indexOf("/collections?") == -1
-										&& uri.toString().indexOf("/children?") == -1) ?
-											XMLResponseParser.MODE_ENTRY : XMLResponseParser.MODE_FEED;
-						parse.parse(mode, uri.toString(), db);
-						req.getHandler().onComplete(req);
-						
-					} else {
-						ByteArrayOutputStream ostream = new ByteArrayOutputStream();
-						hr.getEntity().writeTo(ostream);
-						
-						Log.e(TAG,"Error Body: "+ ostream.toString());
-						Log.e(TAG,"Put Body:"+ req.body);
-						
-						// "Precondition Failed"
-						// The item changed server-side, so we have a conflict to resolve...
-						if (code == 412) {
-							Log.e(TAG, "Dirtied item with server-side changes as well");
-							req.getHandler().onError(req, APIRequest.HTTP_ERROR_CONFLICT);
-						} else {
-							req.getHandler().onError(req, APIRequest.HTTP_ERROR_UNSPECIFIED);
-						}
-						
-						throw new APIException(APIException.HTTP_ERROR, ostream.toString(), req);
-					}
-				} else {
-					BasicResponseHandler brh = new BasicResponseHandler();
-					try {
-						resp = client.execute(request, brh);
-						req.getHandler().onComplete(req);
-					} catch (ClientProtocolException e) {
-						Log.e(TAG, "Exception thrown issuing GET request: ", e);
-						req.getHandler().onError(req, e);
-						throw new APIException(APIException.HTTP_ERROR, req);
-					}
-				}
-			}
-			Log.i(TAG, "Response: " + resp);
-		} catch (IOException e) {
-			Log.e(TAG, "Connection error", e);
-			req.getHandler().onError(req, e);
-			throw new APIException(APIException.HTTP_ERROR, req);
-		} catch (URISyntaxException e) {
-			Log.e(TAG, "URI error", e);
-			req.getHandler().onError(req, e);
-			throw new APIException(APIException.INVALID_URI, req);
-		}
-		return resp;
 	}
 }

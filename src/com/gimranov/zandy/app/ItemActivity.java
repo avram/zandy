@@ -412,25 +412,27 @@ public class ItemActivity extends ListActivity {
 				}
 			};
         	
+			// Get credentials
+			ServerCredentials cred = new ServerCredentials(getBaseContext());
+			
         	// Make this a collection-specific sync, preceding by de-dirtying
         	Item.queue(db);
 			ArrayList<APIRequest> list = new ArrayList<APIRequest>();
 			APIRequest[] templ = {};
 	    	for (Item i : Item.queue) {
         		Log.d(TAG, "Adding dirty item to sync: "+i.getTitle());
-	    		list.add(ServerCredentials.prep(getBaseContext(), 
-	    				APIRequest.update(i)));
+	    		list.add(cred.prep(APIRequest.update(i)));
 	    	}
         	
         	
         	if (collectionKey == null) {
             	Log.d(TAG, "Adding sync request for all items");
-            	APIRequest req = APIRequest.fetchItems(false, getBaseContext());
+            	APIRequest req = APIRequest.fetchItems(false, cred);
     			req.setHandler(mEvent);
     			list.add(req);
         	} else {
             	Log.d(TAG, "Adding sync request for collection: " + collectionKey);
-            	APIRequest req = APIRequest.fetchItems(collectionKey, false, getBaseContext());
+            	APIRequest req = APIRequest.fetchItems(collectionKey, false, cred);
             	req.setHandler(mEvent);
             	list.add(req);
         	}

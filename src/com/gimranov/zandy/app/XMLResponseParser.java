@@ -24,7 +24,6 @@ import org.json.JSONObject;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
-import android.content.Context;
 import android.sax.Element;
 import android.sax.ElementListener;
 import android.sax.EndTextElementListener;
@@ -89,7 +88,7 @@ public class XMLResponseParser extends DefaultHandler {
 		updateKey = key;
 	}
 	
-	public void parse(int mode, String url, final Database db, final Context c) {
+	public void parse(int mode, String url, final Database db) {
 		Element entry;
 		RootElement root;
 		// we have a different root for indiv. items

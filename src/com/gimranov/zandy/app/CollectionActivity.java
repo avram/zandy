@@ -169,7 +169,8 @@ public class CollectionActivity extends ListActivity {
                     				getResources().getString(R.string.collection_empty),
                     				Toast.LENGTH_SHORT).show();
                 			Log.d(TAG, "Running a request to populate missing data for collection");
-                           	APIRequest req = APIRequest.fetchItems(coll, false, getBaseContext());
+                           	APIRequest req = APIRequest.fetchItems(coll, false, 
+                           			new ServerCredentials(getBaseContext()));
                     		ZoteroAPITask task = new ZoteroAPITask(getBaseContext());
                     		req.setHandler(new APIEvent() {
                 				private int updates = 0;
@@ -269,7 +270,7 @@ public class CollectionActivity extends ListActivity {
         				Toast.LENGTH_SHORT).show();
             	return true;
         	}
-        	APIRequest req = APIRequest.fetchCollections(getApplicationContext());
+        	APIRequest req = APIRequest.fetchCollections(new ServerCredentials(getApplicationContext()));
 			req.setHandler(new APIEvent() {
 				private int updates = 0;
 				

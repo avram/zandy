@@ -28,7 +28,6 @@ import java.util.UUID;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -535,7 +534,7 @@ public class APIRequest {
 	 * @return
 	 * @throws APIException
 	 */
-	public void issue(XMLResponseParser parse, Database db, Context c) throws APIException {
+	public void issue(Database db, ServerCredentials cred) throws APIException {
 		
 		Log.i(TAG, "Request "+ method +": " + query);		
 		URI uri;
@@ -604,6 +603,7 @@ public class APIRequest {
 		 * 		ITEM_ATTACHMENT_UPDATE
 		 */
 		if ("xml".equals(disposition)) {
+			XMLResponseParser parse = new XMLResponseParser();
 			// These types will always have a temporary key that we've
 			// been using locally, and which should be replaced by the 
 			// incoming item key.
@@ -640,7 +640,7 @@ public class APIRequest {
 					// Entry mode if and only if the request is an update (PUT)
 					int mode = ("put".equals(method)) ? 
 							XMLResponseParser.MODE_ENTRY : XMLResponseParser.MODE_FEED;
-					parse.parse(mode, uri.toString(), db, c);
+					parse.parse(mode, uri.toString(), db);
 				} else {
 					ByteArrayOutputStream ostream = new ByteArrayOutputStream();
 					hr.getEntity().writeTo(ostream);
@@ -777,9 +777,9 @@ public class APIRequest {
 					if ((double) recd.size() / keys.length < REREQUEST_CUTOFF) {
 						APIRequest mReq;
 						if (type == ITEMS_FOR_COLLECTION) {
-							mReq = fetchItems(coll, false, c);
+							mReq = fetchItems(coll, false, cred);
 						} else {
-							mReq = fetchItems(false, c);
+							mReq = fetchItems(false, cred);
 						}
 						
 						mReq.status = REQ_NEW;
@@ -788,7 +788,7 @@ public class APIRequest {
 						APIRequest mReq;
 						for (String key : missing) {
 							// Queue request for the missing key
-							mReq = fetchItem(key, c);
+							mReq = fetchItem(key, cred);
 							mReq.status = REQ_NEW;
 							mReq.save(db);
 						}
@@ -796,7 +796,7 @@ public class APIRequest {
 						// XXX This is not the best way to make sure these
 						// items are put in the correct collection.
 						if (type == ITEMS_FOR_COLLECTION) {
-							fetchItems(coll, false, c).save(db);
+							fetchItems(coll, false, cred).save(db);
 						}
 					}
 				} else if (type == ITEMS_CHILDREN) {
@@ -818,14 +818,14 @@ public class APIRequest {
 					
 					if ((double) recd.size() / keys.length < REREQUEST_CUTOFF) {
 						APIRequest mReq;
-						mReq = ServerCredentials.prep(c, children(item));
+						mReq = cred.prep(children(item));
 						mReq.status = REQ_NEW;
 						mReq.save(db);
 					} else {
 						APIRequest mReq;
 						for (String key : missing) {
 							// Queue request for the missing key
-							mReq = fetchItem(key, c);
+							mReq = fetchItem(key, cred);
 							mReq.status = REQ_NEW;
 							mReq.save(db);
 						}
@@ -839,7 +839,6 @@ public class APIRequest {
 			}
 			
 			getHandler().onComplete(this);
-			succeeded(db);
 		}
 	}
 	
@@ -849,16 +848,17 @@ public class APIRequest {
 	 * Produces an API request for the specified item key
 	 * 
 	 * @param key			Item key
-	 * @param c				Context
+	 * @param cred			Credentials
 	 */
-	public static APIRequest fetchItem(String key, Context c) {
+	public static APIRequest fetchItem(String key, ServerCredentials cred) {
 		APIRequest req = new APIRequest(ServerCredentials.APIBASE
-       			+ ServerCredentials.prep(c, ServerCredentials.ITEMS)
+       			+ cred.prep(ServerCredentials.ITEMS)
        			+"/"+key, "get", null);
 
 		req.query = req.query + "?content=json";
 		req.disposition = "xml";
 		req.type = ITEM_BY_KEY;
+		req.key = cred.getKey();
 		return req;	
 	}
 	
@@ -867,10 +867,10 @@ public class APIRequest {
 	 * 
 	 * @param collection	The collection to fetch
 	 * @param keysOnly		Use format=keys rather than format=atom/content=json
-	 * @param c				Context
+	 * @param cred			Credentials
 	 */
-	public static APIRequest fetchItems(ItemCollection collection, boolean keysOnly, Context c) {
-		return fetchItems(collection.getKey(), keysOnly, c);
+	public static APIRequest fetchItems(ItemCollection collection, boolean keysOnly, ServerCredentials cred) {
+		return fetchItems(collection.getKey(), keysOnly, cred);
 	}
 	
 	/**
@@ -878,11 +878,11 @@ public class APIRequest {
 	 * 
 	 * @param collectionKey	The collection to fetch
 	 * @param keysOnly		Use format=keys rather than format=atom/content=json
-	 * @param c				Context
+	 * @param cred			Credentials
 	 */
-	public static APIRequest fetchItems(String collectionKey, boolean keysOnly, Context c) {
+	public static APIRequest fetchItems(String collectionKey, boolean keysOnly, ServerCredentials cred) {
 		APIRequest req = new APIRequest(ServerCredentials.APIBASE
-       			+ ServerCredentials.prep(c, ServerCredentials.COLLECTIONS)
+       			+ cred.prep(ServerCredentials.COLLECTIONS)
        			+"/"+collectionKey+"/items", "get", null);
 		if (keysOnly) {
 			req.query = req.query + "?format=keys";
@@ -892,6 +892,7 @@ public class APIRequest {
 			req.disposition = "xml";
 		}
 		req.type = APIRequest.ITEMS_FOR_COLLECTION;
+		req.key = cred.getKey();
 		return req;
 	}
 	
@@ -899,11 +900,11 @@ public class APIRequest {
 	 * Produces an API request for all items
 	 * 
  	 * @param keysOnly		Use format=keys rather than format=atom/content=json
-	 * @param c				Context
+	 * @param cred			Credentials
 	 */
-	public static APIRequest fetchItems(boolean keysOnly, Context c) {
+	public static APIRequest fetchItems(boolean keysOnly, ServerCredentials cred) {
 		APIRequest req = new APIRequest(ServerCredentials.APIBASE
-       			+ ServerCredentials.prep(c, ServerCredentials.ITEMS)
+       			+ cred.prep(ServerCredentials.ITEMS)
        			+"/top", "get", null);
 		if (keysOnly) {
 			req.query = req.query + "?format=keys";
@@ -913,6 +914,7 @@ public class APIRequest {
 			req.disposition = "xml";
 		}
 		req.type = APIRequest.ITEMS_ALL;
+		req.key = cred.getKey();
 		return req;
 	}
 	
@@ -921,13 +923,14 @@ public class APIRequest {
 	 * 
 	 * @param c				Context
 	 */
-	public static APIRequest fetchCollections(Context c) {
+	public static APIRequest fetchCollections(ServerCredentials cred) {
 		APIRequest req = new APIRequest(ServerCredentials.APIBASE 
-    			+ ServerCredentials.prep(c, ServerCredentials.COLLECTIONS)
+    			+ cred.prep(ServerCredentials.COLLECTIONS)
     			+ "?content=json",
     			"get", null);
 		req.disposition = "xml";
 		req.type = APIRequest.COLLECTIONS_ALL;
+		req.key = cred.getKey();
 		return req;
 	}
 	
