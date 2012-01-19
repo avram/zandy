@@ -510,19 +510,19 @@ public class APIRequest {
 	public String toHtmlString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<h1>");
-		sb.append(this.status);
+		sb.append(status);
 		sb.append("</h1>");
 		sb.append("<p><i>");
-		sb.append(this.method + "</i> : "+this.query);
+		sb.append(method + "</i> : "+query);
 		sb.append("</p>");
 		sb.append("<p>");
-		sb.append(this.body);
+		sb.append(body);
 		sb.append("</p>");
 		sb.append("<p>Created: ");
-		sb.append(this.created.toString());
+		sb.append(created.toString());
 		sb.append("</p>");
 		sb.append("<p>Attempted: ");
-		sb.append(this.lastAttempt.toString());
+		sb.append(lastAttempt.toString());
 		sb.append("</p>");
 
 		return sb.toString();

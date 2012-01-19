@@ -171,12 +171,14 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
     		APIRequest[] templ = { };
     		APIRequest[] requests = queue.toArray(templ);
         	queue.clear();
-        	Log.i(TAG, "Now: "+queue.size());
+        	Log.i(TAG, "Queue size now: "+queue.size());
         	// XXX I suspect that this calling of doFetch from doFetch might be the cause of our
         	// out-of-memory situations. We may be able to accomplish the same thing by expecting
         	// the code listening to our handler to fetch again if QUEUED_MORE is received. In that
         	// case, we could just save our queue here and really return.
-    		this.doFetch(requests);
+        	
+        	// XXX Test: Here, we try to use doInBackground instead
+    		doInBackground(requests);
     		
     		// Return a message with the number of requests added to the queue
         	Message msg = Message.obtain();
@@ -188,7 +190,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
         
     	// Here's where we tie in to periodic housekeeping syncs        
     	// If we're already in auto mode (that is, here), just move on
-    	if (this.autoMode) {
+    	if (autoMode) {
     		Message msg = Message.obtain();
     		msg.arg1 = APIRequest.UPDATED_DATA;
     		return msg;
@@ -214,8 +216,8 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
     	list.addAll(APIRequest.queue(db));
     	
     	// We're in auto mode...
-    	this.autoMode = true;
-    	this.doInBackground(list.toArray(templ));
+    	autoMode = true;
+    	doInBackground(list.toArray(templ));
 
     	// Return a message noting that we've queued more requests
 		Message msg = Message.obtain();
