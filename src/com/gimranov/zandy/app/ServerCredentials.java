@@ -53,10 +53,27 @@ public class ServerCredentials {
 	public static final String TAGS = "/tags";
 	public static final String GROUPS = "/groups";	
 	
-	/** And these are the OAuth endpoints we talk to */
-	public static final String OAUTHREQUEST = "https://www.zotero.org/oauth/request";
-	public static final String OAUTHACCESS = "https://www.zotero.org/oauth/access";
-	public static final String OAUTHAUTHORIZE = "https://www.zotero.org/oauth/authorize";
+	/** And these are the OAuth endpoints we talk to.
+	 * 
+	 * We embed the requested permissions in the endpoint URLs; see
+	 * http://www.zotero.org/support/dev/server_api/oauth#requesting_specific_permissions
+	 * for more details.
+	 */
+	public static final String OAUTHREQUEST = "https://www.zotero.org/oauth/request?" +
+			"library_access=1&" +
+			"notes_access=1&" +
+			"write_access=1&" +
+			"all_groups=write";
+	public static final String OAUTHACCESS = "https://www.zotero.org/oauth/access?" +
+			"library_access=1&" +
+			"notes_access=1&" +
+			"write_access=1&" +
+			"all_groups=write";
+	public static final String OAUTHAUTHORIZE = "https://www.zotero.org/oauth/authorize?" +
+			"library_access=1&" +
+			"notes_access=1&" +
+			"write_access=1&" +
+			"all_groups=write";
 	
 	/* More constants */
     public static final File sBaseStorageDir = new File(Environment.getExternalStorageDirectory(), "zandy");
@@ -76,8 +93,15 @@ public class ServerCredentials {
 		return in.replace("USERID", userID);
 	}
 
+	/**
+	 * Replaces USERID with appropriate ID if needed, and sets key if missing
+	 * @param req
+	 * @return
+	 */
 	public APIRequest prep(APIRequest req) {
 		req.query = prep(req.query);
+		if (req.key == null)
+			req.key = userKey;
 		return req;
 	}
 	

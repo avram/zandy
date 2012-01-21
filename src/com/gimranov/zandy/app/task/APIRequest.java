@@ -536,8 +536,15 @@ public class APIRequest {
 	 */
 	public void issue(Database db, ServerCredentials cred) throws APIException {
 		
-		Log.i(TAG, "Request "+ method +": " + query);		
 		URI uri;
+		
+		// Add the API key, if missing and we have it
+		if (!query.contains("key=") && key != null) {
+			String suffix = (query.contains("?")) ? "&key="+key : "?key="+key;
+			query = query + suffix;
+		}
+
+		Log.i(TAG, "Request "+ method +": " + query);
 		
 		try {
 			uri = new URI(query);
