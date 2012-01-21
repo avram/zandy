@@ -123,7 +123,7 @@ public class CollectionActivity extends ListActivity {
         		Cursor cur = adapter.getCursor();
         		// Place the cursor at the selected item
         		if (cur.moveToPosition(position)) {
-        			// and replace the cursor with one for the selected collection
+        			// and open activity for the selected collection
         			ItemCollection coll = ItemCollection.load(cur);
         			if (coll != null && coll.getKey() != null && coll.getSubcollections(db).size() > 0) {
         				Log.d(TAG, "Loading child collection with key: "+coll.getKey());

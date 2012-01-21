@@ -22,8 +22,12 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListView;
 import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.task.APIRequest;
@@ -54,7 +58,6 @@ public class RequestActivity extends ListActivity {
         this.setTitle(getResources().getString(R.string.sync_pending_requests));
         
         setListAdapter(new ResourceCursorAdapter(this, android.R.layout.simple_list_item_2, create()) {
-
 			@Override
 			public void bindView(View view, Context c, Cursor cur) {
 				APIRequest req = new APIRequest(cur);
@@ -66,6 +69,25 @@ public class RequestActivity extends ListActivity {
 				tvInfo.setText(Html.fromHtml(req.toHtmlString()));
 			}
         	
+        });
+        
+        ListView lv = getListView();
+        lv.setOnItemClickListener(new OnItemClickListener() {
+        	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        		ResourceCursorAdapter adapter = (ResourceCursorAdapter) parent.getAdapter();
+        		Cursor cur = adapter.getCursor();
+        		// Place the cursor at the selected item
+        		if (cur.moveToPosition(position)) {
+        			// and replace the cursor with one for the selected collection
+        			APIRequest req = new APIRequest(cur);
+        			// toast for now-- later do something
+            		Toast.makeText(getApplicationContext(),
+            				req.query, 
+            				Toast.LENGTH_SHORT).show();
+        		} else {
+        			// failed to move cursor; should do something
+        		}
+          }
         });
         
     }

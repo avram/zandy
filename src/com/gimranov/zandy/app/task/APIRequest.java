@@ -499,10 +499,6 @@ public class APIRequest {
 	 * @param db	Database object
 	 */
 	public void succeeded(Database db) {
-		// We can short-circuit here if the status doesn't
-		// indicate that the request was ever in the database.
-		//if (status < 10000) return;
-		
 		String[] args = { uuid };
 		db.rawQuery("delete from apirequests where uuid=?", args);
 	}
