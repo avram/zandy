@@ -162,11 +162,12 @@ public class APIRequest {
 	 */
 	public String key;
 	/**
-	 * One of GET, PUT, POST, DELETE.
+	 * One of get, put, post, delete.
+	 * Lower-case preferred, but we coerce them anyway.
 	 */
 	public String method;
 	/**
-	 * Response disposition: xml or raw
+	 * Response disposition: xml or raw. JSON also planned
 	 */
 	public String disposition;
 	
@@ -505,6 +506,9 @@ public class APIRequest {
 	
 	/**
 	 * Returns HTML-formatted string of the request
+	 * 
+	 * XXX i18n, once we settle on a format
+	 * 
 	 * @return
 	 */
 	public String toHtmlString() {
@@ -513,16 +517,19 @@ public class APIRequest {
 		sb.append(status);
 		sb.append("</h1>");
 		sb.append("<p><i>");
-		sb.append(method + "</i> : "+query);
+		sb.append(method + "</i> "+query);
 		sb.append("</p>");
-		sb.append("<p>");
+		sb.append("<p>Body: ");
 		sb.append(body);
 		sb.append("</p>");
 		sb.append("<p>Created: ");
 		sb.append(created.toString());
 		sb.append("</p>");
 		sb.append("<p>Attempted: ");
-		sb.append(lastAttempt.toString());
+		if (lastAttempt.getTime() == 0)
+			sb.append("Never");
+		else
+			sb.append(lastAttempt.toString());
 		sb.append("</p>");
 
 		return sb.toString();
@@ -530,6 +537,8 @@ public class APIRequest {
 	
 	/**
 	 * Issues the specified request, calling its specified handler as appropriate
+	 * 
+	 * This should not be run from a UI thread
 	 * 
 	 * @return
 	 * @throws APIException
@@ -543,6 +552,9 @@ public class APIRequest {
 			String suffix = (query.contains("?")) ? "&key="+key : "?key="+key;
 			query = query + suffix;
 		}
+		
+		// Force lower-case
+		method = method.toLowerCase();
 
 		Log.i(TAG, "Request "+ method +": " + query);
 		
@@ -676,6 +688,7 @@ public class APIRequest {
 				for (StackTraceElement el : e.getStackTrace()) {
 					sb.append(el.toString()+"\n");
 				}
+				recordAttempt(db);
 				throw new APIException(APIException.HTTP_ERROR, 
 						"An IOException was thrown: " + sb.toString(), this);
 			}
@@ -734,6 +747,7 @@ public class APIRequest {
 				for (StackTraceElement el : e.getStackTrace()) {
 					sb.append(el.toString()+"\n");
 				}
+				recordAttempt(db);
 				throw new APIException(APIException.HTTP_ERROR, 
 						"An IOException was thrown: " + sb.toString(), this);
 			}
