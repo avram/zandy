@@ -232,10 +232,11 @@ public class APIRequest {
 	 * simply calling the instance method `issue(..)`, but not from the UI thread.
 	 * 
 	 * The constructor is not to be used directly; use the static methods in this class, or create from
-	 * a cursor. The one exception is the Atom feed continuations produced by XMLResponseParser
+	 * a cursor. The one exception is the Atom feed continuations produced by XMLResponseParser, but that
+	 * should be moved into this class as well.
 	 * 
 	 * @param query		Fragment being requested, like /items
-	 * @param method	GET, POST, PUT, or DELETE
+	 * @param method	GET, POST, PUT, or DELETE (except that lowercase is preferred)
 	 * @param key		Can be null, if you're planning on making requests that don't need a key.
 	 */
 	public APIRequest(String query, String method, String key) {
@@ -244,6 +245,8 @@ public class APIRequest {
 		this.key = key;
 		// default to XML processing
 		this.disposition = "xml";
+		
+		// If this is processing-intensive, we can probably move it to the save method
 		this.uuid = UUID.randomUUID().toString();
 		created = new Date();
 	}
@@ -498,7 +501,7 @@ public class APIRequest {
 	public void succeeded(Database db) {
 		// We can short-circuit here if the status doesn't
 		// indicate that the request was ever in the database.
-		if (status < 10000) return;
+		//if (status < 10000) return;
 		
 		String[] args = { uuid };
 		db.rawQuery("delete from apirequests where uuid=?", args);
@@ -794,8 +797,15 @@ public class APIRequest {
 						coll.saveChildren(db);
 						coll.save(db);
 					}
-						
-					if ((double) recd.size() / keys.length < REREQUEST_CUTOFF) {
+					
+					Log.d(TAG, "Received "+keys.length+" keys, "+missing.size() + " missing ones");
+					Log.d(TAG, "Have "+(double) recd.size() / keys.length + " of list");
+					
+					if (recd.size() == keys.length) {
+						Log.d(TAG, "No new items");
+						succeeded(db);
+					} else if ((double) recd.size() / keys.length < REREQUEST_CUTOFF) {
+						Log.d(TAG, "Requesting full list");
 						APIRequest mReq;
 						if (type == ITEMS_FOR_COLLECTION) {
 							mReq = fetchItems(coll, false, cred);
@@ -806,6 +816,7 @@ public class APIRequest {
 						mReq.status = REQ_NEW;
 						mReq.save(db);
 					} else {
+						Log.d(TAG, "Requesting "+missing.size()+" items one by one");
 						APIRequest mReq;
 						for (String key : missing) {
 							// Queue request for the missing key
@@ -813,11 +824,11 @@ public class APIRequest {
 							mReq.status = REQ_NEW;
 							mReq.save(db);
 						}
-						// Queue request for the collection again
+						// Queue request for the collection again, by key
 						// XXX This is not the best way to make sure these
 						// items are put in the correct collection.
 						if (type == ITEMS_FOR_COLLECTION) {
-							fetchItems(coll, false, cred).save(db);
+							fetchItems(coll, true, cred).save(db);
 						}
 					}
 				} else if (type == ITEMS_CHILDREN) {
@@ -1207,6 +1218,7 @@ public class APIRequest {
 		do {
 			APIRequest req = new APIRequest(cur);
 			list.add(req);
+			Log.d(TAG, "Queueing request: "+req.query);
 		} while (cur.moveToNext() != false);
 		
 		//return list.toArray(templ);

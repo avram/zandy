@@ -108,7 +108,6 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
         	
         	try {
         		Log.i(TAG, "Executing API call: " + reqs[i].query);
-				
         		reqs[i].issue(db, cred);
 				Log.i(TAG, "Succesfully retrieved API call: " + reqs[i].query);
 				reqs[i].succeeded(db);

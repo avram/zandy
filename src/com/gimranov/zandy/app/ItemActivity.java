@@ -424,7 +424,6 @@ public class ItemActivity extends ListActivity {
 	    		list.add(cred.prep(APIRequest.update(i)));
 	    	}
         	
-        	
         	if (collectionKey == null) {
             	Log.d(TAG, "Adding sync request for all items");
             	APIRequest req = APIRequest.fetchItems(false, cred);
@@ -432,14 +431,12 @@ public class ItemActivity extends ListActivity {
     			list.add(req);
         	} else {
             	Log.d(TAG, "Adding sync request for collection: " + collectionKey);
-            	APIRequest req = APIRequest.fetchItems(collectionKey, false, cred);
+            	APIRequest req = APIRequest.fetchItems(collectionKey, true, cred);
             	req.setHandler(mEvent);
             	list.add(req);
         	}
         	APIRequest[] reqs = list.toArray(templ);
         	
-        	// This then provides a full queue, with the locally dirty items first, followed
-        	// by a scoped sync. Cool!
 			ZoteroAPITask task = new ZoteroAPITask(getBaseContext());
 			task.setHandler(syncHandler);
 			task.execute(reqs);
