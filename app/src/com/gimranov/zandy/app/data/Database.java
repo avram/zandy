@@ -93,12 +93,9 @@ public class Database {
 	}
 	
 	/**
-	 * Closes database helper -- it will be opened again if we send another query from
-	 * this object.
+	 * No-op.
 	 */
 	public void close() {
-		//mDatabaseOpenHelper.close();
-		Log.d(TAG, "close() no-op");
 	}
 	
 	public SQLiteStatement compileStatement(String sql) throws SQLiteException {
