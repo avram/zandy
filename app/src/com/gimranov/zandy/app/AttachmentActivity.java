@@ -98,6 +98,11 @@ public class AttachmentActivity extends ListActivity {
 	private ProgressThread progressThread;
 	private Database db;
 	
+	/** 
+	 * For <= Android 2.1 (API 7), we can't pass bundles to showDialog(), so set this instead
+	 */
+	private Bundle b;
+	
 	private ArrayList<File> tmpFiles;
 	
     /** Called when the activity is first created. */
@@ -222,8 +227,10 @@ public class AttachmentActivity extends ListActivity {
         			if (linkMode == Attachment.MODE_IMPORTED_FILE
         					|| linkMode == Attachment.MODE_IMPORTED_URL) {
         				loadFileAttachment(b);
-        			} else
-        				showDialog(DIALOG_CONFIRM_NAVIGATE, b);
+        			} else {
+        				AttachmentActivity.this.b = b;
+        				showDialog(DIALOG_CONFIRM_NAVIGATE);
+        			}
 				}
         		
 				if (row.getType().equals("note")) {
@@ -232,7 +239,8 @@ public class AttachmentActivity extends ListActivity {
 					b.putString("itemKey", itemKey);
 					b.putString("content", row.content.optString("note", ""));
 					removeDialog(DIALOG_NOTE);
-					showDialog(DIALOG_NOTE, b);
+					AttachmentActivity.this.b = b;
+					showDialog(DIALOG_NOTE);
 				}
 				return true;
         	}
@@ -262,7 +270,7 @@ public class AttachmentActivity extends ListActivity {
     	super.onResume();
     }
     
-	protected Dialog onCreateDialog(int id, Bundle b) {
+	protected Dialog onCreateDialog(int id) {
 		final String attachmentKey = b.getString("attachmentKey");
 		final String itemKey = b.getString("itemKey");
 		final String content = b.getString("content");
@@ -359,7 +367,8 @@ public class AttachmentActivity extends ListActivity {
 	    	            b.putString("attachmentKey", attachmentKey);
 	    	            b.putString("itemKey", itemKey);
 	    	        	removeDialog(DIALOG_CONFIRM_DELETE);
-	    	        	showDialog(DIALOG_CONFIRM_DELETE, b);
+	    	        	AttachmentActivity.this.b = b;
+	    	        	showDialog(DIALOG_CONFIRM_DELETE);
 	    	        }
 	    	    });
 			}
@@ -421,7 +430,8 @@ public class AttachmentActivity extends ListActivity {
 				// Zero-length or nonexistent gives length == 0
 				|| (attFile != null && attFile.length() == 0)) {				
 			Log.d(TAG,"Starting to try and download attachment (status: "+att.status+", fn: "+att.filename+")");
-			showDialog(DIALOG_FILE_PROGRESS, b);
+			this.b = b;
+			showDialog(DIALOG_FILE_PROGRESS);
 		} else showAttachment(att);
 	}
 	
@@ -456,8 +466,8 @@ public class AttachmentActivity extends ListActivity {
 					dismissDialog(DIALOG_FILE_PROGRESS);
 				
 				// Let's try to fall back on an online version
-				Bundle b = msg.getData();
-				showDialog(DIALOG_CONFIRM_NAVIGATE, b);
+				AttachmentActivity.this.b = msg.getData();
+				showDialog(DIALOG_CONFIRM_NAVIGATE);
 				
 				refreshView();
 				break;
@@ -696,7 +706,8 @@ public class AttachmentActivity extends ListActivity {
 			b.putString("itemKey", this.item.getKey());
 			b.putString("mode", "new");
         	removeDialog(DIALOG_NOTE);
-        	showDialog(DIALOG_NOTE, b);
+        	this.b = b;
+        	showDialog(DIALOG_NOTE);
             return true;
         case R.id.do_prefs:
             startActivity(new Intent(this, SettingsActivity.class));

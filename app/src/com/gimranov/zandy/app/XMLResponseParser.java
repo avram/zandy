@@ -36,7 +36,6 @@ import com.gimranov.zandy.app.data.Attachment;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
 import com.gimranov.zandy.app.data.ItemCollection;
-import com.gimranov.zandy.app.task.APIException;
 import com.gimranov.zandy.app.task.APIRequest;
 
 public class XMLResponseParser extends DefaultHandler {

@@ -62,6 +62,11 @@ public class CollectionMembershipActivity extends ListActivity {
 	private String itemTitle;
 	
 	private Database db;
+
+	/**
+	 * For API <= 7, where we can't pass Bundles to dialogs
+	 */
+	private Bundle b;
 	
     /** Called when the activity is first created. */
     @Override
@@ -120,8 +125,9 @@ public class CollectionMembershipActivity extends ListActivity {
         		Bundle b = new Bundle();
         		b.putString("itemKey", itemKey);
         		b.putString("collectionKey", row.getKey());
+        		CollectionMembershipActivity.this.b = b;
       			removeDialog(DIALOG_CONFIRM_NAVIGATE);
-       			showDialog(DIALOG_CONFIRM_NAVIGATE, b);
+       			showDialog(DIALOG_CONFIRM_NAVIGATE);
         	}
         });
 
@@ -139,7 +145,7 @@ public class CollectionMembershipActivity extends ListActivity {
     	super.onResume();
     }
     
-	protected Dialog onCreateDialog(int id, Bundle b) {
+	protected Dialog onCreateDialog(int id) {
 		final String collectionKey = b.getString("collectionKey");
 		final String itemKey = b.getString("itemKey");
 		AlertDialog dialog;
@@ -230,7 +236,8 @@ public class CollectionMembershipActivity extends ListActivity {
     		Bundle b = new Bundle();
     		b.putString("itemKey", itemKey);
     		removeDialog(DIALOG_COLLECTION_LIST);
-    		showDialog(DIALOG_COLLECTION_LIST, b);
+    		this.b = b;
+    		showDialog(DIALOG_COLLECTION_LIST);
             return true;
         case R.id.do_prefs:
             startActivity(new Intent(this, SettingsActivity.class));

@@ -133,6 +133,8 @@ public class ItemActivity extends ListActivity {
 			}
 		}
 	};
+
+	protected Bundle b;
 	
 	/**
 	 * Refreshes the current list adapter
@@ -235,7 +237,7 @@ public class ItemActivity extends ListActivity {
         return cursor;
     }
     
-	protected Dialog onCreateDialog(int id, Bundle b) {
+	protected Dialog onCreateDialog(int id) {
 		switch (id) {
 		case DIALOG_NEW:
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -314,7 +316,8 @@ public class ItemActivity extends ListActivity {
 	    	            c.putString("mode", "isbn");
 	    	            c.putString("identifier", value.toString());
 	    	            removeDialog(DIALOG_PROGRESS);
-	    	            showDialog(DIALOG_PROGRESS, c);
+	    	            ItemActivity.this.b = c;
+	    	            showDialog(DIALOG_PROGRESS);
 	    	        }
 	    	    }).setNeutralButton(getResources().getString(R.string.scan), new DialogInterface.OnClickListener() {
 	    	        public void onClick(DialogInterface dialog, int whichButton) {
@@ -332,7 +335,7 @@ public class ItemActivity extends ListActivity {
 		}
 	}
     
-	protected void onPrepareDialog(int id, Dialog dialog, Bundle b) {
+	protected void onPrepareDialog(int id, Dialog dialog) {
 		switch(id) {
 		case DIALOG_PROGRESS:
 			Log.d(TAG, "_____________________dialog_progress_prepare");
@@ -527,8 +530,9 @@ public class ItemActivity extends ListActivity {
 				Log.d(TAG, b.getString("identifier"));
 				progressThread = new ProgressThread(handler, b);
 				progressThread.start();
+				this.b = b;
 				removeDialog(DIALOG_PROGRESS);			
-				showDialog(DIALOG_PROGRESS, b);
+				showDialog(DIALOG_PROGRESS);
 			} else {
 				Toast.makeText(getApplicationContext(),
 						getResources().getString(R.string.identifier_scan_failed), 

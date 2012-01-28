@@ -65,6 +65,7 @@ public class ApiTest extends AndroidTestCase {
 		collection.issue(mDb, mCred);
 	}
 	
+	// verify that we fail on this item, which should be missing
 	public void testMissingItem() throws APIException {
 		APIRequest missingItem = APIRequest.fetchItem(TEST_MISSING_ITEM, mCred);
 		try {

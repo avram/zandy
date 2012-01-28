@@ -70,6 +70,11 @@ public class CreatorActivity extends ListActivity {
 	public Item item;
 	
 	private Database db;
+
+	/**
+	 * For API <= 7, to pass bundles to activities
+	 */
+	private Bundle b;
 	
     /** Called when the activity is first created. */
     @Override
@@ -161,9 +166,9 @@ public class CreatorActivity extends ListActivity {
      			// If we have a long click on an entry, show an editor
         		ArrayAdapter<Bundle> adapter = (ArrayAdapter<Bundle>) parent.getAdapter();
         		Bundle row = adapter.getItem(position);
-        		
+        		CreatorActivity.this.b = row;
     			removeDialog(DIALOG_CREATOR);
-        		showDialog(DIALOG_CREATOR, row);
+        		showDialog(DIALOG_CREATOR);
         		return true;
           }
         });
@@ -182,7 +187,7 @@ public class CreatorActivity extends ListActivity {
     	super.onResume();
     }
     
-	protected Dialog onCreateDialog(int id, Bundle b) {
+	protected Dialog onCreateDialog(int id) {
 		final String creatorType = b.getString("creatorType");
 		final int creatorPosition = b.getInt("position");
 		
@@ -363,7 +368,8 @@ public class CreatorActivity extends ListActivity {
     		row.putInt("position", -1);
     		row.putString("itemKey", this.item.getKey());
 			removeDialog(DIALOG_CREATOR);
-    		showDialog(DIALOG_CREATOR, row);
+			this.b = row;
+    		showDialog(DIALOG_CREATOR);
             return true;
         case R.id.do_prefs:
             startActivity(new Intent(this, SettingsActivity.class));

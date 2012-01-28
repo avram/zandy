@@ -65,6 +65,11 @@ public class ItemDataActivity extends ExpandableListActivity {
 	
 	public Item item;
 	private Database db;
+
+	/**
+	 * For Bundle passing to Dialogs in API <= 7
+	 */
+	protected Bundle b;
 	
     /** Called when the activity is first created. */
     @Override
@@ -122,13 +127,15 @@ public class ItemDataActivity extends ExpandableListActivity {
         		if (row.getString("label").equals("url")) {
         			row.putString("url", row.getString("content"));
         			removeDialog(DIALOG_CONFIRM_NAVIGATE);
-        			showDialog(DIALOG_CONFIRM_NAVIGATE, row);
+        			ItemDataActivity.this.b = row;
+        			showDialog(DIALOG_CONFIRM_NAVIGATE);
         			return true;
         		} else if (row.getString("label").equals("DOI")) {
         			String url = "http://dx.doi.org/"+Uri.encode(row.getString("content"));
         			row.putString("url", url);
         			removeDialog(DIALOG_CONFIRM_NAVIGATE);
-        			showDialog(DIALOG_CONFIRM_NAVIGATE, row);
+        			ItemDataActivity.this.b = row;
+        			showDialog(DIALOG_CONFIRM_NAVIGATE);
         			return true;
         		}  else if (row.getString("label").equals("creators")) {
         	    	Log.d(TAG, "Trying to start creators activity");
@@ -207,14 +214,15 @@ public class ItemDataActivity extends ExpandableListActivity {
             			return;
             		}
         			removeDialog(DIALOG_SINGLE_VALUE);
-            		showDialog(DIALOG_SINGLE_VALUE, row);
+        			ItemDataActivity.this.b = row;
+            		showDialog(DIALOG_SINGLE_VALUE);
             		return;
         		}
 			}
           });
     }
     
-	protected Dialog onCreateDialog(int id, Bundle b) {
+	protected Dialog onCreateDialog(int id) {
 		final String label = b.getString("label");
 		final String itemKey = b.getString("itemKey");
 		final String content = b.getString("content");
@@ -365,7 +373,8 @@ public class ItemDataActivity extends ExpandableListActivity {
         	Bundle b = new Bundle();
         	b.putString("itemKey",item.getKey());
 			removeDialog(DIALOG_CONFIRM_DELETE);
-    		showDialog(DIALOG_CONFIRM_DELETE, b);
+			this.b = b;
+    		showDialog(DIALOG_CONFIRM_DELETE);
         	return true;
         default:
             return super.onOptionsItemSelected(i);

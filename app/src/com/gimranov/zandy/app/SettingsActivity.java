@@ -58,7 +58,7 @@ public class SettingsActivity extends PreferenceActivity implements OnClickListe
 		}
 	}
 	
-	protected Dialog onCreateDialog(int id, Bundle b) {
+	protected Dialog onCreateDialog(int id) {
 		AlertDialog dialog;
 		
 		switch (id) {

@@ -59,6 +59,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	static final int DIALOG_CHOOSE_COLLECTION = 1;
 	
 	private Database db;
+	private Bundle b;
 	
 	/** Called when the activity is first created. */
 	@Override
@@ -86,8 +87,8 @@ public class MainActivity extends Activity implements OnClickListener {
 			Bundle b = new Bundle();
 			b.putString("url", extras.getString("android.intent.extra.TEXT"));
 			b.putString("title", extras.getString("android.intent.extra.SUBJECT"));
-			
-			showDialog(DIALOG_CHOOSE_COLLECTION, b);
+			this.b = b;
+			showDialog(DIALOG_CHOOSE_COLLECTION);
 		}
 
 		setContentView(R.layout.main);
@@ -204,8 +205,8 @@ public class MainActivity extends Activity implements OnClickListener {
 				Bundle b = new Bundle();
 				b.putString("url", extras.getString("android.intent.extra.TEXT"));
 				b.putString("title", extras.getString("android.intent.extra.SUBJECT"));
-				
-				showDialog(DIALOG_CHOOSE_COLLECTION, b);
+				this.b=b;
+				showDialog(DIALOG_CHOOSE_COLLECTION);
 				return;
 			}
 		
@@ -321,7 +322,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		}
 	}
 	
-	protected Dialog onCreateDialog(int id, Bundle b) {
+	protected Dialog onCreateDialog(int id) {
 		final String url = b.getString("url");
 		final String title = b.getString("title");
 		AlertDialog dialog;

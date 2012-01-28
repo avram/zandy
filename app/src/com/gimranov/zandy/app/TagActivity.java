@@ -64,6 +64,8 @@ public class TagActivity extends ListActivity {
 	private Item item;
 	
 	private Database db;
+
+	protected Bundle b;
 	
     /** Called when the activity is first created. */
     @Override
@@ -124,7 +126,8 @@ public class TagActivity extends ListActivity {
         		ArrayAdapter<Bundle> adapter = (ArrayAdapter<Bundle>) parent.getAdapter();
         		Bundle row = adapter.getItem(position);
       			removeDialog(DIALOG_CONFIRM_NAVIGATE);
-       			showDialog(DIALOG_CONFIRM_NAVIGATE, row);
+      			TagActivity.this.b = row;
+       			showDialog(DIALOG_CONFIRM_NAVIGATE);
         	}
         });
         
@@ -142,7 +145,8 @@ public class TagActivity extends ListActivity {
         		Bundle row = adapter.getItem(position);
         		
     			removeDialog(DIALOG_TAG);
-        		showDialog(DIALOG_TAG, row);
+    			TagActivity.this.b=row;
+        		showDialog(DIALOG_TAG);
         		return true;
           }
         });
@@ -161,7 +165,7 @@ public class TagActivity extends ListActivity {
     	super.onResume();
     }
     
-	protected Dialog onCreateDialog(int id, Bundle b) {
+	protected Dialog onCreateDialog(int id) {
 		@SuppressWarnings("unused")
 		final int type = b.getInt("type");
 		final String tag = b.getString("tag");
@@ -247,7 +251,8 @@ public class TagActivity extends ListActivity {
     		row.putString("itemKey", this.item.getKey());
     		row.putInt("type", 0);
 			removeDialog(DIALOG_TAG);
-    		showDialog(DIALOG_TAG, row);
+			this.b = row;
+    		showDialog(DIALOG_TAG);
             return true;
         case R.id.do_prefs:
             startActivity(new Intent(this, SettingsActivity.class));

@@ -51,7 +51,7 @@ public class NoteActivity extends Activity {
 	
 	public Attachment att;
 	private Database db;
-	
+		
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
