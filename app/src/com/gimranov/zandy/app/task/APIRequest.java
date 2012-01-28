@@ -23,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 
@@ -775,6 +776,15 @@ public class APIRequest {
 					
 					if (coll != null) {
 						coll.loadChildren(db);
+						
+						// If this is a collection's key listing, we first look
+						// for any synced keys we have that aren't in the list
+						ArrayList<String> keyAL = new ArrayList<String>(Arrays.asList(keys));
+						ArrayList<Item> notThere = coll.notInKeys(keyAL);
+						// We should then remove those memberships
+						for (Item i : notThere) {
+							coll.remove(i, true, db);
+						}
 					}
 					
 					ArrayList<Item> recd = new ArrayList<Item>();
@@ -828,7 +838,7 @@ public class APIRequest {
 						}
 					}
 				} else if (type == ITEMS_CHILDREN) {
-					// Try to get a parent collection
+					// Try to get a parent item
             		// Our query looks like this:
             		// /users/5770/items/2AJUSIU9/children
             		int itemloc = query.indexOf("/items/");

@@ -43,6 +43,7 @@ import com.gimranov.zandy.app.task.APIRequest;
  */
 public class RequestActivity extends ListActivity {
 
+	@SuppressWarnings("unused")
 	private static final String TAG = "com.gimranov.zandy.app.RequestActivity";
 	private Database db;
 		

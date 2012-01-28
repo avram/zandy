@@ -96,13 +96,23 @@ public class ItemCollection extends HashSet<Item> {
 	/**
 	 * We call void remove(Item) to allow for queueing
 	 * the action for application on the server, via the API.
+	 * 
+	 * When fromAPI is not true, queues a collection membership
+	 * request for the server as well.
+	 * 
+	 * @param item
+	 * @param fromAPI	False for collection memberships we receive from the server
+	 * @param db
 	 */
-	public boolean remove(Item item, Database db) {
+	public boolean remove(Item item, boolean fromAPI, Database db) {
 		String[] args = {dbId, item.dbId};
 		db.rawQuery("delete from itemtocollections where collection_id=? and item_id=?", args);
-		APIRequest req = APIRequest.remove(item, this);
-		req.status = APIRequest.REQ_NEW;
-		req.save(db);
+		
+		if (!fromAPI) {
+			APIRequest req = APIRequest.remove(item, this);
+			req.status = APIRequest.REQ_NEW;
+			req.save(db);
+		}
 		super.remove(item);
 		return true;
 	}
@@ -223,6 +233,21 @@ public class ItemCollection extends HashSet<Item> {
 			req.save(db);
 		}
 		return true;
+	}
+	
+	/**
+	 * Returns ArrayList of Item objects not in the specified ArrayList of item keys. Used for determining
+	 * when items have been deleted from a collection.
+	 */
+	public ArrayList<Item> notInKeys(ArrayList<String> keys) {
+		ArrayList<Item> notThere = new ArrayList<Item>();
+		
+		for (Item i : this) {
+			if (!keys.contains(i.getKey()))
+				notThere.add(i);
+		}
+		
+		return notThere;
 	}
 	
 	/**

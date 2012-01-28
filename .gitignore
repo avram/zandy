@@ -3,3 +3,12 @@ bin/*
 gen/*
 .classpath
 project.properties
+test/assets/*
+test/bin/*
+test/gen/*
+app/assets/*
+app/bin/*
+app/gen/*
+app/.classpath
+app/project.properties
+test/project.properties

@@ -188,7 +188,7 @@ public class CollectionMembershipActivity extends ListActivity {
 		    	    	public void onClick(DialogInterface dialog, int whichButton) {
 		    	        	Item item = Item.load(itemKey, db);
 		    	        	ItemCollection coll = ItemCollection.load(collectionKey, db);
-		    	        	coll.remove(item, db);
+		    	        	coll.remove(item, false, db);
 							ArrayAdapter<ItemCollection> la = (ArrayAdapter<ItemCollection>) getListAdapter();
 		    	            la.clear();
 		    	            for (ItemCollection b : ItemCollection.getCollections(item,db)) {
