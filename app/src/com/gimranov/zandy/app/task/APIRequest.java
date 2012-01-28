@@ -1205,7 +1205,6 @@ public class APIRequest {
 		ArrayList<APIRequest> list = new ArrayList<APIRequest>();
 		String[] cols = Database.REQUESTCOLS;
 		String[] args = { };
-		//APIRequest[] templ = {};
 
 		Cursor cur = db.query("apirequests", cols, "", args, null, null,
 				null, null);
@@ -1216,8 +1215,8 @@ public class APIRequest {
 			list.add(req);
 			Log.d(TAG, "Queueing request: "+req.query);
 		} while (cur.moveToNext() != false);
+		cur.close();
 		
-		//return list.toArray(templ);
 		return list;
 	}
 }

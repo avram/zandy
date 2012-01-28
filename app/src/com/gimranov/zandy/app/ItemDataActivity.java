@@ -109,15 +109,13 @@ public class ItemDataActivity extends ExpandableListActivity {
 			@Override
 			public boolean onChildClick(ExpandableListView parent, View v,
 					int groupPosition, int childPosition, long id) {
-				Log.d(TAG, "child click");
-				return false;
+				return true;
 			}        	
         });
         lv.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
         	// Warning here because Eclipse can't tell whether my ArrayAdapter is
         	// being used with the correct parametrization.
 			public boolean onGroupClick(ExpandableListView parent, View view, int position, long id) {
-     			Log.d(TAG, "group clicked");
 				// If we have a click on an entry, do something...
         		BundleListAdapter adapter = (BundleListAdapter) parent.getExpandableListAdapter();
         		Bundle row = adapter.getGroup(position);
@@ -157,8 +155,11 @@ public class ItemDataActivity extends ExpandableListActivity {
 	    	    	startActivity(i);
 	    			return true;
 	    		}
-				Toast.makeText(getApplicationContext(), row.getString("content"), 
-        				Toast.LENGTH_SHORT).show();
+        		// Suppress toast if we're going to expand the view anyway
+        		if (!"abstractNote".equals(row.getSerializable("label"))) {
+					Toast.makeText(getApplicationContext(), row.getString("content"), 
+	        				Toast.LENGTH_SHORT).show();
+	        	}
         		return false;
         	}
         });
@@ -170,7 +171,6 @@ public class ItemDataActivity extends ExpandableListActivity {
         	@Override
 			public void onCreateContextMenu(ContextMenu menu, View view,
 					ContextMenuInfo menuInfo) {
-     			Log.d(TAG, "contxt menu");
         		ExpandableListView.ExpandableListContextMenuInfo info =
         				(ExpandableListView.ExpandableListContextMenuInfo) menuInfo;
         		int type = ExpandableListView.getPackedPositionType(info.packedPosition);
@@ -411,7 +411,6 @@ public class ItemDataActivity extends ExpandableListActivity {
 
         public View getChildView(int groupPosition, int childPosition, boolean isLastChild,
                 View convertView, ViewGroup parent) {
-        	Log.d(TAG, "childview: "+childPosition);
             TextView textView = getGenericView();
     		Bundle b = getGroup(groupPosition);
     		String label = b.getString("label");
@@ -438,10 +437,7 @@ public class ItemDataActivity extends ExpandableListActivity {
         }
 
         public View getGroupView(int groupPosition, boolean isExpanded, View convertView,
-                ViewGroup parent) {
-        	
-        	Log.d(TAG, "groupview: "+groupPosition);
-        	
+                ViewGroup parent) {        	
     		View row;
     		
     		Bundle b = getGroup(groupPosition);
