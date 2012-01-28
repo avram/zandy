@@ -5,7 +5,7 @@ Installation:
 A built and signed version of Zandy is available for purchase on the Android Market (https://market.android.com/details?id=com.gimranov.zandy.app). You can also check out this project and built an APK yourself using Eclipse with the ADT plugin, or another alternate toolchain. Note that you will need to add the oauth-signpost libraries to your classpath to build the application.
 
 Requirements:
-Android 2.2 or later, although there are plans to support earlier versions of Android.
+Android 2.1 or later.
 
 Support:
 See the Zandy User Guide (http://www.gimranov.com/avram/w/zandy-user-guide) for basic documentation. Feature requests and bug reports are highly encouraged-- please post to the issue tracker on GitHub or to the Zandy user forum (http://www.gimranov.com/forum). Also feel free to write to zandy@gimranov.com with questions.
