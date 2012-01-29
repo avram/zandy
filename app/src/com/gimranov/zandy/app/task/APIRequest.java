@@ -656,8 +656,9 @@ public class APIRequest {
 					HttpEntity he = hr.getEntity();
 					InputStream in = he.getContent();
 					parse.setInputStream(in);
-					// Entry mode if and only if the request is an update (PUT)
-					int mode = ("put".equals(method)) ? 
+					// Entry mode if the request is an update (PUT) or if it is a request
+					// for a single item by key (ITEM_BY_KEY)
+					int mode = ("put".equals(method) || type == APIRequest.ITEM_BY_KEY) ? 
 							XMLResponseParser.MODE_ENTRY : XMLResponseParser.MODE_FEED;
 					try {
 						parse.parse(mode, uri.toString(), db);
