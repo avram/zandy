@@ -278,7 +278,7 @@ public class MainActivity extends Activity implements OnClickListener {
 			} catch (OAuthExpectationFailedException e) {
 				Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
 			} catch (OAuthCommunicationException e) {
-				Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+				Toast.makeText(this, "Error communicating with server. Check your time settings, network connectivity, and try again. OAuth error: "+e.getMessage(), Toast.LENGTH_LONG).show();
 			}
 		}
 	}

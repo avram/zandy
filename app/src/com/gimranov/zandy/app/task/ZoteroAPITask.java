@@ -139,12 +139,14 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
         	// If the last batch saw unchanged items, don't follow the Atom
         	// continuations; just run the child requests
         	if (!XMLResponseParser.followNext) {
+            	ArrayList<APIRequest> toRemove = new ArrayList<APIRequest>();
         		for (APIRequest r : queue) {
         			if (r.type != APIRequest.ITEMS_CHILDREN) {
         				Log.d(TAG, "Removing request from queue since last page had old items: "+r.query);
-        				queue.remove(r);
+        				toRemove.add(r);
         			}
         		}
+        		queue.removeAll(toRemove);
         	}
         	Log.i(TAG, "Starting queued requests: " + queue.size() + " requests");
     		APIRequest[] templ = { };
