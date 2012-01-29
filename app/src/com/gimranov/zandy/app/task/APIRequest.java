@@ -659,7 +659,11 @@ public class APIRequest {
 					// Entry mode if and only if the request is an update (PUT)
 					int mode = ("put".equals(method)) ? 
 							XMLResponseParser.MODE_ENTRY : XMLResponseParser.MODE_FEED;
-					parse.parse(mode, uri.toString(), db);
+					try {
+						parse.parse(mode, uri.toString(), db);
+					} catch (RuntimeException e) {
+						throw new RuntimeException("Parser threw exception on request: "+method+" "+query);
+					}
 				} else {
 					ByteArrayOutputStream ostream = new ByteArrayOutputStream();
 					hr.getEntity().writeTo(ostream);

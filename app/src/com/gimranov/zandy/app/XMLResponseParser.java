@@ -380,7 +380,7 @@ public class XMLResponseParser extends DefaultHandler {
             	parent.save(db);
             }
             db.close();
-        } catch (Exception e) {
+		} catch (Exception e) {
         	throw new RuntimeException(e);
         }
     }
