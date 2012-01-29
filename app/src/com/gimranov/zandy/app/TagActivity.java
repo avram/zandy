@@ -65,7 +65,7 @@ public class TagActivity extends ListActivity {
 	
 	private Database db;
 
-	protected Bundle b;
+	protected Bundle b = new Bundle();
 	
     /** Called when the activity is first created. */
     @Override

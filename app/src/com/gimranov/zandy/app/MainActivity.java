@@ -59,7 +59,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	static final int DIALOG_CHOOSE_COLLECTION = 1;
 	
 	private Database db;
-	private Bundle b;
+	private Bundle b = new Bundle();
 	
 	/** Called when the activity is first created. */
 	@Override

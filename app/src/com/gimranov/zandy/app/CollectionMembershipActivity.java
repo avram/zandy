@@ -66,7 +66,7 @@ public class CollectionMembershipActivity extends ListActivity {
 	/**
 	 * For API <= 7, where we can't pass Bundles to dialogs
 	 */
-	private Bundle b;
+	private Bundle b = new Bundle();
 	
     /** Called when the activity is first created. */
     @Override

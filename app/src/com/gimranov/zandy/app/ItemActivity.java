@@ -134,7 +134,7 @@ public class ItemActivity extends ListActivity {
 		}
 	};
 
-	protected Bundle b;
+	protected Bundle b = new Bundle();
 	
 	/**
 	 * Refreshes the current list adapter

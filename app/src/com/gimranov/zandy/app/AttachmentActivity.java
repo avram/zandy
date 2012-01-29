@@ -101,7 +101,7 @@ public class AttachmentActivity extends ListActivity {
 	/** 
 	 * For <= Android 2.1 (API 7), we can't pass bundles to showDialog(), so set this instead
 	 */
-	private Bundle b;
+	private Bundle b = new Bundle();
 	
 	private ArrayList<File> tmpFiles;
 	

@@ -69,7 +69,7 @@ public class ItemDataActivity extends ExpandableListActivity {
 	/**
 	 * For Bundle passing to Dialogs in API <= 7
 	 */
-	protected Bundle b;
+	protected Bundle b = new Bundle();
 	
     /** Called when the activity is first created. */
     @Override

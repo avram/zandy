@@ -58,7 +58,7 @@ public class LookupActivity extends Activity implements OnClickListener {
 	private ProgressThread progressThread;
 	private Database db;
 
-	private Bundle b;
+	private Bundle b = new Bundle();
 	
     /** Called when the activity is first created. */
     @Override
