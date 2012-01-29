@@ -386,7 +386,7 @@ public class AttachmentActivity extends ListActivity {
 		}
 	}
 	
-	protected void onPrepareDialog(int id, Dialog dialog, Bundle b) {
+	protected void onPrepareDialog(int id, Dialog dialog) {
 		switch(id) {
 		case DIALOG_FILE_PROGRESS:
 			mProgressDialog.setMessage(getResources().getString(R.string.attachment_downloading, b.getString("title")));

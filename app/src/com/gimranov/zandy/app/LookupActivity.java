@@ -126,7 +126,7 @@ public class LookupActivity extends Activity implements OnClickListener {
 		}
 	}
 	
-	protected void onPrepareDialog(int id, Dialog dialog, Bundle b) {
+	protected void onPrepareDialog(int id, Dialog dialog) {
 		switch(id) {
 		case DIALOG_PROGRESS:
 			mProgressDialog.setProgress(0);
