@@ -456,6 +456,7 @@ public class AttachmentActivity extends ListActivity {
 				refreshView();
 				if (null != msg.obj)
 					showAttachment((Attachment)msg.obj);
+				break;
 			case ProgressThread.STATE_FAILED:
 				// Notify that we failed to get anything
 				Toast.makeText(getApplicationContext(),
