@@ -881,6 +881,10 @@ public class Item {
 	 */
 	// XXX i18n
 	public static String localizedStringForString(String s) {
+		if (s==null) {
+			Log.e(TAG, "Received null string in localizedStringForString");
+			return "";
+		}
 		// Item fields from the API
 		if (s.equals("numPages"))
 			return "# of Pages";
