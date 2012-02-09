@@ -403,15 +403,17 @@ public class ItemActivity extends ListActivity {
 				@Override
 				public void onError(APIRequest request, Exception exception) {
 					Log.e(TAG, "APIException caught", exception);
-					Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_error), 
-		    				Toast.LENGTH_SHORT).show();
+					Message msg = syncHandler.obtainMessage();
+					msg.arg1 = APIRequest.ERROR_UNKNOWN;
+					syncHandler.sendMessage(msg);
 				}
 
 				@Override
 				public void onError(APIRequest request, int error) {
 					Log.e(TAG, "API error caught");
-					Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_error), 
-		    				Toast.LENGTH_SHORT).show();
+					Message msg = syncHandler.obtainMessage();
+					msg.arg1 = APIRequest.ERROR_UNKNOWN;
+					syncHandler.sendMessage(msg);
 				}
 			};
         	
