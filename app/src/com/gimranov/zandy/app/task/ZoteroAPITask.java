@@ -92,6 +92,7 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
         return doFetch(params);
 	} 
 	
+	@SuppressWarnings("unused")
 	public Message doFetch(APIRequest... reqs)
 	{	
 		int count = reqs.length;
@@ -138,7 +139,8 @@ public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
         if (queue.size() > 0) {
         	// If the last batch saw unchanged items, don't follow the Atom
         	// continuations; just run the child requests
-        	if (!XMLResponseParser.followNext) {
+        	// XXX This is disabled for now
+        	if (false && !XMLResponseParser.followNext) {
             	ArrayList<APIRequest> toRemove = new ArrayList<APIRequest>();
         		for (APIRequest r : queue) {
         			if (r.type != APIRequest.ITEMS_CHILDREN) {

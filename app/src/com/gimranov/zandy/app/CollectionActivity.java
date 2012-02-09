@@ -53,7 +53,7 @@ public class CollectionActivity extends ListActivity {
 			refreshView();
 			
 			if (msg.arg1 == APIRequest.UPDATED_DATA) {
-				refreshView();
+				//refreshView();
 				return;
 			}
 			
@@ -224,7 +224,7 @@ public class CollectionActivity extends ListActivity {
 				@Override
 				public void onComplete(APIRequest request) {
 					Message msg = handler.obtainMessage();
-					msg.arg1 = APIRequest.UPDATED_DATA;
+					msg.arg1 = APIRequest.BATCH_DONE;
 					handler.sendMessage(msg);
 					Log.d(TAG, "fired oncomplete");
 				}
@@ -233,13 +233,9 @@ public class CollectionActivity extends ListActivity {
 				public void onUpdate(APIRequest request) {
 					updates++;
 					
-					if (updates % 10 == 0) {
-						Message msg = handler.obtainMessage();
-						msg.arg1 = APIRequest.UPDATED_DATA;
-						handler.sendMessage(msg);
-					} else {
-						// do nothing
-					}
+					Message msg = handler.obtainMessage();
+					msg.arg1 = APIRequest.UPDATED_DATA;
+					handler.sendMessage(msg);
 				}
 
 				@Override
