@@ -500,6 +500,8 @@ public class APIRequest {
 	 * @param db	Database object
 	 */
 	public void succeeded(Database db) {
+		getHandler().onComplete(this);
+		
 		String[] args = { uuid };
 		db.rawQuery("delete from apirequests where uuid=?", args);
 	}

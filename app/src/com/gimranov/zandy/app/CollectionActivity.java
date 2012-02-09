@@ -161,60 +161,7 @@ public class CollectionActivity extends ListActivity {
         				if (coll.getSize() == 0) {
         					// Send a message that we need to refresh the collection
             		    	i.putExtra("com.gimranov.zandy.app.rerequest", true);
-            		    	
-        					// XXX Move logic to ItemActivity, triggered by the Extra
-            		    	// above.
-            				Log.d(TAG, "Collection with key: "+coll.getKey()+ " is empty.");
-                    		Toast.makeText(getApplicationContext(),
-                    				getResources().getString(R.string.collection_empty),
-                    				Toast.LENGTH_SHORT).show();
-                			Log.d(TAG, "Running a request to populate missing data for collection");
-                           	APIRequest req = APIRequest.fetchItems(coll, false, 
-                           			new ServerCredentials(getBaseContext()));
-                    		ZoteroAPITask task = new ZoteroAPITask(getBaseContext());
-                    		req.setHandler(new APIEvent() {
-                				private int updates = 0;
-                				
-                				@Override
-                				public void onComplete(APIRequest request) {
-                					Message msg = handler.obtainMessage();
-                					msg.arg1 = APIRequest.UPDATED_DATA;
-                					handler.sendMessage(msg);
-                					Log.d(TAG, "fired oncomplete");
-                				}
-
-                				@Override
-                				public void onUpdate(APIRequest request) {
-                					updates++;
-                					
-                					if (updates % 10 == 0) {
-                						Message msg = handler.obtainMessage();
-                						msg.arg1 = APIRequest.UPDATED_DATA;
-                						handler.sendMessage(msg);
-                					} else {
-                						// do nothing
-                					}
-                				}
-
-                				@Override
-                				public void onError(APIRequest request, Exception exception) {
-                					Log.e(TAG, "APIException caught", exception);
-                					Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_error), 
-                		    				Toast.LENGTH_SHORT).show();
-                				}
-
-                				@Override
-                				public void onError(APIRequest request, int error) {
-                					Log.e(TAG, "API error caught");
-                					Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_error), 
-                		    				Toast.LENGTH_SHORT).show();
-                				}	
-                    		});
-                    		task.execute(req);
         				}
-        				
-        				Log.d(TAG, "Loading items for collection with key: "+coll.getKey());
-        				// We create and issue a specified intent with the necessary data
         		    	i.putExtra("com.gimranov.zandy.app.collectionKey", coll.getKey());
         		    	startActivity(i);
         			} else {

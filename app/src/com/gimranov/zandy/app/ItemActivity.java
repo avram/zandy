@@ -133,6 +133,47 @@ public class ItemActivity extends ListActivity {
 			}
 		}
 	};
+	
+    private APIEvent mEvent = new APIEvent() {
+		private int updates = 0;
+		
+		@Override
+		public void onComplete(APIRequest request) {
+			Message msg = syncHandler.obtainMessage();
+			msg.arg1 = APIRequest.BATCH_DONE;
+			syncHandler.sendMessage(msg);
+			Log.d(TAG, "fired oncomplete");
+		}
+
+		@Override
+		public void onUpdate(APIRequest request) {
+			updates++;
+			
+			if (updates % 10 == 0) {
+				Message msg = syncHandler.obtainMessage();
+				msg.arg1 = APIRequest.UPDATED_DATA;
+				syncHandler.sendMessage(msg);
+			} else {
+				// do nothing
+			}
+		}
+
+		@Override
+		public void onError(APIRequest request, Exception exception) {
+			Log.e(TAG, "APIException caught", exception);
+			Message msg = syncHandler.obtainMessage();
+			msg.arg1 = APIRequest.ERROR_UNKNOWN;
+			syncHandler.sendMessage(msg);
+		}
+
+		@Override
+		public void onError(APIRequest request, int error) {
+			Log.e(TAG, "API error caught");
+			Message msg = syncHandler.obtainMessage();
+			msg.arg1 = APIRequest.ERROR_UNKNOWN;
+			syncHandler.sendMessage(msg);
+		}
+	};
 
 	protected Bundle b = new Bundle();
 	
@@ -156,7 +197,37 @@ public class ItemActivity extends ListActivity {
 		
         setContentView(R.layout.items);
 
+        Intent intent = getIntent();
+        collectionKey = intent.getStringExtra("com.gimranov.zandy.app.collectionKey");
+
+        ItemCollection coll = ItemCollection.load(collectionKey, db);
+       	APIRequest req;
+
+        if (coll != null) {        	
+       		req = APIRequest.fetchItems(coll, false, 
+       				new ServerCredentials(getBaseContext()));
+        } else {        	
+       		req = APIRequest.fetchItems(false, 
+       				new ServerCredentials(getBaseContext()));
+        }
+
         prepareAdapter();
+        
+		ItemAdapter adapter = (ItemAdapter) getListAdapter();
+		Cursor cur = adapter.getCursor();
+		
+		if (intent.getBooleanExtra("com.gimranov.zandy.app.rerequest", false)
+				|| cur == null
+				|| cur.getCount() == 0) {
+    		Toast.makeText(getApplicationContext(),
+    				getResources().getString(R.string.collection_empty),
+    				Toast.LENGTH_SHORT).show();
+			Log.d(TAG, "Running a request to populate missing items");
+    		ZoteroAPITask task = new ZoteroAPITask(getBaseContext());
+    		req.setHandler(mEvent);
+    		task.execute(req);
+
+		}        
         
         ListView lv = getListView();
         lv.setOnItemClickListener(new OnItemClickListener() {
@@ -225,8 +296,11 @@ public class ItemActivity extends ListActivity {
         	this.setTitle(getResources().getString(R.string.tag_viewing_items, tag));
      	} else {
 	        collectionKey = intent.getStringExtra("com.gimranov.zandy.app.collectionKey");
+
+	        ItemCollection coll;
+
 	        if (collectionKey != null) {
-	        	ItemCollection coll = ItemCollection.load(collectionKey, db);
+	        	coll = ItemCollection.load(collectionKey, db);
 	        	cursor = getCursor(coll);
 	        	this.setTitle(coll.getTitle());
 	        } else {
@@ -375,47 +449,6 @@ public class ItemActivity extends ListActivity {
         				Toast.LENGTH_SHORT).show();
             	return true;
         	}
-        	
-        	APIEvent mEvent = new APIEvent() {
-				private int updates = 0;
-				
-				@Override
-				public void onComplete(APIRequest request) {
-					Message msg = syncHandler.obtainMessage();
-					msg.arg1 = APIRequest.UPDATED_DATA;
-					syncHandler.sendMessage(msg);
-					Log.d(TAG, "fired oncomplete");
-				}
-
-				@Override
-				public void onUpdate(APIRequest request) {
-					updates++;
-					
-					if (updates % 10 == 0) {
-						Message msg = syncHandler.obtainMessage();
-						msg.arg1 = APIRequest.UPDATED_DATA;
-						syncHandler.sendMessage(msg);
-					} else {
-						// do nothing
-					}
-				}
-
-				@Override
-				public void onError(APIRequest request, Exception exception) {
-					Log.e(TAG, "APIException caught", exception);
-					Message msg = syncHandler.obtainMessage();
-					msg.arg1 = APIRequest.ERROR_UNKNOWN;
-					syncHandler.sendMessage(msg);
-				}
-
-				@Override
-				public void onError(APIRequest request, int error) {
-					Log.e(TAG, "API error caught");
-					Message msg = syncHandler.obtainMessage();
-					msg.arg1 = APIRequest.ERROR_UNKNOWN;
-					syncHandler.sendMessage(msg);
-				}
-			};
         	
 			// Get credentials
 			ServerCredentials cred = new ServerCredentials(getBaseContext());
