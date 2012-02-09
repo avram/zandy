@@ -622,7 +622,7 @@ public class APIRequest {
 		 * 		ITEM_ATTACHMENT_UPDATE
 		 */
 		if ("xml".equals(disposition)) {
-			XMLResponseParser parse = new XMLResponseParser();
+			XMLResponseParser parse = new XMLResponseParser(this);
 			// These types will always have a temporary key that we've
 			// been using locally, and which should be replaced by the 
 			// incoming item key.

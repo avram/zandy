@@ -36,6 +36,7 @@ import com.gimranov.zandy.app.data.Attachment;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
 import com.gimranov.zandy.app.data.ItemCollection;
+import com.gimranov.zandy.app.task.APIEvent;
 import com.gimranov.zandy.app.task.APIRequest;
 
 public class XMLResponseParser extends DefaultHandler {
@@ -49,6 +50,7 @@ public class XMLResponseParser extends DefaultHandler {
 	private String updateType;
 	private String updateKey;
 	private boolean items = false;
+	private APIRequest request;
 	
 	public static boolean followNext = true;
 	
@@ -66,15 +68,17 @@ public class XMLResponseParser extends DefaultHandler {
 	static final String ATOM_NAMESPACE = "http://www.w3.org/2005/Atom";
 	static final String Z_NAMESPACE = "http://zotero.org/ns/api";
 
-	public XMLResponseParser(InputStream in) {
+	public XMLResponseParser(InputStream in, APIRequest request) {
 		followNext = true;
 		input = in;
+		this.request = request;
 		// Initialize the request queue if needed
 		if (queue == null) queue = new ArrayList<APIRequest>();
 	}
 	
-	public XMLResponseParser() {
+	public XMLResponseParser(APIRequest request) {
 		followNext = true;
+		this.request = request;
 		// Initialize the request queue if needed
 		if (queue == null) queue = new ArrayList<APIRequest>();
 	}
@@ -224,6 +228,8 @@ public class XMLResponseParser extends DefaultHandler {
             		// Add to containing collection
                 	if (!item.getType().equals("attachment") && parent != null) parent.add(item, true, db);
             		
+                	request.getHandler().onUpdate(request);
+                	
                 	Log.d(TAG, "Done parsing item entry.");
             		return;
             	}
