@@ -124,9 +124,11 @@
 	<string name="settings_webdav_password_desc">Password for WebDAV server. This is separate from your Zotero password.</string>
 	<string name="settings_reset_database">Clear local database</string>
 	<string name="settings_reset_database_warning">Are you sure you want to erase all local data? This cannot be undone.</string>
-	<string name="settings_read_only">Read-Only Mode</string>
-	<string name="settings_read_only_desc">Check to prevent Zandy from making modifications to data on the Zotero servers.</string>
-	
+    <string name="settings_read_only">Read-Only Mode</string>
+    <string name="settings_read_only_desc">Check to prevent Zandy from making modifications to data on the Zotero servers.</string>
+    <string name="settings_webdav_ssl_override">Override SSL</string>
+    <string name="settings_webdav_ssl_override_desc">Check to skip SSL certificate checking, for servers using self-signed SSL certificates.</string>
+    	
 	<!-- Zotero terms -->
     <string name="note">Note</string>
     <string name="note_for_item">Note for %s</string>

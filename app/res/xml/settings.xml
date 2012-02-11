@@ -62,5 +62,9 @@
                 android:title="@string/settings_webdav_password"
                 android:summary="@string/settings_webdav_password_desc"
                 android:password="true" />
+      <!--   <CheckBoxPreference
+                android:key="webdav_ssl_override"
+                android:title="@string/settings_webdav_ssl_override"
+                android:summary="@string/settings_webdav_ssl_override_desc" />-->
 </PreferenceCategory>
 </PreferenceScreen>
