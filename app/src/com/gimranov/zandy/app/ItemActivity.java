@@ -205,10 +205,10 @@ public class ItemActivity extends ListActivity {
 
         if (coll != null) {        	
        		req = APIRequest.fetchItems(coll, false, 
-       				new ServerCredentials(getBaseContext()));
+       				new ServerCredentials(this));
         } else {        	
        		req = APIRequest.fetchItems(false, 
-       				new ServerCredentials(getBaseContext()));
+       				new ServerCredentials(this));
         }
 
         prepareAdapter();
@@ -219,11 +219,18 @@ public class ItemActivity extends ListActivity {
 		if (intent.getBooleanExtra("com.gimranov.zandy.app.rerequest", false)
 				|| cur == null
 				|| cur.getCount() == 0) {
-    		Toast.makeText(getApplicationContext(),
+			
+        	if (!ServerCredentials.check(getBaseContext())) {
+            	Toast.makeText(getBaseContext(), getResources().getString(R.string.sync_log_in_first), 
+        				Toast.LENGTH_SHORT).show();
+            	return;
+        	}
+        	
+    		Toast.makeText(this,
     				getResources().getString(R.string.collection_empty),
     				Toast.LENGTH_SHORT).show();
 			Log.d(TAG, "Running a request to populate missing items");
-    		ZoteroAPITask task = new ZoteroAPITask(getBaseContext());
+    		ZoteroAPITask task = new ZoteroAPITask(this);
     		req.setHandler(mEvent);
     		task.execute(req);
 
