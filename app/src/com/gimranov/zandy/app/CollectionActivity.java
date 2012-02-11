@@ -72,8 +72,9 @@ public class CollectionActivity extends ListActivity {
 			}
 			
 			if (msg.arg1 == APIRequest.ERROR_UNKNOWN) {
+				String desc = (msg.arg2 == 0) ? "" : " ("+msg.arg2+")";
 				Toast.makeText(getApplicationContext(),
-						getResources().getString(R.string.sync_error), 
+						getResources().getString(R.string.sync_error)+desc, 
         				Toast.LENGTH_SHORT).show();
 				return;
 			}
@@ -241,15 +242,18 @@ public class CollectionActivity extends ListActivity {
 				@Override
 				public void onError(APIRequest request, Exception exception) {
 					Log.e(TAG, "APIException caught", exception);
-					Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_error), 
-		    				Toast.LENGTH_SHORT).show();
+					Message msg = handler.obtainMessage();
+					msg.arg1 = APIRequest.ERROR_UNKNOWN;
+					handler.sendMessage(msg);
 				}
 
 				@Override
 				public void onError(APIRequest request, int error) {
 					Log.e(TAG, "API error caught");
-					Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_error), 
-		    				Toast.LENGTH_SHORT).show();
+					Message msg = handler.obtainMessage();
+					msg.arg1 = APIRequest.ERROR_UNKNOWN;
+					msg.arg2 = request.status;
+					handler.sendMessage(msg);
 				}
 			});
 			ZoteroAPITask task = new ZoteroAPITask(getBaseContext());
