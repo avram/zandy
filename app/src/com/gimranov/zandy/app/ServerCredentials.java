@@ -76,7 +76,7 @@ public class ServerCredentials {
 			"all_groups=write";
 	
 	/* More constants */
-    public static final File sBaseStorageDir = new File(Environment.getExternalStorageDirectory(), "zandy");
+    public static final File sBaseStorageDir = new File(Environment.getExternalStorageDirectory(), "/Android/data/com.gimranov.zandy");
     public static final File sDocumentStorageDir = new File(sBaseStorageDir, "documents");
     public static final File sCacheDir = new File(sBaseStorageDir, "cache");
 	

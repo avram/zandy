@@ -420,9 +420,9 @@ public class AttachmentActivity extends ListActivity {
 	private void loadFileAttachment(Bundle b) {
 		Attachment att = Attachment.load(b.getString("attachmentKey"), db);
 		if (!ServerCredentials.sBaseStorageDir.exists())
-			ServerCredentials.sBaseStorageDir.mkdir();
+			ServerCredentials.sBaseStorageDir.mkdirs();
 		if (!ServerCredentials.sDocumentStorageDir.exists())
-			ServerCredentials.sDocumentStorageDir.mkdir();
+			ServerCredentials.sDocumentStorageDir.mkdirs();
 		
 		File attFile = new File(att.filename);
 		
@@ -525,9 +525,9 @@ public class AttachmentActivity extends ListActivity {
 			
 			file = new File(ServerCredentials.sDocumentStorageDir,sanitized);
 			if (!ServerCredentials.sBaseStorageDir.exists())
-				ServerCredentials.sBaseStorageDir.mkdir();
+				ServerCredentials.sBaseStorageDir.mkdirs();
 			if (!ServerCredentials.sDocumentStorageDir.exists())
-				ServerCredentials.sDocumentStorageDir.mkdir();
+				ServerCredentials.sDocumentStorageDir.mkdirs();
 			
 			final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 			
@@ -599,7 +599,9 @@ public class AttachmentActivity extends ListActivity {
 
     			/* Save to temporary directory for WebDAV */
     			if ("webdav".equals(mode)) {
-    				File tmpFile = File.createTempFile("zandy", ".zip");
+    				if (!ServerCredentials.sCacheDir.exists())
+    					ServerCredentials.sCacheDir.mkdirs();
+    				File tmpFile = File.createTempFile("zandy", ".zip",ServerCredentials.sCacheDir);
     				// Keep track of temp files that we've created.
     				if (tmpFiles == null) tmpFiles = new ArrayList<File>();
     				tmpFiles.add(tmpFile);
