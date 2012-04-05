@@ -135,7 +135,12 @@ public class MainActivity extends Activity implements OnClickListener {
 			startActivity(i);
 		} else if (v.getId() == R.id.loginButton) {
 			Log.d(TAG, "Starting OAuth");
-			startOAuth();
+			  new Thread(new Runnable() {
+				    public void run() {
+						startOAuth();
+				    }
+				  }).start();
+
 		} else {
 			Log.w(TAG, "Uncaught click on: " + v.getId());
 		}
@@ -236,50 +241,58 @@ public class MainActivity extends Activity implements OnClickListener {
 			 * TODO The logic should have cases for the various things coming in
 			 * on this protocol.
 			 */
-			String verifier = uri
+			final String verifier = uri
 					.getQueryParameter(oauth.signpost.OAuth.OAUTH_VERIFIER);
-			try {
-				/*
-				 * Here, we're handling the callback from the completed OAuth.
-				 * We don't need to do anything highly visible, although it
-				 * would be nice to show a Toast or something.
-				 */
-				this.httpOAuthProvider.retrieveAccessToken(
-						this.httpOAuthConsumer, verifier);
-				HttpParameters params = this.httpOAuthProvider
-						.getResponseParameters();
-				String userID = params.getFirst("userID");
-				Log.d(TAG, "uid: " + userID);
-				String userKey = this.httpOAuthConsumer.getToken();
-				Log.d(TAG, "ukey: " + userKey);
-				String userSecret = this.httpOAuthConsumer.getTokenSecret();
-				Log.d(TAG, "usecret: " + userSecret);
 
-				/*
-				 * These settings live in the Zotero preferences tree.
-				 */
-				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-				SharedPreferences.Editor editor = settings.edit();
-				// For Zotero, the key and secret are identical, it seems
-				editor.putString("user_key", userKey);
-				editor.putString("user_secret", userSecret);
-				editor.putString("user_id", userID);
+			new Thread(new Runnable() {
+				public void run() {
+				    	try {
+				    		/*
+				    		 * Here, we're handling the callback from the completed OAuth.
+				    		 * We don't need to do anything highly visible, although it
+				    		 * would be nice to show a Toast or something.
+				    		 */
+				    		httpOAuthProvider.retrieveAccessToken(
+				    				httpOAuthConsumer, verifier);
+				    		HttpParameters params = httpOAuthProvider
+				    				.getResponseParameters();
+				    		final String userID = params.getFirst("userID");
+				    		Log.d(TAG, "uid: " + userID);
+				    		final String userKey = httpOAuthConsumer.getToken();
+				    		Log.d(TAG, "ukey: " + userKey);
+				    		final String userSecret = httpOAuthConsumer.getTokenSecret();
+				    		Log.d(TAG, "usecret: " + userSecret);
+				    		
+					    	runOnUiThread(new Runnable(){
+					    		public void run(){
+					    			/*
+					    			 * These settings live in the Zotero preferences tree.
+					    			 */
+					    			SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+					    			SharedPreferences.Editor editor = settings.edit();
+					    			// For Zotero, the key and secret are identical, it seems
+					    			editor.putString("user_key", userKey);
+					    			editor.putString("user_secret", userSecret);
+					    			editor.putString("user_id", userID);
 
-				editor.commit();
+					    			editor.commit();
 
-				Button loginButton = (Button) findViewById(R.id.loginButton);
-				loginButton.setText(getResources().getString(R.string.logged_in));
-				loginButton.setClickable(false);
-
-			} catch (OAuthMessageSignerException e) {
-				Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-			} catch (OAuthNotAuthorizedException e) {
-				Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-			} catch (OAuthExpectationFailedException e) {
-				Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-			} catch (OAuthCommunicationException e) {
-				Toast.makeText(this, "Error communicating with server. Check your time settings, network connectivity, and try again. OAuth error: "+e.getMessage(), Toast.LENGTH_LONG).show();
-			}
+					    			Button loginButton = (Button) findViewById(R.id.loginButton);
+					    			loginButton.setText(getResources().getString(R.string.logged_in));
+					    			loginButton.setClickable(false);
+					    		}
+					    	});
+				    	} catch (OAuthMessageSignerException e) {
+				    		Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+				    	} catch (OAuthNotAuthorizedException e) {
+				    		Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+				    	} catch (OAuthExpectationFailedException e) {
+				    		Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+				    	} catch (OAuthCommunicationException e) {
+				    		Toast.makeText(MainActivity.this, "Error communicating with server. Check your time settings, network connectivity, and try again. OAuth error: "+e.getMessage(), Toast.LENGTH_LONG).show();
+				    	}
+				    }
+			  }).start();
 		}
 	}
 
