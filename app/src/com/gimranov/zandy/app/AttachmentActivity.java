@@ -217,7 +217,7 @@ public class AttachmentActivity extends ListActivity {
         			b.putString("attachmentKey", row.key);
         			b.putString("content", url);
     				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        			int linkMode = row.content.optInt("linkMode", Attachment.MODE_LINKED_URL);
+        			int linkMode = row.content.optInt("linkMode", Attachment.MODE_IMPORTED_URL);
         			
         			if (settings.getBoolean("webdav_enabled", false))
         				b.putString("mode", "webdav");
@@ -399,7 +399,7 @@ public class AttachmentActivity extends ListActivity {
 		if (att.status == Attachment.LOCAL) {
 			Log.d(TAG,"Starting to display local attachment");
 			Uri uri = Uri.fromFile(new File(att.filename));
-			String mimeType = att.content.optString("mimeType",null);
+			String mimeType = att.content.optString("mimeType","application/pdf");
 			try {
 				startActivity(new Intent(Intent.ACTION_VIEW)
 				.setDataAndType(uri,mimeType));
