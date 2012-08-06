@@ -12,3 +12,6 @@ app/gen/*
 app/.classpath
 app/project.properties
 test/project.properties
+.idea
+test/*.iml
+app/*.iml
