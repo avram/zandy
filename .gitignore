@@ -11,6 +11,8 @@ app/bin/*
 app/gen/*
 app/.classpath
 app/project.properties
+app/ant.properties
+app/keystore
 test/project.properties
 .idea
 test/*.iml
