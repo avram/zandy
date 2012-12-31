@@ -118,8 +118,8 @@ public class CollectionActivity extends ListActivity {
         setListAdapter(collectionAdapter);
         
         ListView lv = getListView();
-        lv.setOnItemClickListener(new OnItemClickListener() {
-        	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        lv.setOnItemLongClickListener(new OnItemLongClickListener() {
+        	public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
         		CollectionAdapter adapter = (CollectionAdapter) parent.getAdapter();
         		Cursor cur = adapter.getCursor();
         		// Place the cursor at the selected item
@@ -145,11 +145,12 @@ public class CollectionActivity extends ListActivity {
             				getResources().getString(R.string.collection_cant_open, tvTitle.getText()), 
             				Toast.LENGTH_SHORT).show();
         		}
+				return true;
           }
         });
         
-        lv.setOnItemLongClickListener(new OnItemLongClickListener() {
-        	public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        lv.setOnItemClickListener(new OnItemClickListener() {
+        	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         		
         		CollectionAdapter adapter = (CollectionAdapter) parent.getAdapter();
         		Cursor cur = adapter.getCursor();
@@ -168,7 +169,7 @@ public class CollectionActivity extends ListActivity {
         			} else {
         				// collection loaded was null. why?
         				Log.d(TAG, "Failed loading items for collection at position: "+position);
-        				return true;
+        				return;
         			}
         		} else {
         			// failed to move cursor-- show a toast
@@ -176,9 +177,9 @@ public class CollectionActivity extends ListActivity {
             		Toast.makeText(getApplicationContext(),
             				getResources().getString(R.string.collection_cant_open, tvTitle.getText()), 
             				Toast.LENGTH_SHORT).show();
-            		return true;
+            		return;
         		}
-        		return true;
+        		return;
           }
         });
     }

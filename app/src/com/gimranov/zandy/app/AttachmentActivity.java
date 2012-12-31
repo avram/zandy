@@ -183,11 +183,11 @@ public class AttachmentActivity extends ListActivity {
         
         ListView lv = getListView();
         lv.setTextFilterEnabled(true);
-        lv.setOnItemClickListener(new OnItemClickListener() {
+        lv.setOnItemLongClickListener(new OnItemLongClickListener() {
         	// Warning here because Eclipse can't tell whether my ArrayAdapter is
         	// being used with the correct parametrization.
         	@SuppressWarnings("unchecked")
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
         		// If we have a click on an entry, show its note
         		ArrayAdapter<Attachment> adapter = (ArrayAdapter<Attachment>) parent.getAdapter();
         		Attachment row = adapter.getItem(position);
@@ -198,13 +198,14 @@ public class AttachmentActivity extends ListActivity {
 	    	    	i.putExtra("com.gimranov.zandy.app.attKey", row.key);//row.content.optString("note", ""));
 	    	    	startActivity(i);
 				}
+				return true;
         	}
         });
-        lv.setOnItemLongClickListener(new OnItemLongClickListener() {
+        lv.setOnItemClickListener(new OnItemClickListener() {
         	// Warning here because Eclipse can't tell whether my ArrayAdapter is
         	// being used with the correct parametrization.
         	@SuppressWarnings("unchecked")
-			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         		// If we have a long click on an entry, do something...
         		ArrayAdapter<Attachment> adapter = (ArrayAdapter<Attachment>) parent.getAdapter();
         		Attachment row = adapter.getItem(position);
@@ -242,7 +243,7 @@ public class AttachmentActivity extends ListActivity {
 					AttachmentActivity.this.b = b;
 					showDialog(DIALOG_NOTE);
 				}
-				return true;
+				return;
         	}
         });
     }
