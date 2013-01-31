@@ -117,7 +117,7 @@
 	<string name="settings_webdav_enabled">Enable WebDAV</string>
 	<string name="settings_webdav_enabled_desc">Check to have Zandy look for attachments on a WebDAV host</string>
 	<string name="settings_webdav_path">Base URL</string>
-	<string name="settings_webdav_path_desc">Server and path for your WebDAV setup, like https://www.example.com/users/bobsmith/zotero</string>
+	<string name="settings_webdav_path_desc">Server and path for your WebDAV setup, including the final /zotero, like this: https://www.example.com/users/bobsmith/zotero</string>
 	<string name="settings_webdav_username">Username</string>
 	<string name="settings_webdav_username_desc">Username for WebDAV server. This is separate from your Zotero username.</string>
 	<string name="settings_webdav_password">Password</string>
