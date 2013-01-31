@@ -580,8 +580,9 @@ public class AttachmentActivity extends ListActivity {
                  */
                 InputStream is = ucon.getInputStream();
                 BufferedInputStream bis = new BufferedInputStream(is, 16000);
-
-                ByteArrayBuffer baf = new ByteArrayBuffer(50);
+                // Buffer up to 512KB at a time
+                int bufferSize = Math.max(1000, Math.min(ucon.getContentLength(), 512*1024));
+                ByteArrayBuffer baf = new ByteArrayBuffer(bufferSize);
                 int current = 0;
                 
                 /*
