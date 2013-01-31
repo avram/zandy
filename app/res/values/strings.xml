@@ -74,7 +74,8 @@
     <string name="attachment_unzipping">Unzipping&#8230;</string>
     <string name="attachment_no_download_url">No download URL for attachment. Try syncing again.</string>
 	<string name="attachment_download_initiated">File download initiated.</string>
-	<string name="attachment_download_failed">File download may have failed; try again.</string>
+    <string name="attachment_download_failed">File download may have failed; try again.</string>
+    <string name="attachment_download_failed_cant_write">Couldn\'t write downloaded file.</string>
 	<string name="attachment_intent_failed">No application available to open files of type %s.</string>
 	<string name="attachment_intent_failed_for_uri">No application available to open URI: %s</string>
     <string name="attachment_delete_confirm">Delete this attachment?</string>

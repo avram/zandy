@@ -522,7 +522,7 @@ public class AttachmentActivity extends ListActivity {
 				String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(att.getType());
 				if (extension != null) sanitized = sanitized + "." + extension;
 			}
-			sanitized = sanitized.replaceFirst("^(.*?)(\\.?[^.]*)$", "$1"+"_"+att.key+"$2");
+			sanitized = sanitized.replaceFirst("^(.*?)(\\.[^.]*)?$", "$1"+"_"+att.key+"$2");
 			
 			file = new File(ServerCredentials.sDocumentStorageDir,sanitized);
 			if (!ServerCredentials.sBaseStorageDir.exists())
@@ -602,6 +602,7 @@ public class AttachmentActivity extends ListActivity {
     			if ("webdav".equals(mode)) {
     				if (!ServerCredentials.sCacheDir.exists())
     					ServerCredentials.sCacheDir.mkdirs();
+
     				File tmpFile = File.createTempFile("zandy", ".zip",ServerCredentials.sCacheDir);
     				// Keep track of temp files that we've created.
     				if (tmpFiles == null) tmpFiles = new ArrayList<File>();
@@ -634,11 +635,11 @@ public class AttachmentActivity extends ListActivity {
                             while ((current = entryStream.read()) != -1) {
                             	baf2.append((byte) current);
 
-				if (baf2.length() % 2048 == 0) {
-					msg = mHandler.obtainMessage();
-					msg.arg1 = baf2.length();
-					mHandler.sendMessage(msg);
-				}
+                                if (baf2.length() % 2048 == 0) {
+                                    msg = mHandler.obtainMessage();
+                                    msg.arg1 = baf2.length();
+                                    mHandler.sendMessage(msg);
+                                }
                             }
                             fos2.write(baf2.toByteArray());
                             fos2.close();
@@ -648,7 +649,7 @@ public class AttachmentActivity extends ListActivity {
                     	}
                     } while (entries.hasMoreElements());
                     zf.close();
-		    // We remove the file from the ArrayList if deletion succeeded;
+		            // We remove the file from the ArrayList if deletion succeeded;
                     // otherwise deletion is put off until the activity exits.
                     if (tmpFile.delete()) {
                     	tmpFiles.remove(tmpFile);
@@ -662,7 +663,15 @@ public class AttachmentActivity extends ListActivity {
                         + ((System.currentTimeMillis() - startTime) / 1000)
                         + " sec");
 	        } catch (IOException e) {
-	                Log.e(TAG, "Error: ",e);
+                Log.e(TAG, "Error: ",e);
+                AttachmentActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(AttachmentActivity.this,
+                                R.string.attachment_download_failed_cant_write,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
 	        }
 			att.filename = file.getPath();
 			File newFile = new File(att.filename);
