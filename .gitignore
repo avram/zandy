@@ -9,6 +9,7 @@ test/gen/*
 app/assets/*
 app/bin/*
 app/gen/*
+app/out/*
 app/.classpath
 app/project.properties
 app/ant.properties

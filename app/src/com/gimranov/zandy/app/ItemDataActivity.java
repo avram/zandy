@@ -283,9 +283,10 @@ public class ItemDataActivity extends ExpandableListActivity {
 		    	    .setPositiveButton(getResources().getString(R.string.view),
 		    	    		new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int whichButton) {
+                            String fixedUri = Util.doiToUri(content);
 		        			// The behavior for invalid URIs might be nasty, but
 		        			// we'll cross that bridge if we come to it.
-		        			Uri uri = Uri.parse(content);
+                            Uri uri = Uri.parse(fixedUri);
 		        			startActivity(new Intent(Intent.ACTION_VIEW)
 		        							.setData(uri));
 		    	        }
