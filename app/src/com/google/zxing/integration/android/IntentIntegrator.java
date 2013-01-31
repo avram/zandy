@@ -266,7 +266,7 @@ public final class IntentIntegrator {
           activity.startActivity(intent);
         } catch (ActivityNotFoundException anfe) {
           // Hmm, market is not installed
-          Log.w(TAG, "Android Market is not installed; cannot install Barcode Scanner");
+          Log.w(TAG, "No app store is installed; cannot install Barcode Scanner");
         }
       }
     });
