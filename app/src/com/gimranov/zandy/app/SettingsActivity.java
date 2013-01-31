@@ -64,7 +64,6 @@ public class SettingsActivity extends PreferenceActivity implements OnClickListe
 		switch (id) {
 		case DIALOG_CONFIRM_DELETE:
 			dialog = new AlertDialog.Builder(this)
-			// TODO i18n
 		    	    .setTitle(getResources().getString(R.string.settings_reset_database_warning))
 		    	    .setPositiveButton(getResources().getString(R.string.menu_delete), new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int whichButton) {
