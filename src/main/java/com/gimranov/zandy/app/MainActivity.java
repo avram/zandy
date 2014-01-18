@@ -106,37 +106,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		loginButton.setOnClickListener(this);
 
 		if (ServerCredentials.check(getBaseContext())) {
-			loginButton.setVisibility(View.GONE);
-
-            ItemAdapter adapter = new ItemAdapter(this, getCursor("timestamp ASC, item_title COLLATE NOCASE"));
-            ListView lv = ((ListView) findViewById(android.R.id.list));
-            lv.setAdapter(adapter);
-
-            lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    // If we have a click on an item, do something...
-                    ItemAdapter adapter = (ItemAdapter) parent.getAdapter();
-                    Cursor cur = adapter.getCursor();
-                    // Place the cursor at the selected item
-                    if (cur.moveToPosition(position)) {
-                        // and load an activity for the item
-                        Item item = Item.load(cur);
-
-                        Log.d(TAG, "Loading item data with key: "+item.getKey());
-                        // We create and issue a specified intent with the necessary data
-                        Intent i = new Intent(getBaseContext(), ItemDataActivity.class);
-                        i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
-                        i.putExtra("com.gimranov.zandy.app.itemDbId", item.dbId);
-                        startActivity(i);
-                    } else {
-                        // failed to move cursor-- show a toast
-                        TextView tvTitle = (TextView)view.findViewById(R.id.item_title);
-                        Toast.makeText(getApplicationContext(),
-                                getResources().getString(R.string.cant_open_item, tvTitle.getText()),
-                                Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
+			setUpLoggedInUser();
 		}
 	}
 
@@ -311,9 +281,10 @@ public class MainActivity extends Activity implements OnClickListener {
 
 					    			editor.commit();
 
-					    			Button loginButton = (Button) findViewById(R.id.loginButton);
-					    			loginButton.setText(getResources().getString(R.string.logged_in));
-					    			loginButton.setClickable(false);
+                                    setUpLoggedInUser();
+
+                                    doSync();
+
 					    		}
 					    	});
 				    	} catch (OAuthMessageSignerException e) {
@@ -346,18 +317,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		// Handle item selection
 		switch (item.getItemId()) {
 		case R.id.do_sync:
-			if (!ServerCredentials.check(getApplicationContext())) {
-				Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_log_in_first),
-						Toast.LENGTH_SHORT).show();
-				return true;
-			}
-        	Log.d(TAG, "Making sync request for all collections");
-        	ServerCredentials cred = new ServerCredentials(getBaseContext());
-        	APIRequest req = APIRequest.fetchCollections(cred);
-			new ZoteroAPITask(getBaseContext()).execute(req);
-			Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_started),
-					Toast.LENGTH_SHORT).show();
-			return true;
+			return doSync();
 		case R.id.do_prefs:
 			startActivity(new Intent(this, SettingsActivity.class));
 			return true;
@@ -368,6 +328,57 @@ public class MainActivity extends Activity implements OnClickListener {
 			return super.onOptionsItemSelected(item);
 		}
 	}
+
+    private boolean doSync() {
+        if (!ServerCredentials.check(getApplicationContext())) {
+            Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_log_in_first),
+                    Toast.LENGTH_SHORT).show();
+            return true;
+        }
+        Log.d(TAG, "Making sync request for all collections");
+        ServerCredentials cred = new ServerCredentials(getBaseContext());
+        APIRequest req = APIRequest.fetchCollections(cred);
+        new ZoteroAPITask(getBaseContext()).execute(req);
+        Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_started),
+                Toast.LENGTH_SHORT).show();
+        return true;
+    }
+
+    private void setUpLoggedInUser() {
+        Button loginButton = (Button) findViewById(R.id.loginButton);
+
+        loginButton.setVisibility(View.GONE);
+
+        ItemAdapter adapter = new ItemAdapter(this, getCursor("timestamp ASC, item_title COLLATE NOCASE"));
+        ListView lv = ((ListView) findViewById(android.R.id.list));
+        lv.setAdapter(adapter);
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // If we have a click on an item, do something...
+                ItemAdapter adapter = (ItemAdapter) parent.getAdapter();
+                Cursor cur = adapter.getCursor();
+                // Place the cursor at the selected item
+                if (cur.moveToPosition(position)) {
+                    // and load an activity for the item
+                    Item item = Item.load(cur);
+
+                    Log.d(TAG, "Loading item data with key: "+item.getKey());
+                    // We create and issue a specified intent with the necessary data
+                    Intent i = new Intent(getBaseContext(), ItemDataActivity.class);
+                    i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
+                    i.putExtra("com.gimranov.zandy.app.itemDbId", item.dbId);
+                    startActivity(i);
+                } else {
+                    // failed to move cursor-- show a toast
+                    TextView tvTitle = (TextView)view.findViewById(R.id.item_title);
+                    Toast.makeText(getApplicationContext(),
+                            getResources().getString(R.string.cant_open_item, tvTitle.getText()),
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
 
     public Cursor getCursor(String sortBy) {
         Cursor cursor = db.query("items", Database.ITEMCOLS, null, null, null, null, sortBy, null);
