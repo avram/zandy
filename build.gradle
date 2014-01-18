@@ -28,23 +28,23 @@ android {
     compileSdkVersion 19
     buildToolsVersion "19.0.1"
 
-//    signingConfigs {
-//        release {
-//            storeFile file("keystore")
-//            storePassword zandyStorePassword
-//            keyAlias "zandy"
-//            keyPassword zandyKeyPassword
-//        }
-//    }
+    signingConfigs {
+        release {
+            storeFile file("keystore")
+            storePassword zandyStorePassword
+            keyAlias "zandy"
+            keyPassword zandyKeyPassword
+        }
+    }
 
-//    buildTypes {
-//        release {
-//            zipAlign true
-//            signingConfig signingConfigs.release
-//            runProguard false
-//            proguardFile getDefaultProguardFile('proguard-android.txt')
-//        }
-//    }
+    buildTypes {
+        release {
+            zipAlign true
+            signingConfig signingConfigs.release
+            runProguard false
+            proguardFile getDefaultProguardFile('proguard-android.txt')
+        }
+    }
 }
 
 task wrapper(type: Wrapper) {
