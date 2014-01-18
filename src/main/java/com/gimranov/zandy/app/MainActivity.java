@@ -32,6 +32,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -41,11 +42,15 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
+import com.gimranov.zandy.app.data.ItemAdapter;
 import com.gimranov.zandy.app.data.ItemCollection;
 import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
@@ -101,8 +106,37 @@ public class MainActivity extends Activity implements OnClickListener {
 		loginButton.setOnClickListener(this);
 
 		if (ServerCredentials.check(getBaseContext())) {
-			loginButton.setText(getResources().getString(R.string.logged_in));
-			loginButton.setClickable(false);
+			loginButton.setVisibility(View.GONE);
+
+            ItemAdapter adapter = new ItemAdapter(this, getCursor("timestamp ASC, item_title COLLATE NOCASE"));
+            ListView lv = ((ListView) findViewById(android.R.id.list));
+            lv.setAdapter(adapter);
+
+            lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    // If we have a click on an item, do something...
+                    ItemAdapter adapter = (ItemAdapter) parent.getAdapter();
+                    Cursor cur = adapter.getCursor();
+                    // Place the cursor at the selected item
+                    if (cur.moveToPosition(position)) {
+                        // and load an activity for the item
+                        Item item = Item.load(cur);
+
+                        Log.d(TAG, "Loading item data with key: "+item.getKey());
+                        // We create and issue a specified intent with the necessary data
+                        Intent i = new Intent(getBaseContext(), ItemDataActivity.class);
+                        i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
+                        i.putExtra("com.gimranov.zandy.app.itemDbId", item.dbId);
+                        startActivity(i);
+                    } else {
+                        // failed to move cursor-- show a toast
+                        TextView tvTitle = (TextView)view.findViewById(R.id.item_title);
+                        Toast.makeText(getApplicationContext(),
+                                getResources().getString(R.string.cant_open_item, tvTitle.getText()),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
 		}
 	}
 
@@ -334,7 +368,15 @@ public class MainActivity extends Activity implements OnClickListener {
 			return super.onOptionsItemSelected(item);
 		}
 	}
-	
+
+    public Cursor getCursor(String sortBy) {
+        Cursor cursor = db.query("items", Database.ITEMCOLS, null, null, null, null, sortBy, null);
+        if (cursor == null) {
+            Log.e(TAG, "cursor is null");
+        }
+        return cursor;
+    }
+
 	protected Dialog onCreateDialog(int id) {
 		final String url = b.getString("url");
 		final String title = b.getString("title");

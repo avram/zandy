@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   This file is part of Zandy.
   
   Zandy is free software: you can redistribute it and/or modify
@@ -16,15 +15,34 @@
   along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical" android:layout_width="fill_parent"
-	android:layout_height="fill_parent"
-	android:id="@+id/main">
-	<TextView android:id="@+id/welcome" android:textAppearance="?android:attr/textAppearanceLarge"
-		android:text="@string/applicationTitle" android:layout_height="wrap_content" android:padding="3dip" android:textStyle="bold" android:gravity="center_horizontal" android:layout_width="match_parent"/>
-	<Button android:id="@+id/collectionButton" android:layout_height="wrap_content"
-		android:text="@string/view_collections" android:layout_width="match_parent" android:layout_weight="0.30"></Button>
-	<Button android:id="@+id/itemButton" android:layout_height="wrap_content"
-		android:text="@string/view_items" android:layout_width="match_parent" android:layout_weight="0.30"></Button>
-	<Button android:id="@+id/loginButton" android:layout_height="wrap_content"
-		android:text="@string/log_in" android:layout_width="match_parent" android:layout_weight="0.10"></Button>
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:id="@+id/main">
+
+    <Button
+        android:id="@+id/collectionButton"
+        android:layout_height="wrap_content"
+        android:text="@string/view_collections"
+        android:layout_width="match_parent"/>
+
+    <Button
+        android:id="@+id/itemButton"
+        android:layout_height="wrap_content"
+        android:text="@string/view_items"
+        android:layout_width="match_parent"/>
+
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="fill_parent"
+        android:layout_height="0dip"
+        android:layout_weight="3"
+        android:drawSelectorOnTop="false" />
+
+    <Button
+        android:id="@+id/loginButton"
+        android:layout_height="wrap_content"
+        android:text="@string/log_in"
+        android:layout_width="match_parent"
+        android:layout_weight="1"/>
 </LinearLayout>
