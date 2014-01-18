@@ -91,16 +91,17 @@ public class ItemActivity extends ListActivity {
 		R.string.sort_title_year,
 		R.string.sort_modified_title
 	};
-	
-	private String collectionKey;
+    private static final String SORT_CHOICE = "sort_choice";
+
+    private String collectionKey;
 	private String query;
 	private Database db;
 		
 	private ProgressDialog mProgressDialog;
 	private ProgressThread progressThread;
-	
+
 	public String sortBy = "item_year, item_title";
-	
+
 	final Handler syncHandler = new Handler() {
 		public void handleMessage(Message msg) {
 			Log.d(TAG,"received message: "+msg.arg1);
@@ -192,7 +193,10 @@ public class ItemActivity extends ListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
+        String persistedSort = Persistence.read(SORT_CHOICE);
+        if (persistedSort != null) sortBy = persistedSort;
+
         db = new Database(this);
 		
         setContentView(R.layout.items);
@@ -369,6 +373,8 @@ public class ItemActivity extends ListActivity {
 							ItemAdapter adapter = (ItemAdapter) getListAdapter();
 							adapter.changeCursor(cursor);
 		        			Log.d(TAG, "Re-sorting by: "+SORTS[pos]);
+                            
+                            Persistence.write(SORT_CHOICE, SORTS[pos]);
 		    	        }
 		    	    });
 			AlertDialog dialog2 = builder2.create();
