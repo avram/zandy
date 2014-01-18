@@ -31,6 +31,15 @@ android {
             keyPassword zandyKeyPassword
         }
     }
+
+    buildTypes {
+        release {
+            zipAlign true
+            signingConfig signingConfigs.release
+            runProguard false
+            proguardFile getDefaultProguardFile('proguard-android.txt')
+        }
+    }
 }
 
 task wrapper(type: Wrapper) {
