@@ -1,16 +1,16 @@
 /*******************************************************************************
  * This file is part of Zandy.
- * 
+ *
  * Zandy is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Zandy is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
@@ -58,12 +58,12 @@ import com.gimranov.zandy.app.data.ItemCollection;
 /**
  * Represents a request to the Zotero API. These can be consumed by
  * other things like ZoteroAPITask. These should be queued up for many purposes.
- * 
+ *
  * The APIRequest should include the HttpPost / HttpGet / etc. that it needs
  * to be executed, and optionally a callback to be called when it completes.
- * 
+ *
  * See http://www.zotero.org/support/dev/server_api for information.
- * 
+ *
  * @author ajlyon
  *
  */
@@ -80,11 +80,11 @@ public class APIRequest {
 	public static final String API_MISSING ="Partial data";
 	public static final String API_STALE = "Stale data";
 	public static final String API_WIP  = 	"Sync attempted";
-	public static final String API_CLEAN =	"No unsynced change";	
-	
+	public static final String API_CLEAN =	"No unsynced change";
+
 	/**
 	 * These are constants represented by integers.
-	 * 
+	 *
 	 * The above should be moving down here some time.
 	 */
 	/**
@@ -104,7 +104,7 @@ public class APIRequest {
 	public static final int ERROR_UNKNOWN	= 4000;
 	/** Queued more requests */
 	public static final int QUEUED_MORE		= 3000;
-	
+
 	/**
 	 * Request types
 	 */
@@ -123,37 +123,37 @@ public class APIRequest {
 	public static final int ITEM_ATTACHMENT_NEW		= 20005;
 	public static final int ITEM_ATTACHMENT_UPDATE	= 20006;
 	public static final int ITEM_ATTACHMENT_DELETE	= 20007;
-	
+
 
 	public static final int ITEM_FIELDS				= 30000;
 	public static final int CREATOR_TYPES			= 30001;
 	public static final int ITEM_FIELDS_L10N		= 30002;
 	public static final int CREATOR_TYPES_L10N		= 30003;
-	
+
 	/**
 	 * Request status for use within the database
 	 */
 	public static final int REQ_NEW					= 40000;
 	public static final int REQ_FAILING				= 41000;
-	
+
 	/**
 	 * We'll request the whole collection or library rather than
 	 * individual feeds when we have less than this proportion of
 	 * the items. Used when pre-fetching keys.
 	 */
 	public static double REREQUEST_CUTOFF			= 0.7;
-	
+
 	/**
 	 * Type of request we're sending. This should be one of
 	 * the request types listed above.
 	 */
 	public int type;
-	
+
 	/**
 	 * Callback handler
 	 */
 	private APIEvent handler;
-	
+
 	/**
 	 * Base query to send.
 	 */
@@ -171,7 +171,7 @@ public class APIRequest {
 	 * Response disposition: xml or raw. JSON also planned
 	 */
 	public String disposition;
-	
+
 	/**
 	 * Used when sending JSON in POST and PUT requests.
 	 */
@@ -190,21 +190,21 @@ public class APIRequest {
 	 */
 	public String ifMatch;
 	/**
-	 * Request body, generally JSON. 
+	 * Request body, generally JSON.
 	 */
 	public String body;
-	
+
 	/**
 	 * The temporary key (UUID) that the request is based on.
 	 */
 	public String updateKey;
-	
+
 	/**
 	 * Type of object we expect to get. This and the updateKey are used to update
 	 * the UUIDs / local keys of locally-created items. I know, it's a hack.
 	 */
 	public String updateType;
-	
+
 	/**
 	 * Status code for the request. Codes should be constants defined in APIRequest;
 	 * take the REQ_* code and add the response code if applicable.
@@ -216,26 +216,26 @@ public class APIRequest {
 	 * appropriate. Every request should have one.
 	 */
 	private String uuid;
-	
+
 	/**
 	 * Timestamp when this request was first created.
 	 */
 	private Date created;
-	
+
 	/**
 	 * Timestamp when this request was last attempted to be run.
 	 */
 	private Date lastAttempt;
-		
+
 	/**
 	 * Creates a basic APIRequest item. Augment the item using instance methods for more complex
 	 * requests, or pass it to ZoteroAPITask for simpler ones. The request can be run by
 	 * simply calling the instance method `issue(..)`, but not from the UI thread.
-	 * 
+	 *
 	 * The constructor is not to be used directly; use the static methods in this class, or create from
 	 * a cursor. The one exception is the Atom feed continuations produced by XMLResponseParser, but that
 	 * should be moved into this class as well.
-	 * 
+	 *
 	 * @param query		Fragment being requested, like /items
 	 * @param method	GET, POST, PUT, or DELETE (except that lowercase is preferred)
 	 * @param key		Can be null, if you're planning on making requests that don't need a key.
@@ -246,12 +246,12 @@ public class APIRequest {
 		this.key = key;
 		// default to XML processing
 		this.disposition = "xml";
-		
+
 		// If this is processing-intensive, we can probably move it to the save method
 		this.uuid = UUID.randomUUID().toString();
 		created = new Date();
 	}
-	
+
 	/**
 	 * Load an APIRequest from its serialized form in the database
 	 * 	public static final String[] REQUESTCOLS = {"_id", "uuid", "type",
@@ -277,7 +277,7 @@ public class APIRequest {
 		this.status = cur.getInt(12);
 		this.body = cur.getString(13);
 	}
-	
+
 	/**
 	 * Saves the APIRequest's basic info to the database. Does not maintain handler information.
 	 * @param db
@@ -292,13 +292,13 @@ public class APIRequest {
 			// Why, oh why does bind* use 1-based indexing? And cur.get* uses 0-based!
 			insert.bindString(1, uuid);
 			insert.bindLong(2, (long) type);
-			
+
 			String createdUnix = Long.toString(created.getTime());
 			String lastAttemptUnix;
 			if (lastAttempt == null) lastAttemptUnix = null;
 			else lastAttemptUnix = Long.toString(lastAttempt.getTime());
 			String status = Integer.toString(this.status);
-			
+
 			// Iterate through null-allowed strings and bind them
 			String[] strings = {query, key, method, disposition, ifMatch, updateKey, updateType,
 					createdUnix, lastAttemptUnix, status, body};
@@ -307,7 +307,7 @@ public class APIRequest {
 				if (strings[i] == null) insert.bindNull(3+i);
 				else insert.bindString(3+i, strings[i]);
 			}
-			
+
 			insert.executeInsert();
 			insert.clearBindings();
 			insert.close();
@@ -316,13 +316,13 @@ public class APIRequest {
 			throw e;
 		}
 	}
-	
+
 	/**
 	 * Getter for the request's implementation of the APIEvent interface,
 	 * used for call-backs, usually tying into the UI.
-	 * 
+	 *
 	 * Returns a no-op, logging handler if none specified
-	 * 
+	 *
 	 * @return
 	 */
 	public APIEvent getHandler() {
@@ -337,11 +337,11 @@ public class APIRequest {
 				}
 				@Override
 				public void onUpdate(APIRequest request) {
-					Log.d(TAG, "onUpdate called but no handler");				
+					Log.d(TAG, "onUpdate called but no handler");
 				}
 				@Override
 				public void onError(APIRequest request, Exception exception) {
-					Log.d(TAG, "onError called but no handler");					
+					Log.d(TAG, "onError called but no handler");
 				}
 				@Override
 				public void onError(APIRequest request, int error) {
@@ -357,10 +357,10 @@ public class APIRequest {
 			this.handler = handler;
 			return;
 		}
-		
+
 		Log.e(TAG, "APIEvent handler for request cannot be replaced");
 	}
-	
+
 	/**
 	 * Set an Android standard handler to be used for the APIEvents
 	 * @param handler
@@ -375,11 +375,11 @@ public class APIRequest {
 				}
 				@Override
 				public void onUpdate(APIRequest request) {
-					mHandler.sendEmptyMessage(UPDATED_DATA);				
+					mHandler.sendEmptyMessage(UPDATED_DATA);
 				}
 				@Override
 				public void onError(APIRequest request, Exception exception) {
-					mHandler.sendEmptyMessage(ERROR_UNKNOWN);					
+					mHandler.sendEmptyMessage(ERROR_UNKNOWN);
 				}
 				@Override
 				public void onError(APIRequest request, int error) {
@@ -392,11 +392,11 @@ public class APIRequest {
 	}
 
 	/**
-	 * Populates the body with a JSON representation of 
+	 * Populates the body with a JSON representation of
 	 * the specified item.
-	 * 
+	 *
 	 * Use this for updating items, i.e.:
-	 *     PUT /users/1/items/ABCD2345 
+	 *     PUT /users/1/items/ABCD2345
 	 * @param item		Item to put in the body.
 	 */
 	public void setBody(Item item) {
@@ -406,11 +406,11 @@ public class APIRequest {
 			Log.e(TAG, "Error setting body for item", e);
 		}
 	}
-	
+
 	/**
 	 * Populates the body with a JSON representation of the specified
 	 * items.
-	 * 
+	 *
 	 * Use this for creating new items, i.e.:
 	 *     POST /users/1/items
 	 * @param items
@@ -429,12 +429,12 @@ public class APIRequest {
 			Log.e(TAG, "Error setting body for items", e);
 		}
 	}
-	
+
 	/**
 	 * Populates the body with a JSON representation of specified
 	 * attachments; note that this is will not work with non-note
 	 * attachments until the server API supports them.
-	 * 
+	 *
 	 * @param attachments
 	 */
 	public void setBodyWithNotes(ArrayList<Attachment> attachments) {
@@ -451,7 +451,7 @@ public class APIRequest {
 			Log.e(TAG, "Error setting body for attachments", e);
 		}
 	}
-	
+
 	/**
 	 * Getter for the request's UUID
 	 * @return
@@ -459,10 +459,10 @@ public class APIRequest {
 	public String getUuid() {
 		return uuid;
 	}
-	
+
 	/**
 	 * Sets the HTTP response code portion of the request's status
-	 * 
+	 *
 	 * @param code
 	 * @return		The new status
 	 */
@@ -470,7 +470,7 @@ public class APIRequest {
 		status = (status - status % 1000) + code;
 		return status;
 	}
-	
+
 	/**
 	 * Gets the HTTP response code portion of the request's status;
 	 * returns 0 if there was no code set.
@@ -478,12 +478,12 @@ public class APIRequest {
 	public int getHttpStatus() {
 		return status % 1000;
 	}
-	
+
 	/**
 	 * Record a failed attempt to run the request.
-	 * 
+	 *
 	 * Saves the APIRequest in its current state.
-	 * 
+	 *
 	 * @param db	Database object
 	 * @return	Date object with new lastAttempt value
 	 */
@@ -492,25 +492,25 @@ public class APIRequest {
 		save(db);
 		return lastAttempt;
 	}
-	
+
 	/**
 	 * To be called when the request succeeds. Currently just
 	 * deletes the corresponding row from the database.
-	 * 
+	 *
 	 * @param db	Database object
 	 */
 	public void succeeded(Database db) {
 		getHandler().onComplete(this);
-		
+
 		String[] args = { uuid };
 		db.rawQuery("delete from apirequests where uuid=?", args);
 	}
-	
+
 	/**
 	 * Returns HTML-formatted string of the request
-	 * 
+	 *
 	 * XXX i18n, once we settle on a format
-	 * 
+	 *
 	 * @return
 	 */
 	public String toHtmlString() {
@@ -536,36 +536,36 @@ public class APIRequest {
 
 		return sb.toString();
 	}
-	
+
 	/**
 	 * Issues the specified request, calling its specified handler as appropriate
-	 * 
+	 *
 	 * This should not be run from a UI thread
-	 * 
+	 *
 	 * @return
 	 * @throws APIException
 	 */
 	public void issue(Database db, ServerCredentials cred) throws APIException {
-		
+
 		URI uri;
-		
+
 		// Add the API key, if missing and we have it
 		if (!query.contains("key=") && key != null) {
 			String suffix = (query.contains("?")) ? "&key="+key : "?key="+key;
 			query = query + suffix;
 		}
-		
+
 		// Force lower-case
 		method = method.toLowerCase();
 
 		Log.i(TAG, "Request "+ method +": " + query);
-		
+
 		try {
 			uri = new URI(query);
 		} catch (URISyntaxException e1) {
 			throw new APIException(APIException.INVALID_URI, "Invalid URI: "+query, this);
 		}
-		
+
 		HttpClient client = new DefaultHttpClient();
 		// The default implementation includes an Expect: header, which
 		// confuses the Zotero servers.
@@ -573,12 +573,12 @@ public class APIRequest {
 		// We also need to send our data nice and raw.
 		client.getParams().setParameter("http.protocol.content-charset", "UTF-8");
 
-		
+
 		HttpGet get = new HttpGet(uri);
 		HttpPost post = new HttpPost(uri);
 		HttpPut put = new HttpPut(uri);
 		HttpDelete delete = new HttpDelete(uri);
-		
+
 		// There are several shared initialization routines for POST and PUT
 		if ("post".equals(method) || "put".equals(method)) {
 			if(ifMatch != null) {
@@ -604,7 +604,7 @@ public class APIRequest {
 				put.setEntity(entity);
 			}
 		}
-		
+
 		if ("get".equals(method)) {
 			if(contentType != null) {
 				get.setHeader("Content-Type", contentType);
@@ -626,13 +626,13 @@ public class APIRequest {
 		if ("xml".equals(disposition)) {
 			XMLResponseParser parse = new XMLResponseParser(this);
 			// These types will always have a temporary key that we've
-			// been using locally, and which should be replaced by the 
+			// been using locally, and which should be replaced by the
 			// incoming item key.
 			if (type == ITEM_NEW
 					|| type == ITEM_ATTACHMENT_NEW) {
 				parse.update(updateType, updateKey);
 			}
-			
+
 			try {
 				HttpResponse hr;
 				if ("post".equals(method)) {
@@ -649,7 +649,7 @@ public class APIRequest {
 					}
 					hr = client.execute(get);
 				}
-				
+
 				// Record the response code
 				status = hr.getStatusLine().getStatusCode();
 				Log.d(TAG, status + " : "+ hr.getStatusLine().getReasonPhrase());
@@ -660,12 +660,12 @@ public class APIRequest {
 					parse.setInputStream(in);
 					// Entry mode if the request is an update (PUT) or if it is a request
 					// for a single item by key (ITEM_BY_KEY)
-					int mode = ("put".equals(method) || type == APIRequest.ITEM_BY_KEY) ? 
+					int mode = ("put".equals(method) || type == APIRequest.ITEM_BY_KEY) ?
 							XMLResponseParser.MODE_ENTRY : XMLResponseParser.MODE_FEED;
 					try {
 						parse.parse(mode, uri.toString(), db);
 					} catch (RuntimeException e) {
-						throw new RuntimeException("Parser threw exception on request: "+method+" "+query);
+						throw new RuntimeException("Parser threw exception on request: "+method+" "+query, e);
 					}
 				} else {
 					ByteArrayOutputStream ostream = new ByteArrayOutputStream();
@@ -681,12 +681,12 @@ public class APIRequest {
 						// to the database, and also notify our handler.
 						getHandler().onError(this, APIRequest.HTTP_ERROR_CONFLICT);
 					} else {
-						Log.e(TAG, "Response status "+status+" : "+ostream.toString());						
+						Log.e(TAG, "Response status "+status+" : "+ostream.toString());
 						getHandler().onError(this, APIRequest.HTTP_ERROR_UNSPECIFIED);
 					}
 					status = getHttpStatus() + REQ_FAILING;
 					recordAttempt(db);
-						
+
 					// I'm not sure whether we should throw here
 					throw new APIException(APIException.HTTP_ERROR, ostream.toString(), this);
 				}
@@ -696,7 +696,7 @@ public class APIRequest {
 					sb.append(el.toString()+"\n");
 				}
 				recordAttempt(db);
-				throw new APIException(APIException.HTTP_ERROR, 
+				throw new APIException(APIException.HTTP_ERROR,
 						"An IOException was thrown: " + sb.toString(), this);
 			}
 		} // end if ("xml".equals(disposition)) {..}
@@ -731,7 +731,7 @@ public class APIRequest {
 		else {
 			BasicResponseHandler brh = new BasicResponseHandler();
 			String resp;
-			
+
 			try {
 				if ("post".equals(method)) {
 					resp = client.execute(post, brh);
@@ -755,23 +755,23 @@ public class APIRequest {
 					sb.append(el.toString()+"\n");
 				}
 				recordAttempt(db);
-				throw new APIException(APIException.HTTP_ERROR, 
+				throw new APIException(APIException.HTTP_ERROR,
 						"An IOException was thrown: " + sb.toString(), this);
 			}
-			
+
 			if ("raw".equals(disposition)) {
 				/* 
 				 * The output should be a newline-delimited set of alphanumeric
 				 * keys.
 				 */
-				
+
 				String[] keys = resp.split("\n");
-				
+
 				ArrayList<String> missing = new ArrayList<String>();
-				
+
 				if (type == ITEMS_ALL ||
 						type == ITEMS_FOR_COLLECTION) {
-					
+
 					// Try to get a parent collection
             		// Our query looks like this:
             		// /users/5770/collections/2AJUSIU9/items
@@ -780,10 +780,10 @@ public class APIRequest {
         			// The string "/collections/" is thirteen characters long
 					ItemCollection coll = ItemCollection.load(
 							query.substring(colloc+13, itemloc), db);
-					
+
 					if (coll != null) {
 						coll.loadChildren(db);
-						
+
 						// If this is a collection's key listing, we first look
 						// for any synced keys we have that aren't in the list
 						ArrayList<String> keyAL = new ArrayList<String>(Arrays.asList(keys));
@@ -793,7 +793,7 @@ public class APIRequest {
 							coll.remove(i, true, db);
 						}
 					}
-					
+
 					ArrayList<Item> recd = new ArrayList<Item>();
 					for (int j = 0; j < keys.length; j++) {
 						Item got = Item.load(keys[j], db);
@@ -805,15 +805,15 @@ public class APIRequest {
 							recd.add(got);
 						}
 					}
-					
+
 					if (coll != null) {
 						coll.saveChildren(db);
 						coll.save(db);
 					}
-					
+
 					Log.d(TAG, "Received "+keys.length+" keys, "+missing.size() + " missing ones");
 					Log.d(TAG, "Have "+(double) recd.size() / keys.length + " of list");
-					
+
 					if (recd.size() == keys.length) {
 						Log.d(TAG, "No new items");
 						succeeded(db);
@@ -825,7 +825,7 @@ public class APIRequest {
 						} else {
 							mReq = fetchItems(false, cred);
 						}
-						
+
 						mReq.status = REQ_NEW;
 						mReq.save(db);
 					} else {
@@ -853,14 +853,14 @@ public class APIRequest {
         			// The string "/items/" is seven characters long
 					Item item = Item.load(
 							query.substring(itemloc+7, childloc), db);
-					
+
 					ArrayList<Attachment> recd = new ArrayList<Attachment>();
 					for (int j = 0; j < keys.length; j++) {
 						Attachment got = Attachment.load(keys[j], db);
 						if (got == null) missing.add(keys[j]);
 						else recd.add(got);
 					}
-					
+
 					if ((double) recd.size() / keys.length < REREQUEST_CUTOFF) {
 						APIRequest mReq;
 						mReq = cred.prep(children(item));
@@ -882,16 +882,16 @@ public class APIRequest {
 				/* Here, disposition should be "none" */
 				// Nothing to be done.
 			}
-			
+
 			getHandler().onComplete(this);
 		}
 	}
-	
+
 	/** NEXT SECTION: Static methods for generating APIRequests */
 
 	/**
 	 * Produces an API request for the specified item key
-	 * 
+	 *
 	 * @param key			Item key
 	 * @param cred			Credentials
 	 */
@@ -904,12 +904,12 @@ public class APIRequest {
 		req.disposition = "xml";
 		req.type = ITEM_BY_KEY;
 		req.key = cred.getKey();
-		return req;	
+		return req;
 	}
-	
+
 	/**
 	 * Produces an API request for the items in a specified collection.
-	 * 
+	 *
 	 * @param collection	The collection to fetch
 	 * @param keysOnly		Use format=keys rather than format=atom/content=json
 	 * @param cred			Credentials
@@ -917,10 +917,10 @@ public class APIRequest {
 	public static APIRequest fetchItems(ItemCollection collection, boolean keysOnly, ServerCredentials cred) {
 		return fetchItems(collection.getKey(), keysOnly, cred);
 	}
-	
+
 	/**
 	 * Produces an API request for the items in a specified collection.
-	 * 
+	 *
 	 * @param collectionKey	The collection to fetch
 	 * @param keysOnly		Use format=keys rather than format=atom/content=json
 	 * @param cred			Credentials
@@ -940,10 +940,10 @@ public class APIRequest {
 		req.key = cred.getKey();
 		return req;
 	}
-	
+
 	/**
 	 * Produces an API request for all items
-	 * 
+	 *
  	 * @param keysOnly		Use format=keys rather than format=atom/content=json
 	 * @param cred			Credentials
 	 */
@@ -962,14 +962,14 @@ public class APIRequest {
 		req.key = cred.getKey();
 		return req;
 	}
-	
+
 	/**
 	 * Produces an API request for all collections
-	 * 
+	 *
 	 * @param c				Context
 	 */
 	public static APIRequest fetchCollections(ServerCredentials cred) {
-		APIRequest req = new APIRequest(ServerCredentials.APIBASE 
+		APIRequest req = new APIRequest(ServerCredentials.APIBASE
     			+ cred.prep(ServerCredentials.COLLECTIONS)
     			+ "?content=json",
     			"get", null);
@@ -978,15 +978,15 @@ public class APIRequest {
 		req.key = cred.getKey();
 		return req;
 	}
-	
+
 	/**
 	 * Produces an API request to remove the specified item from the collection.
 	 * This request always needs a key, but it isn't set automatically and should
 	 * be set by whatever consumes this request.
-	 * 
+	 *
 	 * From the API docs:
 	 *   DELETE /users/1/collections/QRST9876/items/ABCD2345
-	 * 
+	 *
 	 * @param item
 	 * @param collection
 	 * @return
@@ -998,20 +998,20 @@ public class APIRequest {
 								"DELETE",
 								null);
 		templ.disposition = "none";
-		
+
 		return templ;
 	}
-	
+
 	/**
 	 * Produces an API request to add the specified items to the collection.
 	 * This request always needs a key, but it isn't set automatically and should
 	 * be set by whatever consumes this request.
-	 * 
+	 *
 	 * From the API docs:
 	 *   POST /users/1/collections/QRST9876/items
-	 *   
+	 *
 	 *   ABCD2345 FBCD2335
-	 * 
+	 *
 	 * @param items
 	 * @param collection
 	 * @return
@@ -1030,10 +1030,10 @@ public class APIRequest {
 		templ.disposition = "none";
 		return templ;
 	}
-	
+
 	/**
 	 * Craft a request to add a single item to the server
-	 * 
+	 *
 	 * @param item
 	 * @param collection
 	 * @return
@@ -1043,11 +1043,11 @@ public class APIRequest {
 		items.add(item);
 		return add(items, collection);
 	}
-	
+
 	/**
 	 * Craft a request to add items to the server
 	 * This does not attempt to update them, just add them.
-	 * 
+	 *
 	 * @param items
 	 * @return
 	 */
@@ -1064,14 +1064,14 @@ public class APIRequest {
 		// needs to be reworked.
 		Log.d(TAG, "Using the templ key of the first new item for now...");
 		templ.updateKey = items.get(0).getKey();
-		
+
 		return templ;
 	}
-	
+
 	/**
 	 * Craft a request to add child items (notes, attachments) to the server
 	 * This does not attempt to update them, just add them.
-	 * 
+	 *
 	 * @param item The parent item of the attachments
 	 * @param attachments
 	 * @return
@@ -1089,9 +1089,9 @@ public class APIRequest {
 		// needs to be reworked.
 		Log.d(TAG, "Using the templ key of the first new attachment for now...");
 		templ.updateKey = attachments.get(0).key;
-		
+
 		return templ;
-	}	
+	}
 
 	/**
 	 * Craft a request for the children of the specified item
@@ -1107,18 +1107,18 @@ public class APIRequest {
 		templ.type = ITEMS_CHILDREN;
 		return templ;
 	}
-	
+
 	/**
 	 * Craft a request to update an attachment on the server
 	 * Does not refresh eTag
-	 * 
+	 *
 	 * @param attachment
 	 * @return
 	 */
 	public static APIRequest update(Attachment attachment, Database db) {
 		Log.d(TAG, "Attachment key pre-update: "+attachment.key);
 		// If we have an attachment marked as new, update it
-		if (attachment.key.length() > 10) {	
+		if (attachment.key.length() > 10) {
 			Item item = Item.load(attachment.parentKey, db);
 			ArrayList<Attachment> aL = new ArrayList<Attachment>();
 			aL.add(attachment);
@@ -1130,7 +1130,7 @@ public class APIRequest {
 			}
 			return add(item, aL);
 		}
-		
+
 		APIRequest templ = new APIRequest(ServerCredentials.APIBASE
 								+ ServerCredentials.ITEMS+"/" + attachment.key,
 								"PUT",
@@ -1142,25 +1142,25 @@ public class APIRequest {
 		}
 		templ.ifMatch = '"' + attachment.etag + '"';
 		templ.disposition = "xml";
-		
+
 		return templ;
 	}
 
 	/**
 	 * Craft a request to update an attachment on the server
 	 * Does not refresh eTag
-	 * 
+	 *
 	 * @param item
 	 * @return
 	 */
 	public static APIRequest update(Item item) {
 		// If we have an item markes as new, update it
-		if (item.getKey().length() > 10) {			
+		if (item.getKey().length() > 10) {
 			ArrayList<Item> mAL = new ArrayList<Item>();
 			mAL.add(item);
 			return add(mAL);
 		}
-		
+
 		APIRequest templ = new APIRequest(ServerCredentials.APIBASE
 								+ ServerCredentials.ITEMS+"/"+item.getKey(),
 								"PUT",
@@ -1169,18 +1169,18 @@ public class APIRequest {
 		templ.ifMatch = '"' + item.getEtag() + '"';
 		Log.d(TAG,"etag: "+item.getEtag());
 		templ.disposition = "xml";
-		
+
 		return templ;
 	}
-	
+
 	/**
 	 * Produces API requests to delete queued items from the server.
 	 * This request always needs a key.
-	 * 
+	 *
 	 * From the API docs:
 	 *   DELETE /users/1/items/ABCD2345
 	 *   If-Match: "8e984e9b2a8fb560b0085b40f6c2c2b7"
-	 * 
+	 *
 	 * @param c
 	 * @return
 	 */
@@ -1208,12 +1208,12 @@ public class APIRequest {
 			list.add(templ);
 		} while (cur.moveToNext() != false);
 		cur.close();
-		
+
 		db.rawQuery("delete from deleteditems", args);
 		db.close();
 		return list;
 	}
-	
+
 	/**
 	 * Returns APIRequest objects from the database
 	 * @return
@@ -1226,14 +1226,14 @@ public class APIRequest {
 		Cursor cur = db.query("apirequests", cols, "", args, null, null,
 				null, null);
 		if (cur == null) return list;
-		
+
 		do {
 			APIRequest req = new APIRequest(cur);
 			list.add(req);
 			Log.d(TAG, "Queueing request: "+req.query);
 		} while (cur.moveToNext() != false);
 		cur.close();
-		
+
 		return list;
 	}
 }
