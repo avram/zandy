@@ -1,77 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="com.gimranov.zandy.app"
-      android:versionCode="1370"
-      android:versionName="1.3.7">
-    <uses-sdk android:minSdkVersion="4" android:targetSdkVersion="11" />
+    package="com.gimranov.zandy.app"
+    android:versionCode="1370"
+    android:versionName="1.3.7">
+
+    <uses-sdk
+        android:minSdkVersion="4"
+        android:targetSdkVersion="19" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    
-    <application android:icon="@drawable/zandy72" android:label="@string/app_name">
-        <activity android:name=".MainActivity"
-                  android:label="@string/app_name"
-                  android:launchMode="singleInstance">
+
+    <application
+        android:icon="@drawable/zandy72"
+        android:label="@string/app_name">
+        <activity
+            android:name=".MainActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-				<data android:scheme="zotero" />
+
+                <data android:scheme="zotero" />
             </intent-filter>
             <intent-filter>
-            	<action android:name="android.intent.action.SEND" />
-            	<category android:name="android.intent.category.DEFAULT" />
-            	<data android:mimeType="text/plain" />
-        	</intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
         </activity>
-        <activity android:name=".CollectionActivity"
-                  android:label="@string/app_name"
-                  android:launchMode="standard">
-        </activity>
-        <activity android:name=".ItemActivity"
-                  android:label="@string/app_name"
-                  android:launchMode="standard">
+        <activity
+            android:name=".CollectionActivity"
+            android:label="@string/app_name"
+            android:launchMode="standard"/>
+        <activity
+            android:name=".ItemActivity"
+            android:label="@string/app_name"
+            android:launchMode="standard">
             <intent-filter>
-            	<action android:name="android.intent.action.SEARCH" />
-        	</intent-filter>
-        	<meta-data android:name="android.app.searchable"
-                   android:resource="@xml/searchable"/>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
         </activity>
-        <activity android:name=".ItemDataActivity"
-                  android:label="@string/app_name"
-                  android:launchMode="standard">
-        </activity>
-        <activity android:name=".TagActivity"
-                  android:label="@string/app_name"
-                  android:launchMode="standard">
-        </activity>
-        <activity android:name=".CreatorActivity"
-                  android:label="@string/app_name"
-                  android:launchMode="standard">
-        </activity>
-        <activity android:name=".SettingsActivity"
-                  android:label="@string/app_name"
-                  android:launchMode="standard">
-        </activity>
-        <activity android:name=".AttachmentActivity"
-            	  android:label="@string/app_name"
-                  android:launchMode="standard">
-        </activity>
-        <activity android:name=".CollectionMembershipActivity"
-            	  android:label="@string/app_name"
-                  android:launchMode="standard">
-        </activity>
-        <activity android:name=".LookupActivity"
-            	  android:label="@string/app_name"
-                  android:launchMode="standard">
-        </activity>
-        <activity android:name=".RequestActivity"
-            	  android:label="@string/app_name"
-                  android:launchMode="standard">
-        </activity>
-        <activity android:name=".NoteActivity" android:label="@string/app_name" android:launchMode="standard"></activity>
+        <activity
+            android:name=".ItemDataActivity"
+            android:label="@string/app_name"
+            android:launchMode="standard"/>
+        <activity
+            android:name=".TagActivity"
+            android:label="@string/app_name"
+            android:launchMode="standard"/>
+        <activity
+            android:name=".CreatorActivity"
+            android:label="@string/app_name"
+            android:launchMode="standard"/>
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/app_name"
+            android:launchMode="standard"/>
+        <activity
+            android:name=".AttachmentActivity"
+            android:label="@string/app_name"
+            android:launchMode="standard"/>
+        <activity
+            android:name=".CollectionMembershipActivity"
+            android:label="@string/app_name"
+            android:launchMode="standard"/>
+        <activity
+            android:name=".LookupActivity"
+            android:label="@string/app_name"
+            android:launchMode="standard"/>
+        <activity
+            android:name=".RequestActivity"
+            android:label="@string/app_name"
+            android:launchMode="standard"/>
+        <activity
+            android:name=".NoteActivity"
+            android:label="@string/app_name"
+            android:launchMode="standard" />
     </application>
 </manifest>
