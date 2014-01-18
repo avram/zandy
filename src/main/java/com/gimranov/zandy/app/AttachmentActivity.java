@@ -50,6 +50,7 @@ import android.widget.TextView;
 import android.widget.TextView.BufferType;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.gimranov.zandy.app.data.Attachment;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
@@ -670,6 +671,7 @@ public class AttachmentActivity extends ListActivity {
                         + " sec");
 	        } catch (IOException e) {
                 Log.e(TAG, "Error: ",e);
+                Crashlytics.logException(e);
                 AttachmentActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

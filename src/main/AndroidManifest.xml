@@ -40,7 +40,7 @@
         <activity
             android:name=".CollectionActivity"
             android:label="@string/app_name"
-            android:launchMode="standard"/>
+            android:launchMode="standard" />
         <activity
             android:name=".ItemActivity"
             android:label="@string/app_name"
@@ -55,38 +55,42 @@
         <activity
             android:name=".ItemDataActivity"
             android:label="@string/app_name"
-            android:launchMode="standard"/>
+            android:launchMode="standard" />
         <activity
             android:name=".TagActivity"
             android:label="@string/app_name"
-            android:launchMode="standard"/>
+            android:launchMode="standard" />
         <activity
             android:name=".CreatorActivity"
             android:label="@string/app_name"
-            android:launchMode="standard"/>
+            android:launchMode="standard" />
         <activity
             android:name=".SettingsActivity"
             android:label="@string/app_name"
-            android:launchMode="standard"/>
+            android:launchMode="standard" />
         <activity
             android:name=".AttachmentActivity"
             android:label="@string/app_name"
-            android:launchMode="standard"/>
+            android:launchMode="standard" />
         <activity
             android:name=".CollectionMembershipActivity"
             android:label="@string/app_name"
-            android:launchMode="standard"/>
+            android:launchMode="standard" />
         <activity
             android:name=".LookupActivity"
             android:label="@string/app_name"
-            android:launchMode="standard"/>
+            android:launchMode="standard" />
         <activity
             android:name=".RequestActivity"
             android:label="@string/app_name"
-            android:launchMode="standard"/>
+            android:launchMode="standard" />
         <activity
             android:name=".NoteActivity"
             android:label="@string/app_name"
             android:launchMode="standard" />
+
+        <meta-data
+            android:name="com.crashlytics.ApiKey"
+            android:value="d02b3d0416bed4f24247e9114e295b0f38ae0455" />
     </application>
 </manifest>

@@ -89,7 +89,7 @@ this.LINK_MODE_LINKED_URL = 3;
 			if (type.equals("note"))
 				type = "note";
 		} catch (JSONException e) {
-			Log.e(TAG, "JSON exception parsing attachment content",e);
+			Log.e(TAG, "JSON exception parsing attachment content: "+ content.toString(), e);
 		}
 		return type;
 	}

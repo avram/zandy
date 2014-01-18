@@ -1,45 +1,50 @@
 buildscript {
     repositories {
         mavenCentral()
+        maven { url 'http://download.crashlytics.com/maven' }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:0.7.+'
+        classpath 'com.crashlytics.tools.gradle:crashlytics-gradle:1.+'
     }
 }
 
 
 repositories {
     mavenCentral()
+    maven { url 'http://download.crashlytics.com/maven' }
 }
 
 apply plugin: 'android'
+apply plugin: 'crashlytics'
 
 dependencies {
     compile 'oauth.signpost:signpost-commonshttp4:1.2.1.2'
     compile 'com.intellij:annotations:12.0'
+    compile 'com.crashlytics.android:crashlytics:1.+'
 }
 
 android {
     compileSdkVersion 19
     buildToolsVersion "19.0.1"
 
-    signingConfigs {
-        release {
-            storeFile file("keystore")
-            storePassword zandyStorePassword
-            keyAlias "zandy"
-            keyPassword zandyKeyPassword
-        }
-    }
+//    signingConfigs {
+//        release {
+//            storeFile file("keystore")
+//            storePassword zandyStorePassword
+//            keyAlias "zandy"
+//            keyPassword zandyKeyPassword
+//        }
+//    }
 
-    buildTypes {
-        release {
-            zipAlign true
-            signingConfig signingConfigs.release
-            runProguard false
-            proguardFile getDefaultProguardFile('proguard-android.txt')
-        }
-    }
+//    buildTypes {
+//        release {
+//            zipAlign true
+//            signingConfig signingConfigs.release
+//            runProguard false
+//            proguardFile getDefaultProguardFile('proguard-android.txt')
+//        }
+//    }
 }
 
 task wrapper(type: Wrapper) {
