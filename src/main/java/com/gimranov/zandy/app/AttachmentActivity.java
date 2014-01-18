@@ -16,24 +16,6 @@
  ******************************************************************************/
 package com.gimranov.zandy.app;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.Authenticator;
-import java.net.MalformedURLException;
-import java.net.PasswordAuthentication;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-
-import org.apache.http.util.ByteArrayBuffer;
-import org.json.JSONException;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
@@ -73,6 +55,24 @@ import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
 import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
+
+import org.apache.http.util.ByteArrayBuffer;
+import org.json.JSONException;
+
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.Authenticator;
+import java.net.MalformedURLException;
+import java.net.PasswordAuthentication;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * This Activity handles displaying and editing attachments. It works almost the same as
@@ -271,7 +271,8 @@ public class AttachmentActivity extends ListActivity {
     	super.onResume();
     }
     
-	protected Dialog onCreateDialog(int id) {
+	@Override
+    protected Dialog onCreateDialog(int id) {
 		final String attachmentKey = b.getString("attachmentKey");
 		final String itemKey = b.getString("itemKey");
 		final String content = b.getString("content");
@@ -509,6 +510,10 @@ public class AttachmentActivity extends ListActivity {
 
 			// Setup
 			final String attachmentKey = arguments.getString("attachmentKey");
+
+            // Can't fetch if we have nothing to fetch
+            if (attachmentKey == null) return;
+
 			final String mode = arguments.getString("mode");
 			URL url;
 			File file;
