@@ -76,10 +76,10 @@ public class ItemActivity extends ListActivity {
 	 * Allowed sort orderings
 	 */
 	static final String[] SORTS = {
-		"item_year, item_title",
-		"item_creator, item_year",
-		"item_title, item_year",
-		"timestamp ASC, item_title"
+		"item_year, item_title COLLATE NOCASE",
+		"item_creator COLLATE NOCASE, item_year",
+		"item_title COLLATE NOCASE, item_year",
+		"timestamp ASC, item_title COLLATE NOCASE"
 	};
 
 	/**
