@@ -1,0 +1,37 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.7.+'
+    }
+}
+
+
+repositories {
+    mavenCentral()
+}
+
+apply plugin: 'android'
+
+dependencies {
+    compile 'oauth.signpost:signpost-commonshttp4:1.2.1.2'
+}
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "19.0.1"
+
+    signingConfigs {
+        release {
+            storeFile file("keystore")
+            storePassword zandyStorePassword
+            keyAlias "zandy"
+            keyPassword zandyKeyPassword
+        }
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.9'
+}
