@@ -14,57 +14,59 @@
   You should have received a copy of the GNU Affero General Public License
   along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
 -->
-<PreferenceScreen
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:title="Settings">
-<PreferenceCategory android:title="@string/settings_basic"
- 			android:summary="">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="Settings">
+    <PreferenceCategory
+        android:title="@string/settings_basic"
+        android:summary="">
         <CheckBoxPreference
-                android:key="sync_aggressively"
-                android:title="@string/settings_aggressive_syncing"
-                android:summary="@string/settings_aggressive_syncing_desc" />
-    <!--    <CheckBoxPreference
-                android:key="sync_read_only"
-                android:title="@string/settings_read_only"
-                android:summary="@string/settings_read_only_desc" />-->
-        
-        <EditTextPreference
-                android:key="user_id"
-                android:title="@string/settings_user_id"
-                android:summary="@string/settings_user_id_desc"
-                android:numeric="integer" />
+            android:key="sync_aggressively"
+            android:title="@string/settings_aggressive_syncing"
+            android:summary="@string/settings_aggressive_syncing_desc" />
+        <!--    <CheckBoxPreference
+                    android:key="sync_read_only"
+                    android:title="@string/settings_read_only"
+                    android:summary="@string/settings_read_only_desc" />-->
 
         <EditTextPreference
-                android:key="user_key"
-                android:title="@string/settings_api_key"
-                android:summary="@string/settings_api_key_desc" />
-</PreferenceCategory>
-<PreferenceCategory android:title="@string/settings_webdav"
- 			android:summary="">
-        <CheckBoxPreference
-                android:key="webdav_enabled"
-                android:title="@string/settings_webdav_enabled"
-                android:summary="@string/settings_webdav_enabled_desc" />
+            android:key="user_id"
+            android:title="@string/settings_user_id"
+            android:summary="@string/settings_user_id_desc"
+            android:numeric="integer" />
 
         <EditTextPreference
-                android:key="webdav_path"
-                android:title="@string/settings_webdav_path"
-                android:summary="@string/settings_webdav_path_desc"
-                android:inputType="textUri" />
-        
+            android:key="user_key"
+            android:title="@string/settings_api_key"
+            android:summary="@string/settings_api_key_desc" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/settings_webdav"
+        android:summary="">
+        <CheckBoxPreference
+            android:key="webdav_enabled"
+            android:title="@string/settings_webdav_enabled"
+            android:summary="@string/settings_webdav_enabled_desc" />
+
         <EditTextPreference
-                android:key="webdav_username"
-                android:title="@string/settings_webdav_username"
-                android:summary="@string/settings_webdav_username_desc" />
-        
+            android:key="webdav_path"
+            android:title="@string/settings_webdav_path"
+            android:summary="@string/settings_webdav_path_desc"
+            android:inputType="textUri" />
+
         <EditTextPreference
-                android:key="webdav_password"
-                android:title="@string/settings_webdav_password"
-                android:summary="@string/settings_webdav_password_desc"
-                android:password="true" />
-      <!--   <CheckBoxPreference
-                android:key="webdav_ssl_override"
-                android:title="@string/settings_webdav_ssl_override"
-                android:summary="@string/settings_webdav_ssl_override_desc" />-->
-</PreferenceCategory>
+            android:key="webdav_username"
+            android:title="@string/settings_webdav_username"
+            android:summary="@string/settings_webdav_username_desc" />
+
+        <EditTextPreference
+            android:key="webdav_password"
+            android:title="@string/settings_webdav_password"
+            android:summary="@string/settings_webdav_password_desc"
+            android:password="true" />
+        <CheckBoxPreference
+            android:key="webdav_ssl_override"
+            android:title="@string/settings_webdav_ssl_override"
+            android:summary="@string/settings_webdav_ssl_override_desc"
+            android:defaultValue="false" />
+    </PreferenceCategory>
 </PreferenceScreen>

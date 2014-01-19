@@ -56,6 +56,7 @@ import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
 import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
+import com.gimranov.zandy.app.webdav.WebDavTrust;
 
 import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONException;
@@ -549,6 +550,10 @@ public class AttachmentActivity extends ListActivity {
 				        		settings.getString("webdav_password", "").toCharArray());
 				    }
 				});
+
+                if (settings.getBoolean("webdav_ssl_override", false)) {
+                    WebDavTrust.installAllTrustingCertificate();
+                }
 			} else {
 				urlstring = att.url+"?key="+settings.getString("user_key","");
 			}

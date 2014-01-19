@@ -129,8 +129,9 @@
     <string name="settings_read_only_desc">Check to prevent Zandy from making modifications to data on the Zotero servers.</string>
     <string name="settings_webdav_ssl_override">Override SSL</string>
     <string name="settings_webdav_ssl_override_desc">Check to skip SSL certificate checking, for servers using self-signed SSL certificates.</string>
-    	
-	<!-- Zotero terms -->
+    <string name="settings_test_connections">Test Zotero and WebDAV connections</string>
+
+    <!-- Zotero terms -->
     <string name="note">Note</string>
     <string name="note_for_item">Note for %s</string>
     <string name="note_edit">Edit note</string>
@@ -171,5 +172,5 @@
         <string name="template_thesis">{"itemType":"thesis","title":"-_-_-","creators":[{"creatorType":"author","firstName":"-_-_-","lastName":"-_-_-"}],"abstractNote":"-_-_-","thesisType":"-_-_-","university":"-_-_-","place":"-_-_-","date":"-_-_-","numPages":"-_-_-","language":"-_-_-","shortTitle":"-_-_-","url":"-_-_-","accessDate":"-_-_-","archive":"-_-_-","archiveLocation":"-_-_-","libraryCatalog":"-_-_-","callNumber":"-_-_-","rights":"-_-_-","extra":"-_-_-","tags":[],"notes":[]}</string>
         <string name="template_videoRecording">{"itemType":"videoRecording","title":"-_-_-","creators":[{"creatorType":"director","firstName":"-_-_-","lastName":"-_-_-"}],"abstractNote":"-_-_-","videoRecordingFormat":"-_-_-","seriesTitle":"-_-_-","volume":"-_-_-","numberOfVolumes":"-_-_-","place":"-_-_-","studio":"-_-_-","date":"-_-_-","runningTime":"-_-_-","language":"-_-_-","ISBN":"-_-_-","shortTitle":"-_-_-","url":"-_-_-","accessDate":"-_-_-","archive":"-_-_-","archiveLocation":"-_-_-","libraryCatalog":"-_-_-","callNumber":"-_-_-","rights":"-_-_-","extra":"-_-_-","tags":[],"notes":[]}</string>
         <string name="template_webpage">{"itemType":"webpage","title":"-_-_-","creators":[{"creatorType":"author","firstName":"-_-_-","lastName":"-_-_-"}],"abstractNote":"-_-_-","websiteTitle":"-_-_-","websiteType":"-_-_-","date":"-_-_-","shortTitle":"-_-_-","url":"-_-_-","accessDate":"-_-_-","language":"-_-_-","rights":"-_-_-","extra":"-_-_-","tags":[],"notes":[]}</string>
-   
+
 </resources>
