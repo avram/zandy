@@ -46,6 +46,10 @@ android {
             proguardFile getDefaultProguardFile('proguard-android.txt')
         }
     }
+    
+    packagingOptions {
+        exclude 'META-INF/LICENSE.txt'
+    }
 }
 
 task wrapper(type: Wrapper) {
