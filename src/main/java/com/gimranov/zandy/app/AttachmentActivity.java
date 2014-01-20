@@ -591,14 +591,13 @@ public class AttachmentActivity extends ListActivity {
                  * Define InputStreams to read from the URLConnection.
                  */
                 InputStream is = ucon.getInputStream();
-                BufferedInputStream bis = new BufferedInputStream(is, 16000);
+                BufferedInputStream bis = new BufferedInputStream(is, 2000);
                 int current = 0;
                 int size = 0;
 
                 /*
-                 * Read bytes to the Buffer until there is nothing more to read(-1).
+                 * Read bytes to the file until there is nothing more to read(-1).
                  */
-
                 FileOutputStream fos = new FileOutputStream(file);
 
                 while ((current = bis.read()) != -1) {
@@ -674,7 +673,9 @@ public class AttachmentActivity extends ListActivity {
                             Crashlytics.logException(new Throwable("b64 " + name64, e));
                         }
                     } while (entries.hasMoreElements());
+
                     zf.close();
+
 		            // We remove the file from the ArrayList if deletion succeeded;
                     // otherwise deletion is put off until the activity exits.
                     if (tmpFile.delete()) {
@@ -688,15 +689,9 @@ public class AttachmentActivity extends ListActivity {
 	        } catch (IOException e) {
                 Log.e(TAG, "Error: ",e);
                 Crashlytics.logException(e);
-                AttachmentActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(AttachmentActivity.this,
-                                R.string.attachment_download_failed_cant_write,
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
+                toastError(R.string.attachment_download_failed, e.getMessage());
 	        }
+
 			att.filename = file.getPath();
 			File newFile = new File(att.filename);
         	Message msg = mHandler.obtainMessage();
@@ -714,7 +709,20 @@ public class AttachmentActivity extends ListActivity {
         	mHandler.sendMessage(msg);
 		}
 	}
-               
+
+    private void toastError(final int resource, final String detail) {
+        AttachmentActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(AttachmentActivity.this,
+                        AttachmentActivity.this.getString(resource)
+                            + "\n " + detail,
+                        Toast.LENGTH_LONG
+                ).show();
+            }
+        });
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
