@@ -644,31 +644,35 @@ public class AttachmentActivity extends ListActivity {
                         mHandler.sendMessage(msg);
 
                     	String name64 = entry.getName();
-                    	byte[] byteName = Base64.decode(name64.getBytes(), 0, name64.length() - 5, Base64.DEFAULT);
-                    	String name = new String(byteName);
-                    	Log.d(TAG, "Found file "+name+" from encoded "+name64);
-                    	// If the linkMode is not an imported URL (snapshot) and the MIME type isn't text/html,
-                    	// then we unzip it and we're happy. If either of the preceding is true, we skip the file
-                    	// unless the filename includes .htm (covering .html automatically)
-                    	if ( (!att.getType().equals("text/html")) || name.contains(".htm")) {
-                    		FileOutputStream fos2 = new FileOutputStream(file);
-                    		InputStream entryStream = zf.getInputStream(entry);
-                            ByteArrayBuffer baf2 = new ByteArrayBuffer(100);
-                            while ((current = entryStream.read()) != -1) {
-                            	baf2.append((byte) current);
+                        try {
+                    	    byte[] byteName = Base64.decode(name64.getBytes(), 0, name64.length() - 5, Base64.DEFAULT);
+                            String name = new String(byteName);
+                            Log.d(TAG, "Found file "+name+" from encoded "+name64);
+                            // If the linkMode is not an imported URL (snapshot) and the MIME type isn't text/html,
+                            // then we unzip it and we're happy. If either of the preceding is true, we skip the file
+                            // unless the filename includes .htm (covering .html automatically)
+                            if ( (!att.getType().equals("text/html")) || name.contains(".htm")) {
+                                FileOutputStream fos2 = new FileOutputStream(file);
+                                InputStream entryStream = zf.getInputStream(entry);
+                                ByteArrayBuffer baf2 = new ByteArrayBuffer(100);
+                                while ((current = entryStream.read()) != -1) {
+                                    baf2.append((byte) current);
 
-                                if (baf2.length() % 2048 == 0) {
-                                    msg = mHandler.obtainMessage();
-                                    msg.arg1 = baf2.length();
-                                    mHandler.sendMessage(msg);
+                                    if (baf2.length() % 2048 == 0) {
+                                        msg = mHandler.obtainMessage();
+                                        msg.arg1 = baf2.length();
+                                        mHandler.sendMessage(msg);
+                                    }
                                 }
+                                fos2.write(baf2.toByteArray());
+                                fos2.close();
+                                Log.d(TAG, "Finished reading file");
+                            } else {
+                                Log.d(TAG, "Skipping file: "+name);
                             }
-                            fos2.write(baf2.toByteArray());
-                            fos2.close();
-                            Log.d(TAG, "Finished reading file");
-                    	} else {
-                    		Log.d(TAG, "Skipping file: "+name);
-                    	}
+                        } catch (IllegalArgumentException e) {
+                            Crashlytics.logException(new Throwable("b64 " + name64, e));
+                        }
                     } while (entries.hasMoreElements());
                     zf.close();
 		            // We remove the file from the ArrayList if deletion succeeded;
