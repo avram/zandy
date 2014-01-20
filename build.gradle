@@ -22,29 +22,30 @@ dependencies {
     compile 'oauth.signpost:signpost-commonshttp4:1.2.1.2'
     compile 'com.intellij:annotations:12.0'
     compile 'com.crashlytics.android:crashlytics:1.+'
+    compile 'commons-io:commons-io:2.4'
 }
 
 android {
     compileSdkVersion 19
     buildToolsVersion "19.0.1"
 
-    signingConfigs {
-        release {
-            storeFile file("keystore")
-            storePassword zandyStorePassword
-            keyAlias "zandy"
-            keyPassword zandyKeyPassword
-        }
-    }
-
-    buildTypes {
-        release {
-            zipAlign true
-            signingConfig signingConfigs.release
-            runProguard false
-            proguardFile getDefaultProguardFile('proguard-android.txt')
-        }
-    }
+//    signingConfigs {
+//        release {
+//            storeFile file("keystore")
+//            storePassword zandyStorePassword
+//            keyAlias "zandy"
+//            keyPassword zandyKeyPassword
+//        }
+//    }
+//
+//    buildTypes {
+//        release {
+//            zipAlign true
+//            signingConfig signingConfigs.release
+//            runProguard false
+//            proguardFile getDefaultProguardFile('proguard-android.txt')
+//        }
+//    }
 }
 
 task wrapper(type: Wrapper) {
