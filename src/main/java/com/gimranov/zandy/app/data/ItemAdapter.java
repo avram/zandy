@@ -46,7 +46,7 @@ public class ItemAdapter extends ResourceCursorAdapter {
     }
     
     /**
-     * Call this when the data has been updated-- it refreshes the cursor and notifies of the change
+     * Call this when the data has been updated
      */
     public void notifyDataSetChanged() {
     	super.notifyDataSetChanged();

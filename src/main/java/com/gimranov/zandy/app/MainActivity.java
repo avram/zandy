@@ -34,6 +34,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -62,6 +63,8 @@ public class MainActivity extends Activity implements OnClickListener {
 	private OAuthProvider httpOAuthProvider;
 
 	private static final String TAG = "com.gimranov.zandy.app.MainActivity";
+
+    private static final String DEFAULT_SORT = "timestamp ASC, item_title COLLATE NOCASE";
 
 	static final int DIALOG_CHOOSE_COLLECTION = 1;
 	
@@ -120,9 +123,16 @@ public class MainActivity extends Activity implements OnClickListener {
 		if (!ServerCredentials.check(getBaseContext())) {
 			loginButton.setText(getResources().getString(R.string.log_in));
 			loginButton.setClickable(true);
-		}
-		
-		super.onResume();
+		} else {
+            ListView lv = ((ListView) findViewById(android.R.id.list));
+            ItemAdapter adapter = (ItemAdapter) lv.getAdapter();
+            if (adapter != null) {
+                Cursor newCursor = getCursor(DEFAULT_SORT);
+                adapter.changeCursor(newCursor);
+                adapter.notifyDataSetChanged();
+            }
+        }
+        super.onResume();
 	}
 	
 	/**
@@ -362,7 +372,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
         loginButton.setVisibility(View.GONE);
 
-        ItemAdapter adapter = new ItemAdapter(this, getCursor("timestamp ASC, item_title COLLATE NOCASE"));
+        ItemAdapter adapter = new ItemAdapter(this, getCursor(DEFAULT_SORT));
         ListView lv = ((ListView) findViewById(android.R.id.list));
         lv.setAdapter(adapter);
 

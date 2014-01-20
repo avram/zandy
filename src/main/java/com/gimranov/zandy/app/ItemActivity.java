@@ -269,9 +269,8 @@ public class ItemActivity extends ListActivity {
     }
 
 	protected void onResume() {
-		ItemAdapter adapter = (ItemAdapter) getListAdapter();
-		adapter.changeCursor(prepareCursor());
-    	super.onResume();
+        super.onResume();
+        refreshView();
     }
     
     public void onDestroy() {
