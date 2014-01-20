@@ -58,6 +58,7 @@ import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
 import com.gimranov.zandy.app.webdav.WebDavTrust;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONException;
 
@@ -591,37 +592,46 @@ public class AttachmentActivity extends ListActivity {
                  */
                 InputStream is = ucon.getInputStream();
                 BufferedInputStream bis = new BufferedInputStream(is, 16000);
-                // Buffer up to 512KB at a time
-                int bufferSize = Math.max(1000, Math.min(ucon.getContentLength(), 512*1024));
-                ByteArrayBuffer baf = new ByteArrayBuffer(bufferSize);
                 int current = 0;
-                
+                int size = 0;
+
                 /*
                  * Read bytes to the Buffer until there is nothing more to read(-1).
-                 * TODO read in chunks instead of byte by byte
                  */
+
+                FileOutputStream fos = new FileOutputStream(file);
+
                 while ((current = bis.read()) != -1) {
-                        baf.append((byte) current);
-                        
-                    if (baf.length() % 2048 == 0) {
+                    fos.write((byte) current);
+
+                    size++;
+
+                    if (size % 2048 == 0) {
                         msg = mHandler.obtainMessage();
-                        msg.arg1 = baf.length();
+                        msg.arg1 = size;
                         mHandler.sendMessage(msg);
                     }
                 }
 
+                fos.close();
+
     			/* Save to temporary directory for WebDAV */
     			if ("webdav".equals(mode)) {
-    				if (!ServerCredentials.sCacheDir.exists())
-    					ServerCredentials.sCacheDir.mkdirs();
+    				if (!ServerCredentials.sCacheDir.exists()) {
+                        //noinspection ResultOfMethodCallIgnored
+                        ServerCredentials.sCacheDir.mkdirs();
+                    }
 
     				File tmpFile = File.createTempFile("zandy", ".zip",ServerCredentials.sCacheDir);
+
+                    FileUtils.copyFile(file, tmpFile);
+                    //noinspection ResultOfMethodCallIgnored
+                    file.delete();
+
     				// Keep track of temp files that we've created.
     				if (tmpFiles == null) tmpFiles = new ArrayList<File>();
     				tmpFiles.add(tmpFile);
-    				FileOutputStream fos = new FileOutputStream(tmpFile);
-                    fos.write(baf.toByteArray());
-                    fos.close();
+
                     ZipFile zf = new ZipFile(tmpFile);
                     
                 	Enumeration<ZipEntry> entries = (Enumeration<ZipEntry>) zf.entries();
@@ -666,11 +676,8 @@ public class AttachmentActivity extends ListActivity {
                     if (tmpFile.delete()) {
                     	tmpFiles.remove(tmpFile);
                     }
-    			} else {
-                    FileOutputStream fos = new FileOutputStream(file);
-                    fos.write(baf.toByteArray());
-                    fos.close();
-                }
+    			}
+
     			Log.d(TAG, "download ready in "
                         + ((System.currentTimeMillis() - startTime) / 1000)
                         + " sec");

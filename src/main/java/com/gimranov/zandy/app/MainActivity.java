@@ -16,16 +16,6 @@
  ******************************************************************************/
 package com.gimranov.zandy.app;
 
-import java.util.ArrayList;
-
-import oauth.signpost.OAuthProvider;
-import oauth.signpost.basic.DefaultOAuthProvider;
-import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
-import oauth.signpost.exception.OAuthCommunicationException;
-import oauth.signpost.exception.OAuthExpectationFailedException;
-import oauth.signpost.exception.OAuthMessageSignerException;
-import oauth.signpost.exception.OAuthNotAuthorizedException;
-import oauth.signpost.http.HttpParameters;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -49,13 +39,23 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
-
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
 import com.gimranov.zandy.app.data.ItemAdapter;
 import com.gimranov.zandy.app.data.ItemCollection;
 import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
+
+import java.util.ArrayList;
+
+import oauth.signpost.OAuthProvider;
+import oauth.signpost.basic.DefaultOAuthProvider;
+import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
+import oauth.signpost.exception.OAuthCommunicationException;
+import oauth.signpost.exception.OAuthExpectationFailedException;
+import oauth.signpost.exception.OAuthMessageSignerException;
+import oauth.signpost.exception.OAuthNotAuthorizedException;
+import oauth.signpost.http.HttpParameters;
 
 public class MainActivity extends Activity implements OnClickListener {
 	private CommonsHttpOAuthConsumer httpOAuthConsumer;
@@ -175,15 +175,24 @@ public class MainActivity extends Activity implements OnClickListener {
 					ServerCredentials.CALLBACKURL);
 			startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl)));
 		} catch (OAuthMessageSignerException e) {
-			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+            toastError(e.getMessage());
 		} catch (OAuthNotAuthorizedException e) {
-			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+            toastError(e.getMessage());
 		} catch (OAuthExpectationFailedException e) {
-			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+            toastError(e.getMessage());
 		} catch (OAuthCommunicationException e) {
-			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+            toastError(e.getMessage());
 		}
 	}
+
+    private void toastError(final String message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG);
+            }
+        });
+    }
 
 	/**
 	 * Receives intents that the app knows how to interpret. These will probably
@@ -292,13 +301,13 @@ public class MainActivity extends Activity implements OnClickListener {
 					    		}
 					    	});
 				    	} catch (OAuthMessageSignerException e) {
-				    		Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                            toastError(e.getMessage());
 				    	} catch (OAuthNotAuthorizedException e) {
-				    		Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                            toastError(e.getMessage());
 				    	} catch (OAuthExpectationFailedException e) {
-				    		Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
+                            toastError(e.getMessage());
 				    	} catch (OAuthCommunicationException e) {
-				    		Toast.makeText(MainActivity.this, "Error communicating with server. Check your time settings, network connectivity, and try again. OAuth error: "+e.getMessage(), Toast.LENGTH_LONG).show();
+                            toastError("Error communicating with server. Check your time settings, network connectivity, and try again. OAuth error: " + e.getMessage());
 				    	}
 				    }
 			  }).start();
