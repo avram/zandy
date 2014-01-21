@@ -84,9 +84,14 @@ this.LINK_MODE_LINKED_URL = 3;
 		String type = "";
 		try {
 			type = content.getString("itemType");
-			if (type.equals("attachment"))
-				type = content.getString("mimeType");
-			if (type.equals("note"))
+			if (type.equals("attachment")) {
+                if (content.has("mimeType")) {
+                    type = content.getString("mimeType");
+                } else if (content.has("contentType")) {
+                    type = content.getString("contentType");
+                }
+            }
+            if (type.equals("note"))
 				type = "note";
 		} catch (JSONException e) {
 			Log.e(TAG, "JSON exception parsing attachment content: "+ content.toString(), e);
