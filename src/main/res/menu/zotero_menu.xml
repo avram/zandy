@@ -23,7 +23,9 @@
           android:icon="@drawable/glyphish_22_skull_n_bones"
           android:title="@string/menu_delete"
           android:enabled="false"
-          android:visible="false" />
+          android:visible="false"
+        android:showAsAction="ifRoom"
+        />
     <item android:id="@+id/do_identifier"
           android:icon="@drawable/glyphish_195_barcode"
           android:title="@string/menu_identifier"
@@ -33,15 +35,22 @@
           android:icon="@drawable/glyphish_104_index_cards"
           android:title="@string/menu_sort"
           android:enabled="false"
-          android:visible="false" />
+          android:visible="false"
+        android:showAsAction="ifRoom"
+        />
     <item android:id="@+id/do_search"
           android:icon="@drawable/glyphish_151_telescope"
           android:title="@string/menu_search"
           android:enabled="false"
-          android:visible="false" />    
+          android:visible="false"
+        android:showAsAction="ifRoom"
+        />
     <item android:id="@+id/do_new"
           android:icon="@drawable/glyphish_10_medical"
-          android:title="@string/menu_new" />
+          android:title="@string/menu_new"
+        android:showAsAction="ifRoom"
+
+        />
     <item android:id="@+id/do_prefs"
           android:icon="@drawable/glyphish_106_sliders"
           android:title="@string/menu_prefs" />
