@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ExpandableListActivity;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -287,8 +288,14 @@ public class ItemDataActivity extends ExpandableListActivity {
 		        			// The behavior for invalid URIs might be nasty, but
 		        			// we'll cross that bridge if we come to it.
                             Uri uri = Uri.parse(fixedUri);
-		        			startActivity(new Intent(Intent.ACTION_VIEW)
+
+                            try {
+		        			    startActivity(new Intent(Intent.ACTION_VIEW)
 		        							.setData(uri));
+                            } catch (ActivityNotFoundException e) {
+                                //noinspection UnnecessaryReturnStatement
+                                return;
+                            }
 		    	        }
 		    	    }).setNegativeButton(getResources().getString(R.string.cancel),
 		    	    		new DialogInterface.OnClickListener() {
