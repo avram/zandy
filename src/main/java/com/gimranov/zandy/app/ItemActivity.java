@@ -61,6 +61,7 @@ import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import com.squareup.otto.Subscribe;
 
 public class ItemActivity extends ListActivity {
 
@@ -120,7 +121,9 @@ public class ItemActivity extends ListActivity {
 			}
 			
 			if (msg.arg1 == APIRequest.BATCH_DONE) {
-				Toast.makeText(getApplicationContext(),
+                Application.getInstance().getBus().post(SyncEvent.COMPLETE);
+
+                Toast.makeText(getApplicationContext(),
 						getResources().getString(R.string.sync_complete), 
         				Toast.LENGTH_SHORT).show();
 				return;
@@ -183,6 +186,8 @@ public class ItemActivity extends ListActivity {
 	 */
 	private void refreshView() {
 		ItemAdapter adapter = (ItemAdapter) getListAdapter();
+        if (adapter == null) return;
+
 		Cursor newCursor = prepareCursor();
 		adapter.changeCursor(newCursor);
 		adapter.notifyDataSetChanged();
@@ -268,11 +273,14 @@ public class ItemActivity extends ListActivity {
         });
     }
 
+    @Override
 	protected void onResume() {
         super.onResume();
+        Application.getInstance().getBus().register(this);
         refreshView();
     }
-    
+
+    @Override
     public void onDestroy() {
 		ItemAdapter adapter = (ItemAdapter) getListAdapter();
 		Cursor cur = adapter.getCursor();
@@ -280,7 +288,13 @@ public class ItemActivity extends ListActivity {
 		if (db != null) db.close();
 		super.onDestroy();
     }
-    
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Application.getInstance().getBus().unregister(this);
+    }
+
     private void prepareAdapter() {
 		ItemAdapter adapter = new ItemAdapter(this, prepareCursor());
         setListAdapter(adapter);
@@ -420,7 +434,8 @@ public class ItemActivity extends ListActivity {
 			return null;
 		}
 	}
-    
+
+    @Override
 	protected void onPrepareDialog(int id, Dialog dialog) {
 		switch(id) {
 		case DIALOG_PROGRESS:
@@ -561,8 +576,13 @@ public class ItemActivity extends ListActivity {
 		return query.query(db);
 	}
 
+    @Subscribe public void syncComplete(SyncEvent event) {
+        if (event.getStatus() == SyncEvent.COMPLETE_CODE) refreshView();
+    }
+
 	/* Thread and helper to run lookups */
-	
+
+    @Override
 	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
 		Log.d(TAG, "_____________________on_activity_result");
 		

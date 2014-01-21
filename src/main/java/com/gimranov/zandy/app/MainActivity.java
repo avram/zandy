@@ -34,7 +34,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,6 +45,7 @@ import com.gimranov.zandy.app.data.ItemAdapter;
 import com.gimranov.zandy.app.data.ItemCollection;
 import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
+import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
 
@@ -117,25 +117,43 @@ public class MainActivity extends Activity implements OnClickListener {
 		}
 	}
 
+    @Override
 	public void onResume() {
+        Application.getInstance().getBus().register(this);
+
 		Button loginButton = (Button) findViewById(R.id.loginButton);
 
 		if (!ServerCredentials.check(getBaseContext())) {
 			loginButton.setText(getResources().getString(R.string.log_in));
 			loginButton.setClickable(true);
 		} else {
-            ListView lv = ((ListView) findViewById(android.R.id.list));
-            ItemAdapter adapter = (ItemAdapter) lv.getAdapter();
-            if (adapter != null) {
-                Cursor newCursor = getCursor(DEFAULT_SORT);
-                adapter.changeCursor(newCursor);
-                adapter.notifyDataSetChanged();
-            }
+            refreshList();
         }
         super.onResume();
 	}
-	
-	/**
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Application.getInstance().getBus().unregister(this);
+    }
+
+    /**
+     * Refreshes the list view, safely if possible
+     */
+    private void refreshList() {
+        ListView lv = ((ListView) findViewById(android.R.id.list));
+        if (lv == null) return;
+
+        ItemAdapter adapter = (ItemAdapter) lv.getAdapter();
+        if (adapter != null) {
+            Cursor newCursor = getCursor(DEFAULT_SORT);
+            adapter.changeCursor(newCursor);
+            adapter.notifyDataSetChanged();
+        }
+    }
+
+    /**
 	 * Implementation of the OnClickListener interface, to handle button events.
 	 * 
 	 * Note: When adding a button, it needs to be added here, but the
@@ -411,6 +429,7 @@ public class MainActivity extends Activity implements OnClickListener {
         return cursor;
     }
 
+    @Override
 	protected Dialog onCreateDialog(int id) {
 		final String url = b.getString("url");
 		final String title = b.getString("title");
@@ -453,4 +472,8 @@ public class MainActivity extends Activity implements OnClickListener {
 			return null;
 		}
 	}
+
+    @Subscribe public void syncComplete(SyncEvent event) {
+        refreshList();
+    }
 }

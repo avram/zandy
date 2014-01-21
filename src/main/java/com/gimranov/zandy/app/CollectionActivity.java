@@ -65,6 +65,7 @@ public class CollectionActivity extends ListActivity {
 			}
 			
 			if (msg.arg1 == APIRequest.BATCH_DONE) {
+                Application.getInstance().getBus().post(SyncEvent.COMPLETE);
 				Toast.makeText(getApplicationContext(),
 						getResources().getString(R.string.sync_complete), 
         				Toast.LENGTH_SHORT).show();
@@ -225,6 +226,8 @@ public class CollectionActivity extends ListActivity {
 				
 				@Override
 				public void onComplete(APIRequest request) {
+                    Application.getInstance().getBus().post(new SyncEvent());
+
 					Message msg = handler.obtainMessage();
 					msg.arg1 = APIRequest.BATCH_DONE;
 					handler.sendMessage(msg);
