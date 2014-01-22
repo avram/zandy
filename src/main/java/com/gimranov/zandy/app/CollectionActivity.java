@@ -226,8 +226,6 @@ public class CollectionActivity extends ListActivity {
 				
 				@Override
 				public void onComplete(APIRequest request) {
-                    Application.getInstance().getBus().post(SyncEvent.COMPLETE);
-
 					Message msg = handler.obtainMessage();
 					msg.arg1 = APIRequest.BATCH_DONE;
 					handler.sendMessage(msg);
