@@ -690,7 +690,7 @@ public class APIRequest {
 					// I'm not sure whether we should throw here
 					throw new APIException(APIException.HTTP_ERROR, ostream.toString(), this);
 				}
-			} catch (IOException e) {
+			} catch (Exception e) {
 				StringBuilder sb = new StringBuilder();
 				for (StackTraceElement el : e.getStackTrace()) {
 					sb.append(el.toString()+"\n");
