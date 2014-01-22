@@ -59,7 +59,6 @@ import com.gimranov.zandy.app.task.ZoteroAPITask;
 import com.gimranov.zandy.app.webdav.WebDavTrust;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.http.util.ByteArrayBuffer;
 import org.json.JSONException;
 
 import java.io.BufferedInputStream;
@@ -653,17 +652,17 @@ public class AttachmentActivity extends ListActivity {
                             if ( (!att.getType().equals("text/html")) || name.contains(".htm")) {
                                 FileOutputStream fos2 = new FileOutputStream(file);
                                 InputStream entryStream = zf.getInputStream(entry);
-                                ByteArrayBuffer baf2 = new ByteArrayBuffer(100);
+                                int counter = 0;
                                 while ((current = entryStream.read()) != -1) {
-                                    baf2.append((byte) current);
-
-                                    if (baf2.length() % 2048 == 0) {
+                                    fos2.write((byte) current);
+                                    if (counter % 2048 == 0) {
                                         msg = mHandler.obtainMessage();
-                                        msg.arg1 = baf2.length();
+                                        msg.arg1 = counter;
                                         mHandler.sendMessage(msg);
                                     }
+                                    counter++;
+
                                 }
-                                fos2.write(baf2.toByteArray());
                                 fos2.close();
                                 Log.d(TAG, "Finished reading file");
                             } else {
