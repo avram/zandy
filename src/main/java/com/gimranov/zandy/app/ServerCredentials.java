@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import com.gimranov.zandy.app.task.APIRequest;
 
@@ -90,7 +91,11 @@ public class ServerCredentials {
     }
     
 	public String prep(String in) {
-		return in.replace("USERID", userID);
+        if (userID == null) {
+            Log.d(ServerCredentials.class.getCanonicalName(), "UserID was null");
+            return in;
+        }
+        return in.replace("USERID", userID);
 	}
 
 	/**
