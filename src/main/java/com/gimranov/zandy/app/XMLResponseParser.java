@@ -16,14 +16,6 @@
  ******************************************************************************/
 package com.gimranov.zandy.app;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.xml.sax.Attributes;
-import org.xml.sax.helpers.DefaultHandler;
-
 import android.sax.Element;
 import android.sax.ElementListener;
 import android.sax.EndTextElementListener;
@@ -37,8 +29,15 @@ import com.gimranov.zandy.app.data.Attachment;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
 import com.gimranov.zandy.app.data.ItemCollection;
-import com.gimranov.zandy.app.task.APIEvent;
 import com.gimranov.zandy.app.task.APIRequest;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.xml.sax.Attributes;
+import org.xml.sax.helpers.DefaultHandler;
+
+import java.io.InputStream;
+import java.util.ArrayList;
 
 public class XMLResponseParser extends DefaultHandler {
 	private static final String TAG = "com.gimranov.zandy.app.XMLResponseParser";
@@ -115,8 +114,8 @@ public class XMLResponseParser extends DefaultHandler {
 	            	int length = attributes.getLength();
 	            	// I shouldn't have to walk through, but the namespacing isn't working here
 	            	for (int i = 0; i < length; i++) {
-	            		if (attributes.getQName(i) == "rel") rel = attributes.getValue(i);
-	            		if (attributes.getQName(i) == "href") href = attributes.getValue(i);
+	            		if ("rel".equals(attributes.getQName(i))) rel = attributes.getValue(i);
+	            		if ("href".equals(attributes.getQName(i))) href = attributes.getValue(i);
 	            	}
 	    			// We try to get a parent collection if necessary / possible
 	            	if (rel.contains("self")) {
@@ -192,7 +191,7 @@ public class XMLResponseParser extends DefaultHandler {
             		} else {
 	            		item.dirty = APIRequest.API_CLEAN;
         				attachment.dirty = APIRequest.API_CLEAN;
-	            		if ((attachment.url != null && attachment.url != "")
+	            		if ((attachment.url != null && !"".equals(attachment.url))
 	            				|| attachment.content.optInt("linkMode") == Attachment.MODE_IMPORTED_FILE
 	            				|| attachment.content.optInt("linkMode") == Attachment.MODE_IMPORTED_URL)
 	            			attachment.status = Attachment.AVAILABLE;
@@ -235,7 +234,7 @@ public class XMLResponseParser extends DefaultHandler {
             		return;
             	}
             	
-            	if (items == false) {
+            	if (!items) {
             		if (updateKey != null && updateType != null && updateType.equals("collection")) {
             			// We have an incoming new version of a collection
             			ItemCollection existing = ItemCollection.load(updateKey, db);
@@ -338,8 +337,8 @@ public class XMLResponseParser extends DefaultHandler {
             	int length = attributes.getLength();
             	// I shouldn't have to walk through, but the namespacing isn't working here
             	for (int i = 0; i < length; i++) {
-            		if (attributes.getQName(i) == "rel") rel = attributes.getValue(i);
-            		if (attributes.getQName(i) == "href") href = attributes.getValue(i);
+            		if ("rel".equals(attributes.getQName(i))) rel = attributes.getValue(i);
+            		if ("href".equals(attributes.getQName(i))) href = attributes.getValue(i);
             	}
             	if (rel != null && rel.equals("up")) {
                 	int start = href.indexOf("/items/");
