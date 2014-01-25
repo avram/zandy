@@ -33,9 +33,9 @@ android {
     signingConfigs {
         release {
             storeFile file("keystore")
-            storePassword hasProperty('zandyStorePassword') ? zandyStorePassword : ""
+            storePassword (hasProperty('zandyStorePassword') ? zandyStorePassword : "")
             keyAlias "zandy"
-            keyPassword hasProperty('zandyKeyPassword') ? zandyKeyPassword : ""
+            keyPassword (hasProperty('zandyKeyPassword') ? zandyKeyPassword : "")
         }
     }
 
