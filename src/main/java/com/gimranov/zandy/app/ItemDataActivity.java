@@ -294,6 +294,7 @@ public class ItemDataActivity extends ExpandableListActivity {
 		        							.setData(uri));
                             } catch (ActivityNotFoundException e) {
                                 //noinspection UnnecessaryReturnStatement
+                                Toast.makeText(ItemDataActivity.this, ItemDataActivity.this.getString(R.string.attachment_intent_failed_for_uri, fixedUri), Toast.LENGTH_LONG).show();
                                 return;
                             }
 		    	        }
