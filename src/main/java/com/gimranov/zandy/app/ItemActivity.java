@@ -16,18 +16,6 @@
  ******************************************************************************/
 package com.gimranov.zandy.app;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
-
-import org.apache.http.util.ByteArrayBuffer;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
@@ -62,6 +50,19 @@ import com.gimranov.zandy.app.task.ZoteroAPITask;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.squareup.otto.Subscribe;
+
+import org.apache.http.util.ByteArrayBuffer;
+import org.jetbrains.annotations.Nullable;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
 
 public class ItemActivity extends ListActivity {
 
@@ -400,7 +401,6 @@ public class ItemActivity extends ListActivity {
                 AlertDialog dialog2 = builder2.create();
                 return dialog2;
             case DIALOG_PROGRESS:
-                Log.d(TAG, "_____________________dialog_progress");
                 mProgressDialog = new ProgressDialog(this);
                 mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
                 mProgressDialog.setIndeterminate(true);
@@ -428,8 +428,14 @@ public class ItemActivity extends ListActivity {
                             }
                         }).setNeutralButton(getResources().getString(R.string.scan), new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
+                                // If we're about to download from Google play, cancel that dialog
+                                // and prompt from Amazon if we're on an Amazon device
                                 IntentIntegrator integrator = new IntentIntegrator(current);
-                                integrator.initiateScan();
+                                @Nullable AlertDialog producedDialog = integrator.initiateScan();
+                                if (producedDialog != null && "amazon".equals(BuildConfig.FLAVOR)) {
+                                    producedDialog.dismiss();
+                                    AmazonZxingGlue.showDownloadDialog(current);
+                                }
                             }
                         }).setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
@@ -446,7 +452,6 @@ public class ItemActivity extends ListActivity {
     protected void onPrepareDialog(int id, Dialog dialog) {
         switch (id) {
             case DIALOG_PROGRESS:
-                Log.d(TAG, "_____________________dialog_progress_prepare");
         }
     }
 
@@ -528,7 +533,6 @@ public class ItemActivity extends ListActivity {
                 return true;
             case R.id.do_prefs:
                 Intent i = new Intent(getBaseContext(), SettingsActivity.class);
-                Log.d(TAG, "Intent for class:  " + i.getClass().toString());
                 startActivity(i);
                 return true;
             case R.id.do_sort:
@@ -733,7 +737,7 @@ public class ItemActivity extends ListActivity {
             mHandler.sendMessage(msg);
 
         	/*
-        	 * {
+             * {
  "stat":"ok",
  "list":[{
 	"url":["http://www.worldcat.org/oclc/177669176?referer=xid"],
