@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.UUID;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
@@ -578,6 +579,10 @@ public class APIRequest {
 		HttpPost post = new HttpPost(uri);
 		HttpPut put = new HttpPut(uri);
 		HttpDelete delete = new HttpDelete(uri);
+
+        for (HttpRequest request : Arrays.asList(get, post, put, delete)) {
+            request.setHeader("Zotero-API-Version", "1");
+        }
 
 		// There are several shared initialization routines for POST and PUT
 		if ("post".equals(method) || "put".equals(method)) {
