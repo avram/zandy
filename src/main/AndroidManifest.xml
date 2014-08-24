@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.gimranov.zandy.app"
-    android:versionCode="1420"
-    android:versionName="1.4.2">
+    package="com.gimranov.zandy.app">
 
     <uses-sdk
         android:minSdkVersion="7"
