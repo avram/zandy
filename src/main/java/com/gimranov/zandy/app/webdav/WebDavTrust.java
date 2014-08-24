@@ -1,17 +1,12 @@
 package com.gimranov.zandy.app.webdav;
 
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
-
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 
-/**
- * Part of the Scopely™ Platform
- * © 2013 Scopely, Inc.
- */
 public class WebDavTrust {
     private static final String TAG = WebDavTrust.class.getCanonicalName();
 

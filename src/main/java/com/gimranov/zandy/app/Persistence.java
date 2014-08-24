@@ -5,10 +5,6 @@ import android.content.SharedPreferences;
 
 import org.jetbrains.annotations.Nullable;
 
-/**
- * Part of the Scopely™ Platform
- * © 2013 Scopely, Inc.
- */
 public class Persistence {
     private static final String TAG = Persistence.class.getCanonicalName();
 

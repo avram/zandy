@@ -1,9 +1,5 @@
 package com.gimranov.zandy.app;
 
-/**
- * Part of the Scopely™ Platform
- * © 2013 Scopely, Inc.
- */
 public class SyncEvent {
     private static final String TAG = SyncEvent.class.getCanonicalName();
 

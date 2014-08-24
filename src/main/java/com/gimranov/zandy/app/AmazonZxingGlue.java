@@ -10,10 +10,6 @@ import android.util.Log;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 
-/**
- * Part of the Scopely™ Platform
- * © 2014 Scopely, Inc.
- */
 public class AmazonZxingGlue {
     private static final String TAG = AmazonZxingGlue.class.getCanonicalName();
 

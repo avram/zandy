@@ -16,17 +16,18 @@
  ******************************************************************************/
 package com.gimranov.zandy.app.task;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.UUID;
-
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteException;
+import android.database.sqlite.SQLiteStatement;
+import android.os.Handler;
+import android.util.Log;
+import com.gimranov.zandy.app.ServerCredentials;
+import com.gimranov.zandy.app.XMLResponseParser;
+import com.gimranov.zandy.app.data.Attachment;
+import com.gimranov.zandy.app.data.Database;
+import com.gimranov.zandy.app.data.Item;
+import com.gimranov.zandy.app.data.ItemCollection;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -42,19 +43,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteException;
-import android.database.sqlite.SQLiteStatement;
-import android.os.Handler;
-import android.util.Log;
-
-import com.gimranov.zandy.app.ServerCredentials;
-import com.gimranov.zandy.app.XMLResponseParser;
-import com.gimranov.zandy.app.data.Attachment;
-import com.gimranov.zandy.app.data.Database;
-import com.gimranov.zandy.app.data.Item;
-import com.gimranov.zandy.app.data.ItemCollection;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.UUID;
 
 /**
  * Represents a request to the Zotero API. These can be consumed by
