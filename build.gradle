@@ -35,8 +35,8 @@ android {
     buildToolsVersion "20.0.0"
 
     defaultConfig {
-        versionCode 1430
-        versionName "1.4.3"
+        versionCode 1440
+        versionName "1.4.4"
     }
 
     productFlavors {
