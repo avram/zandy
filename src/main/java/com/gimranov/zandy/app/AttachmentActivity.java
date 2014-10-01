@@ -663,18 +663,26 @@ public class AttachmentActivity extends ListActivity {
                             if ((!att.getType().equals("text/html")) || name.contains(".htm")) {
                                 FileOutputStream fos2 = new FileOutputStream(file);
                                 InputStream entryStream = zf.getInputStream(entry);
-                                int counter = 0;
-                                while ((current = entryStream.read()) != -1) {
-                                    fos2.write((byte) current);
-                                    if (counter % 2048 == 0) {
-                                        msg = mHandler.obtainMessage();
-                                        msg.arg1 = counter;
-                                        mHandler.sendMessage(msg);
-                                    }
-                                    counter++;
 
-                                }
+                                final AtomicInteger counter = new AtomicInteger();
+
+                                OutputStream outputStream = new CountingOutputStream(fos2) {
+                                    @Override
+                                    protected void afterWrite(int n) throws IOException {
+                                        super.afterWrite(n);
+                                        if (n > 0) {
+                                            int completed = counter.addAndGet(n);
+                                            Message message = mHandler.obtainMessage();
+                                            message.arg1 = completed;
+                                            mHandler.sendMessage(message);
+                                        }
+                                    }
+                                };
+
+                                IOUtils.copy(entryStream, outputStream);
+
                                 fos2.close();
+                                entryStream.close();
                                 Log.d(TAG, "Finished reading file");
                             } else {
                                 Log.d(TAG, "Skipping file: " + name);
@@ -761,7 +769,6 @@ public class AttachmentActivity extends ListActivity {
                 b.putString("itemKey", this.item.getKey());
                 b.putString("mode", "new");
                 removeDialog(DIALOG_NOTE);
-                com.crashlytics.android.internal.b = b;
                 showDialog(DIALOG_NOTE);
                 return true;
             case R.id.do_prefs:
