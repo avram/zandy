@@ -326,8 +326,7 @@ public class ItemActivity extends ListActivity {
 
             ItemCollection coll;
 
-            if (collectionKey != null) {
-                coll = ItemCollection.load(collectionKey, db);
+            if (collectionKey != null && (coll = ItemCollection.load(collectionKey, db)) != null) {
                 cursor = getCursor(coll);
                 this.setTitle(coll.getTitle());
             } else {
