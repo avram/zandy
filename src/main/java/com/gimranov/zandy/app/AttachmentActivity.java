@@ -689,6 +689,8 @@ public class AttachmentActivity extends ListActivity {
                             }
                         } catch (IllegalArgumentException e) {
                             Crashlytics.logException(new Throwable("b64 " + name64, e));
+                        } catch (NegativeArraySizeException e) {
+                            Crashlytics.logException(new Throwable("b64 " + name64, e));
                         }
                     } while (entries.hasMoreElements());
 
