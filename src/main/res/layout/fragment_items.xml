@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<android.support.v4.widget.SwipeRefreshLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/swipe_container_items"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/list_item"
+        android:id="@+id/items">
+
+        <ListView
+            android:id="@android:id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:drawSelectorOnTop="true"
+            android:divider="@color/list_divider"
+            android:dividerHeight="1dp"
+            />
+
+        <com.getbase.floatingactionbutton.FloatingActionsMenu
+            android:id="@+id/btnFab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="24dp"
+            android:layout_marginBottom="24dp"
+            fab:fab_addButtonColorNormal="@color/primary_dark"
+            fab:fab_addButtonColorPressed="@color/primary_darkest"
+            fab:fab_addButtonPlusIconColor="@color/white"
+            fab:fab_labelStyle="@style/menu_labels_style"
+            fab:fab_labelsPosition="left">
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btnFabManual"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                fab:fab_colorNormal="@color/primary"
+                fab:fab_size="mini"
+                fab:fab_icon="@drawable/ic_manual"
+                fab:fab_title="Manual"
+                fab:fab_colorPressed="@color/primary_dark"
+                />
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btnFabUpload"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                fab:fab_colorNormal="@color/primary"
+                fab:fab_size="mini"
+                fab:fab_icon="@drawable/ic_upload"
+                fab:fab_title="PDF"
+                fab:fab_colorPressed="@color/primary_dark"
+                />
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btnFabIsbn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                fab:fab_colorNormal="@color/primary"
+                fab:fab_size="mini"
+                fab:fab_icon="@drawable/ic_isbn"
+                fab:fab_title="ISBN"
+                fab:fab_colorPressed="@color/primary_dark"
+                />
+
+            <com.getbase.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btnFabScan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                fab:fab_colorNormal="@color/primary"
+                fab:fab_size="mini"
+                fab:fab_icon="@drawable/ic_scan"
+                fab:fab_title="Scan"
+                fab:fab_colorPressed="@color/primary_dark"
+                />
+
+        </com.getbase.floatingactionbutton.FloatingActionsMenu>
+
+        <!-- What to do if there's no data to show in the list  -->
+        <TextView android:id="@android:id/empty" android:layout_width="fill_parent"
+            android:layout_height="fill_parent" android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="No items to show. Try syncing, or create some." />
+    </RelativeLayout>
+</android.support.v4.widget.SwipeRefreshLayout>

@@ -1,71 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  This file is part of Zandy.
-  
-  Zandy is free software: you can redistribute it and/or modify
-  it under the terms of the GNU Affero General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-  
-  Zandy is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Affero General Public License for more details.
-  
-  You should have received a copy of the GNU Affero General Public License
-  along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
--->
-
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:id="@+id/note"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical">
 
 
-        <LinearLayout
-            android:layout_width="wrap_content"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/note"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    <LinearLayout
+        android:id="@+id/linearLayout1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+        <TextView
+            android:id="@+id/noteTitleLabel"
+            android:layout_width="78dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:text=""
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+        <TextView
+            android:id="@+id/noteTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+    </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/linearLayout1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:id="@+id/noteTitleLabel"
-                    android:layout_width="78dp"
-                    android:layout_height="wrap_content"
-                    tools:text="Title Label"
-                    android:textAppearance="?android:attr/textAppearanceMedium"/>
-
-                <TextView
-                    android:id="@+id/noteTitle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    tools:text="Title"
-                    android:textAppearance="?android:attr/textAppearanceLarge"/>
-            </LinearLayout>
+    <TextView
+        android:id="@+id/noteText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.82"
+        android:text=""
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
 
-            <TextView
-                android:id="@+id/noteText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.82"
-                tools:text="Content is really long. Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long.Content is really long."
-                android:textAppearance="?android:attr/textAppearanceMedium"/>
+    <Button
+        android:id="@+id/editNote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.05"
+        android:text="@string/note_edit" />
 
-
-            <Button
-                android:id="@+id/editNote"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.05"
-                android:text="@string/note_edit"/>
-        </LinearLayout>
-
-
-</ScrollView>
+</LinearLayout>

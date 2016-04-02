@@ -1,24 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  This file is part of Zandy.
-  
-  Zandy is free software: you can redistribute it and/or modify
-  it under the terms of the GNU Affero General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-  
-  Zandy is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Affero General Public License for more details.
-  
-  You should have received a copy of the GNU Affero General Public License
-  along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
--->
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="70dip"
-    android:padding="3dip">
+    android:padding="3dip"
+    android:background="@drawable/state_list_item"
+    >
     
     <ImageView
         android:id="@+id/item_type"
@@ -41,6 +28,8 @@
         android:layout_toRightOf="@id/item_type"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
+
+        android:textColor="@color/text_color"
         
         android:singleLine="true"
         android:ellipsize="marquee" />
@@ -57,6 +46,8 @@
         android:layout_above="@id/item_summary"
         android:layout_alignWithParentIfMissing="true"
         android:ellipsize="marquee"
+
+        android:textColor="@color/text_color"
                 
         android:gravity="center_vertical" />
 

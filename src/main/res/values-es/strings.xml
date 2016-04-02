@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><resources>
-    <string name="app_name">Zandy</string>
-    <string name="applicationTitle">Zandy: Un cliente de Zotero para Android</string>
+    <string name="app_name">Zotable</string>
+    <string name="applicationTitle">Zotable: Un cliente de Zotero para Android</string>
     <string name="menu_sync">Sincronización</string>
     <string name="menu_new">Nuevo</string>
     <string name="menu_delete">Eliminar</string>
@@ -92,14 +92,14 @@
 		<!-- Settings -->
 	<string name="settings_basic">Básico</string>
 	<string name="settings_aggressive_syncing">Sincronización agresiva</string>
-	<string name="settings_aggressive_syncing_desc">Revise que Zandy intente tener todas las colecciones sincronizadas</string>
+	<string name="settings_aggressive_syncing_desc">Revise que Zotable intente tener todas las colecciones sincronizadas</string>
 	<string name="settings_user_id">Identificación de usuario</string>
 	<string name="settings_user_id_desc">Esta es la identificación numérica del usuario para su cuenta en Zotero.org</string>
 	<string name="settings_api_key">Clave API</string>
 	<string name="settings_api_key_desc">Esta es la clave API para accede a su cuenta en Zotero.org</string>
 	<string name="settings_webdav">WebDAV</string>
 	<string name="settings_webdav_enabled">Activar WebDAV</string>
-	<string name="settings_webdav_enabled_desc">Haga clic para que Zandy busque archivos adjuntos en el servidor WebDAV</string>
+	<string name="settings_webdav_enabled_desc">Haga clic para que Zotable busque archivos adjuntos en el servidor WebDAV</string>
 	<string name="settings_webdav_path">URL Base</string>
 	<string name="settings_webdav_path_desc">El servidor y la ruta para la configuración de WebDAV, incluyendo el / zotero final, como este: https://www.example.com/users/bobsmith/zotero</string>
 	<string name="settings_webdav_username">Nombre de usuario</string>
@@ -109,7 +109,7 @@
 	<string name="settings_reset_database">Limpiar la base de datos local</string>
 	<string name="settings_reset_database_warning">¿Seguro que desea borrar todos los datos locales? Esto no se puede deshacer.</string>
     <string name="settings_read_only">Modo Sólo lectura</string>
-    <string name="settings_read_only_desc">Revisar para evitar que Zandy haga modificaciones a los datos en los servidores Zotero</string>
+    <string name="settings_read_only_desc">Revisar para evitar que Zotable haga modificaciones a los datos en los servidores Zotero</string>
     <string name="settings_webdav_ssl_override">Ignorar SSL</string>
     <string name="settings_webdav_ssl_override_desc">Comprobar para omitir la comprobación de certificados SSL, para los servidores que usan certificados autofirmados SSL.</string>
     <string name="settings_test_connections">Probar las conexiones Zotero y WebDav</string>

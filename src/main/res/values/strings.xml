@@ -1,23 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  This file is part of Zandy.
-  
-  Zandy is free software: you can redistribute it and/or modify
-  it under the terms of the GNU Affero General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-  
-  Zandy is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Affero General Public License for more details.
-  
-  You should have received a copy of the GNU Affero General Public License
-  along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
--->
+
 <resources>
-    <string name="app_name">Zandy</string>
-    <string name="applicationTitle">Zandy: A Zotero Client for Android</string>
+    <string name="app_name">Zotable</string>
+    <string name="applicationTitle">Zotable: A Zotero Client for Android</string>
     <string name="menu_sync">Sync</string>
     <string name="menu_new">New</string>
     <string name="menu_delete">Delete</string>
@@ -25,6 +10,8 @@
     <string name="menu_sort">Sort</string>
     <string name="menu_prefs">Settings</string>
     <string name="menu_search">Search</string>
+    <string name="drawer_open">Open</string>
+    <string name="drawer_close">Close</string>
     <string name="view_items">View Items</string>
     <string name="view_collections">View Collections</string>
     <string name="log_in">Log in</string>
@@ -46,6 +33,8 @@
     <string name="sort_creator_year">Creator, then year</string>
     <string name="sort_title_year">Title, then year</string>
     <string name="sort_modified_title">Date modified, then title</string>
+    <string name="sort_tag_name">Tag</string>
+    <string name="sort_item_count">Item count</string>
     <!-- ItemActivity (item lists) -->
     <string name="all_items">All items</string>
     <string name="cant_open_item">Can\'t open %s</string>
@@ -91,6 +80,7 @@
  	<string name="tag_viewing_items">Tag: %s</string>
 	<!-- Collections -->
 	<string name="collections">Collections</string>
+    <string name="no_collections">No collections found, requesting update.</string>
 	<string name="collections_for_item">Collections containing %s</string>
 	<string name="collection_cant_open">Can\'t open %s</string>
 	<string name="collection_no_subcollections">No subcollections for collection. To view items in the collection, touch and hold the collection.</string>
@@ -109,27 +99,27 @@
 		<!-- Settings -->
 	<string name="settings_basic">Basic</string>
 	<string name="settings_aggressive_syncing">Aggressive Syncing</string>
-	<string name="settings_aggressive_syncing_desc">Check to have Zandy attempt to keep all collections synced</string>
+	<string name="settings_aggressive_syncing_desc">attempt to keep all collections synced</string>
 	<string name="settings_user_id">User ID</string>
-	<string name="settings_user_id_desc">This is the numeric user ID for your account at Zotero.org</string>
+	<string name="settings_user_id_desc">at Zotero</string>
 	<string name="settings_api_key">API Key</string>
-	<string name="settings_api_key_desc">This is the API key to access your account at Zotero.org</string>
+	<string name="settings_api_key_desc">to access Zotero account</string>
 	<string name="settings_webdav">WebDAV</string>
 	<string name="settings_webdav_enabled">Enable WebDAV</string>
-	<string name="settings_webdav_enabled_desc">Check to have Zandy look for attachments on a WebDAV host</string>
+	<string name="settings_webdav_enabled_desc">look for attachments on a WebDAV host?</string>
 	<string name="settings_webdav_path">Base URL</string>
-	<string name="settings_webdav_path_desc">Server and path for your WebDAV setup, including the final /zotero, like this: https://www.example.com/users/bobsmith/zotero</string>
+	<string name="settings_webdav_path_desc">Server and path for your WebDAV setup, including the final /zotero</string>
 	<string name="settings_webdav_username">Username</string>
-	<string name="settings_webdav_username_desc">Username for WebDAV server. This is separate from your Zotero username.</string>
+	<string name="settings_webdav_username_desc">for WebDAV server</string>
 	<string name="settings_webdav_password">Password</string>
-	<string name="settings_webdav_password_desc">Password for WebDAV server. This is separate from your Zotero password.</string>
+	<string name="settings_webdav_password_desc">for WebDAV server</string>
 	<string name="settings_reset_database">Clear local database</string>
-	<string name="settings_reset_database_warning">Are you sure you want to erase all local data? This cannot be undone.</string>
+	<string name="settings_reset_database_warning">Erase all local data? This cannot be undone.</string>
     <string name="settings_read_only">Read-Only Mode</string>
-    <string name="settings_read_only_desc">Check to prevent Zandy from making modifications to data on the Zotero servers.</string>
+    <string name="settings_read_only_desc">Check to prevent Zotable from making modifications to data on the Zotero servers.</string>
     <string name="settings_webdav_ssl_override">Override SSL</string>
-    <string name="settings_webdav_ssl_override_desc">Check to skip SSL certificate checking, for servers using self-signed SSL certificates.</string>
-    <string name="settings_test_connections">Test Zotero and WebDAV connections</string>
+    <string name="settings_webdav_ssl_override_desc">skip SSL certificate checking?</string>
+    <string name="settings_test_connections">Test web connections</string>
 
     <!-- Zotero terms -->
     <string name="note">Note</string>
@@ -172,5 +162,10 @@
         <string name="template_thesis">{"itemType":"thesis","title":"-_-_-","creators":[{"creatorType":"author","firstName":"-_-_-","lastName":"-_-_-"}],"abstractNote":"-_-_-","thesisType":"-_-_-","university":"-_-_-","place":"-_-_-","date":"-_-_-","numPages":"-_-_-","language":"-_-_-","shortTitle":"-_-_-","url":"-_-_-","accessDate":"-_-_-","archive":"-_-_-","archiveLocation":"-_-_-","libraryCatalog":"-_-_-","callNumber":"-_-_-","rights":"-_-_-","extra":"-_-_-","tags":[],"notes":[]}</string>
         <string name="template_videoRecording">{"itemType":"videoRecording","title":"-_-_-","creators":[{"creatorType":"director","firstName":"-_-_-","lastName":"-_-_-"}],"abstractNote":"-_-_-","videoRecordingFormat":"-_-_-","seriesTitle":"-_-_-","volume":"-_-_-","numberOfVolumes":"-_-_-","place":"-_-_-","studio":"-_-_-","date":"-_-_-","runningTime":"-_-_-","language":"-_-_-","ISBN":"-_-_-","shortTitle":"-_-_-","url":"-_-_-","accessDate":"-_-_-","archive":"-_-_-","archiveLocation":"-_-_-","libraryCatalog":"-_-_-","callNumber":"-_-_-","rights":"-_-_-","extra":"-_-_-","tags":[],"notes":[]}</string>
         <string name="template_webpage">{"itemType":"webpage","title":"-_-_-","creators":[{"creatorType":"author","firstName":"-_-_-","lastName":"-_-_-"}],"abstractNote":"-_-_-","websiteTitle":"-_-_-","websiteType":"-_-_-","date":"-_-_-","shortTitle":"-_-_-","url":"-_-_-","accessDate":"-_-_-","language":"-_-_-","rights":"-_-_-","extra":"-_-_-","tags":[],"notes":[]}</string>
+    <string name="title_activity_activity__preference">Preferences</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_pdf">Add to Zotero</string>
 
 </resources>

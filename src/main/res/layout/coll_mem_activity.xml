@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:fab="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/list_item"
+        android:id="@+id/conColls">
+
+        <ListView
+            android:id="@+id/lvCollections"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawSelectorOnTop="false"
+            android:background="@color/list_item"
+            android:divider="@color/list_divider"
+            android:dividerHeight="1dp"
+            />
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btnFab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/lvCollections"
+            android:layout_marginTop="24dp"
+            fab:fab_title="New"
+            fab:fab_icon="@drawable/ic_plus"
+            fab:fab_colorNormal="@color/primary_dark"
+            fab:fab_colorPressed="@color/primary_darkest"
+            />
+</RelativeLayout>

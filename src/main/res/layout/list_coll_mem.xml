@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/list_coll_mem"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/state_list_item"
+    android:paddingStart="5dp">
+    <TextView
+	    android:id="@+id/tvCollName"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:text=""
+        android:textColor="@color/text_color"
+	    android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        />
+    <ImageView
+        android:id="@+id/imgRemove"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="5dp"
+        android:layout_alignParentEnd="true"
+        android:src="@drawable/ic_delete"
+        android:layout_centerVertical="true"
+        />
+</RelativeLayout>

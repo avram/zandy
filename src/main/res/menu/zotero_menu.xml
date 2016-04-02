@@ -1,57 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  This file is part of Zandy.
-  
-  Zandy is free software: you can redistribute it and/or modify
-  it under the terms of the GNU Affero General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-  
-  Zandy is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Affero General Public License for more details.
-  
-  You should have received a copy of the GNU Affero General Public License
-  along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
--->
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/do_sync"
-          android:icon="@drawable/glyphish_02_redo"
-          android:title="@string/menu_sync" />
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+    <item android:id="@+id/do_search"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="@string/menu_search"
+        android:actionViewClass="android.widget.SearchView"
+        android:enabled="false"
+        android:visible="false"
+        android:showAsAction="always"
+        />
+    <item android:id="@+id/do_sort"
+        android:icon="@android:drawable/ic_menu_sort_by_size"
+        android:title="@string/menu_sort"
+        android:enabled="false"
+        android:visible="false"
+        android:showAsAction="always"
+        />
     <item android:id="@+id/do_delete"
-          android:icon="@drawable/glyphish_22_skull_n_bones"
+          android:icon="@android:drawable/ic_menu_delete"
           android:title="@string/menu_delete"
           android:enabled="false"
           android:visible="false"
-        android:showAsAction="ifRoom"
-        />
-    <item android:id="@+id/do_identifier"
-          android:icon="@drawable/glyphish_195_barcode"
-          android:title="@string/menu_identifier"
-          android:enabled="false"
-          android:visible="false" />
-    <item android:id="@+id/do_sort"
-          android:icon="@drawable/glyphish_104_index_cards"
-          android:title="@string/menu_sort"
-          android:enabled="false"
-          android:visible="false"
-        android:showAsAction="ifRoom"
-        />
-    <item android:id="@+id/do_search"
-          android:icon="@drawable/glyphish_151_telescope"
-          android:title="@string/menu_search"
-          android:enabled="false"
-          android:visible="false"
-        android:showAsAction="ifRoom"
-        />
-    <item android:id="@+id/do_new"
-          android:icon="@drawable/glyphish_10_medical"
-          android:title="@string/menu_new"
-        android:showAsAction="ifRoom"
-
-        />
+          android:showAsAction="ifRoom"
+          />
     <item android:id="@+id/do_prefs"
-          android:icon="@drawable/glyphish_106_sliders"
-          android:title="@string/menu_prefs" />
+          android:icon="@android:drawable/ic_menu_preferences"
+          android:title="@string/menu_prefs"
+        android:enabled="false"
+        android:visible="false"
+          android:showAsAction="ifRoom"
+          />
 </menu>
