@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="primary" type="color">@color/blue</item>
+    <item name="primary_light" type="color">@color/light_blue</item>
+    <item name="primary_dark" type="color">@color/dark_blue</item>
+    <item name="primary_darkest" type="color">@color/darkest_blue</item>
+    <item name="accent" type="color">@color/primary_light</item>
+
+    <item name="refresh1" type="color">@color/light_blue</item>
+    <item name="refresh2" type="color">@color/blue</item>
+    <item name="refresh3" type="color">@color/dark_blue</item>
+    <item name="refresh4" type="color">@color/darkest_blue</item>
+
+    <item name="bg_light" type="color">@color/off_white</item>
+    <item name="list_item" type="color">@color/bg_light</item>
+    <item name="list_divider" type="color">@color/light_gray</item>
+    <item name="text_color" type="color">@color/dark_gray</item>
+    <item name="text_color_light" type="color">@color/gray</item>
+
+    <item name="blue" type="color">#2196F3</item>
+    <item name="light_blue" type="color">#BBDEFB</item>
+    <item name="dark_blue" type="color">#1976D2</item>
+    <item name="darkest_blue" type="color">#0D47A1</item>
+
+    <item name="yellow" type="color">#FFC413</item>
+    <item name="dark_yellow" type="color">#FFBF00</item>
+
+    <item name="white" type="color">#FFFFFF</item>
+    <item name="off_white" type="color">#FCFCFC</item>
+    <item name="light_gray" type="color">#CCCCCC</item>
+    <item name="gray" type="color">#777777</item>
+    <item name="dark_gray" type="color">#333333</item>
+    <item name="black_semi_transparent" type="color">#B2000000</item>
+    <item name="black" type="color">#000000</item>
+</resources>

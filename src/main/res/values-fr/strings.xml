@@ -1,23 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  This file is part of Zandy.
-  
-  Zandy is free software: you can redistribute it and/or modify
-  it under the terms of the GNU Affero General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-  
-  Zandy is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Affero General Public License for more details.
-  
-  You should have received a copy of the GNU Affero General Public License
-  along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
--->
+
 <resources>
-    <string name="app_name">Zandy</string>
-    <string name="applicationTitle">Zandy: un client Zotero pour Android</string>
+    <string name="app_name">Zotable</string>
+    <string name="applicationTitle">Zotable: un client Zotero pour Android</string>
     <string name="menu_sync">Synchroniser</string>
     <string name="menu_new">Nouveau</string>
     <string name="menu_delete">Supprimer</string>
@@ -88,14 +73,14 @@
 	<!-- Settings -->
 	<string name="settings_basic">Simple</string>
 	<string name="settings_aggressive_syncing">Synchronisation agressive</string>
-	<string name="settings_aggressive_syncing_desc">Cochez pour que Zandy tente de garder toutes les collections synchronisées</string>
+	<string name="settings_aggressive_syncing_desc">Cochez pour que Zotable tente de garder toutes les collections synchronisées</string>
 	<string name="settings_user_id">Identifiant numérique</string>
 	<string name="settings_user_id_desc">Ceci est l\'identifiant numérique associé à votre compte Zotero.org</string>
 	<string name="settings_api_key">Clé API</string>
 	<string name="settings_api_key_desc">Cette clé API est nécessaire pour accéder à votre compte Zotero.org</string>
 	<string name="settings_webdav">WebDAV</string>
 	<string name="settings_webdav_enabled">Utiliser un accès WebDAV</string>
-	<string name="settings_webdav_enabled_desc">Cocher pour que Zandy cherche les pièces jointes sur un serveur WebDAV</string>
+	<string name="settings_webdav_enabled_desc">Cocher pour que Zotable cherche les pièces jointes sur un serveur WebDAV</string>
 	<string name="settings_webdav_path">Base URL</string>
 	<string name="settings_webdav_path_desc">Serveur et chermin pour les réglages WebDAV, par exemple: https://www.example.com/users/bobsmith/zotero</string>
 	<string name="settings_webdav_username">Identifiant</string>

@@ -1,39 +1,20 @@
-<!--
-  This file is part of Zandy.
-  
-  Zandy is free software: you can redistribute it and/or modify
-  it under the terms of the GNU Affero General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-  
-  Zandy is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Affero General Public License for more details.
-  
-  You should have received a copy of the GNU Affero General Public License
-  along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
--->
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    android:title="Settings">
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
         android:title="@string/settings_basic"
         android:summary="">
         <CheckBoxPreference
             android:key="sync_aggressively"
             android:title="@string/settings_aggressive_syncing"
-            android:summary="@string/settings_aggressive_syncing_desc" />
-        <!--    <CheckBoxPreference
-                    android:key="sync_read_only"
-                    android:title="@string/settings_read_only"
-                    android:summary="@string/settings_read_only_desc" />-->
-
+            android:summary="@string/settings_aggressive_syncing_desc"
+            />
         <EditTextPreference
             android:key="user_id"
             android:title="@string/settings_user_id"
             android:summary="@string/settings_user_id_desc"
-            android:numeric="integer" />
-
+            android:textColor="@color/text_color"
+            android:numeric="integer"
+            />
         <EditTextPreference
             android:key="user_key"
             android:title="@string/settings_api_key"

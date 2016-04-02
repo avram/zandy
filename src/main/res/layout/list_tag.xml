@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:padding="5dip"
+    android:gravity="center_vertical"
+    android:background="@drawable/state_list_item"
+    >
+    <TextView
+    	android:id="@+id/tag_name"
+    	android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:textColor="@color/text_color"
+        android:layout_alignParentTop="true"
+        />
+    <TextView
+        android:id="@+id/item_count"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="marquee"
+        android:textColor="@color/text_color_light"
+        android:layout_below="@id/tag_name"
+        />
+
+</RelativeLayout>
