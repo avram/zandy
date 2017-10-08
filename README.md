@@ -1,23 +1,20 @@
-Zandy: a Zotero client for Android
+# Zandy: a Zotero client for Android
 by Avram Lyon (ajlyon@gmail.com)
 
-Installation:
+[![Build Status](https://travis-ci.org/avram/zandy.svg?branch=master)](https://travis-ci.org/avram/zandy)
+
+## Installation
 A built and signed version of Zandy is available for purchase on the Android Market (https://market.android.com/details?id=com.gimranov.zandy.app). You can also check out this project and built an APK yourself using Eclipse with the ADT plugin, or another alternate toolchain. Note that you will need to add the oauth-signpost libraries to your classpath to build the application.
 
-Requirements:
-Android 2.1 or later.
+## Requirements
+Android 4.0.4 or later.
 
-Support:
+## Support
 See the Zandy User Guide (http://www.gimranov.com/avram/w/zandy-user-guide) for basic documentation. Feature requests and bug reports are highly encouraged-- please post to the issue tracker on GitHub or to the Zandy user forum (http://www.gimranov.com/forum). Also feel free to write to zandy@gimranov.com with questions.
 
-License:
+## License
 GNU Affero General Public License, Version 3 or later.
 
 This is based in part on the code by Martin Paul Eve (University of Sussex) to create an Android client for Mendeley, hosted at (https://code.google.com/p/mendeley-for-android/). That code is GPL-licensed, and the present code is licensed under the GPL-compatible Affero GPL.
 Icons from FamFamFam's Silk icon set (http://www.famfamfam.com/lab/icons/silk/) are used for item types and elsewhere. These icons are licensed under the  Creative Commons Attribution 2.5 License. 
 Icons from Glyphish's free icon set (http://glyphish.com/) are used for some buttons. They are licensed under the Creative Commons Attribution 3.0 United States License. To view a copy of this license, visit http://creativecommons.org/licenses/by/3.0/us/ or send a letter to Creative Commons, 171 Second Street, Suite 300, San Francisco, California, 94105, USA.
-
-Dependencies:
-Requires oauth-signpost (http://code.google.com/p/oauth-signpost/) for OAuth support, licensed under the Apache license, version 2.
-Bar code scanning requires that the ZXing Bar Code Scanner app be installed. Zandy includes an integration file from the ZXing project (http://code.google.com/p/zxing/), licensed under the Apache license, version 2.
-Also requires the Android Compatibility Library, which Zandy uses to enable Android 2.1 support.
