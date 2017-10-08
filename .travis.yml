@@ -1,20 +1,15 @@
-language: java
-jdk: oraclejdk7
-before_install:
-- wget http://dl.google.com/android/android-sdk_r22.3-linux.tgz
-- tar xzf android-sdk_r22.3-linux.tgz
-- export ANDROID_HOME=$PWD/android-sdk-linux
-- export PATH=${PATH}:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools
-- wget https://dl-ssl.google.com/android/repository/build-tools_r19-linux.zip
-- unzip build-tools_r19-linux.zip -d $ANDROID_HOME
-- mkdir -p $ANDROID_HOME/build-tools/
-- mv $ANDROID_HOME/android-4.4 $ANDROID_HOME/build-tools/19
-- echo yes | android update sdk --filter platform-tools --no-ui --force > /dev/null
-- echo yes | android update sdk --filter android-18 --no-ui --force > /dev/null
-- echo yes | android update sdk --filter android-19 --no-ui --force > /dev/null
-- echo yes | android update sdk --filter extra-android-support --no-ui --force > /dev/null
-- echo yes | android update sdk --filter extra-android-m2repository --no-ui --force
-  > /dev/null
+language: android
+android:
+  components:
+      - tools
+      - platform-tools
+      - tools
+
+      # The BuildTools version used by your project
+      - build-tools-26.0.2
+
+      # The SDK version used to compile your project
+      - android-26
 env:
   global:
   - secure: d6TRFiViL9vd4qtg8T/500KZJBzN9QG6s7EBUxoXv8EfOdvwzW7zmLqdLHbq3YhNkzcOTV9WJH/kDAf5X1tXbEExmkQnld0VW0k2i9YZnzl4nfyS1u6PQ5Tb3v2pYqDW+R0Lg7gD60OeY6+aOm1vjYKW2ACAUJhgR2u0Nb/hgn0=
