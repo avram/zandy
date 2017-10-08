@@ -2,12 +2,12 @@
 buildscript {
     repositories {
         jcenter()
-        maven { url 'http://download.crashlytics.com/maven' }
+        maven { url 'https://maven.fabric.io/public' }
     }
 
     dependencies {
         classpath 'com.android.tools.build:gradle:2.3.3'
-        classpath 'com.crashlytics.tools.gradle:crashlytics-gradle:1.+'
+        classpath 'io.fabric.tools:gradle:1.+'
     }
 }
 
@@ -21,16 +21,21 @@ allprojects {
 repositories {
     mavenLocal()
     mavenCentral()
-    maven { url 'http://download.crashlytics.com/maven' }
+    maven { url 'https://maven.fabric.io/public' }
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'crashlytics'
+apply plugin: 'io.fabric'
+
 
 dependencies {
-    compile 'oauth.signpost:signpost-commonshttp4:1.2.1.2'
+    compile('oauth.signpost:signpost-commonshttp4:1.2.1.2') {
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    }
     compile 'com.intellij:annotations:12.0'
-    compile 'com.crashlytics.android:crashlytics:1.+'
+    compile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
+        transitive = true;
+    }
     compile 'commons-io:commons-io:2.4'
     compile 'com.squareup:otto:1.3.4'
     compile 'com.google.zxing:android-integration:2.3.0'
@@ -42,6 +47,8 @@ dependencies {
 android {
     compileSdkVersion 26
     buildToolsVersion "26.0.2"
+
+    useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
         versionCode 1440

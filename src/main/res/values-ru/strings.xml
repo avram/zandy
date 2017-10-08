@@ -45,7 +45,7 @@
 	<string name="attachment_intent_failed">Не удалось найти приложение для файлов типа "%s".</string>
 		<!-- Syncing -->
 	<string name="sync_log_in_first">Выполните вход для синхронизации</string>
-	<string name="sync_started">Синхронизация запущена...</string>
+	<string name="sync_started">Синхронизация запущена…</string>
         <!-- Zotero terms -->
     <string name="note">Заметка</string>
 </resources>
