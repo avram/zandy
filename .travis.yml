@@ -14,7 +14,7 @@ env:
   global:
   - secure: d6TRFiViL9vd4qtg8T/500KZJBzN9QG6s7EBUxoXv8EfOdvwzW7zmLqdLHbq3YhNkzcOTV9WJH/kDAf5X1tXbEExmkQnld0VW0k2i9YZnzl4nfyS1u6PQ5Tb3v2pYqDW+R0Lg7gD60OeY6+aOm1vjYKW2ACAUJhgR2u0Nb/hgn0=
   - secure: jBvKNkP0FpIyZ1QWHEx5fJqZDrkRB2MRQZDlIzCAdA+ElWLwBOIcAQNHpJ2wH+taaSeZbuan1N70Ca0oUe+qqWgxDiDa4A1dJ/ZOgcSwTqtl7bCCuyZIdni0X1trh7xOHtCIWAuay5gIvUNoKPNbeFKpv6mNRzqOeeEbp+eJh+w=
-install: ./gradlew assemble
+install: ./gradlew assembleDebug
 
 notifications:
   email: false
