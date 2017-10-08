@@ -61,7 +61,7 @@ import com.gimranov.zandy.app.task.ZoteroAPITask;
  */
 public class CreatorActivity extends ListActivity {
 
-	private static final String TAG = "com.gimranov.zandy.app.CreatorActivity";
+	private static final String TAG = CreatorActivity.class.getSimpleName();
 	
 	static final int DIALOG_CREATOR = 3;
 	static final int DIALOG_CONFIRM_NAVIGATE = 4;	

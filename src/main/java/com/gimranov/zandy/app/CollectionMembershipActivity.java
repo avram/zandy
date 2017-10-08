@@ -53,7 +53,7 @@ import com.gimranov.zandy.app.task.ZoteroAPITask;
  */
 public class CollectionMembershipActivity extends ListActivity {
 
-	private static final String TAG = "com.gimranov.zandy.app.CollectionMembershipActivity";
+	private static final String TAG = CollectionMembershipActivity.class.getSimpleName();
 	
 	static final int DIALOG_CONFIRM_NAVIGATE = 4;
 	static final int DIALOG_COLLECTION_LIST = 1;

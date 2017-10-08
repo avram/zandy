@@ -62,7 +62,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	private CommonsHttpOAuthConsumer httpOAuthConsumer;
 	private OAuthProvider httpOAuthProvider;
 
-	private static final String TAG = "com.gimranov.zandy.app.MainActivity";
+	private static final String TAG = MainActivity.class.getSimpleName();
 
     private static final String DEFAULT_SORT = "timestamp ASC, item_title COLLATE NOCASE";
 
@@ -76,7 +76,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-        Crashlytics.start(this);
+        new Crashlytics.Builder().build();
 
 		// Let items in on the fun
 		db = new Database(getBaseContext());
@@ -320,7 +320,7 @@ public class MainActivity extends Activity implements OnClickListener {
 					    			editor.putString("user_secret", userSecret);
 					    			editor.putString("user_id", userID);
 
-					    			editor.commit();
+					    			editor.apply();
 
                                     setUpLoggedInUser();
 
@@ -328,11 +328,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
 					    		}
 					    	});
-				    	} catch (OAuthMessageSignerException e) {
-                            toastError(e.getMessage());
-				    	} catch (OAuthNotAuthorizedException e) {
-                            toastError(e.getMessage());
-				    	} catch (OAuthExpectationFailedException e) {
+				    	} catch (OAuthMessageSignerException | OAuthNotAuthorizedException | OAuthExpectationFailedException e) {
                             toastError(e.getMessage());
 				    	} catch (OAuthCommunicationException e) {
                             toastError("Error communicating with server. Check your time settings, network connectivity, and try again. OAuth error: " + e.getMessage());

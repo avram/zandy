@@ -24,6 +24,7 @@ import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.text.Editable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -56,7 +57,7 @@ import com.gimranov.zandy.app.task.ZoteroAPITask;
  */
 public class TagActivity extends ListActivity {
 
-	private static final String TAG = "com.gimranov.zandy.app.TagActivity";
+	private static final String TAG = TagActivity.class.getSimpleName();
 	
 	static final int DIALOG_TAG = 3;
 	static final int DIALOG_CONFIRM_NAVIGATE = 4;	
@@ -89,8 +90,9 @@ public class TagActivity extends ListActivity {
          * we can do that anonymously.
          */
         setListAdapter(new ArrayAdapter<Bundle>(this, R.layout.list_data, rows) {
-        	@Override
-        	public View getView(int position, View convertView, ViewGroup parent) {
+        	@NonNull
+			@Override
+        	public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         		View row;
         		
                 // We are reusing views, but we need to initialize it if null
@@ -102,8 +104,8 @@ public class TagActivity extends ListActivity {
         		}
          
         		/* Our layout has just two fields */
-        		TextView tvLabel = (TextView) row.findViewById(R.id.data_label);
-        		TextView tvContent = (TextView) row.findViewById(R.id.data_content);
+        		TextView tvLabel = row.findViewById(R.id.data_label);
+        		TextView tvContent = row.findViewById(R.id.data_content);
         		
         		if (getItem(position).getInt("type") == 1)
         			tvLabel.setText(getResources().getString(R.string.tag_auto));

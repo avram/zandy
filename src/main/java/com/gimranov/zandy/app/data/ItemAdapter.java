@@ -34,7 +34,7 @@ import com.gimranov.zandy.app.R;
  *
  */
 public class ItemAdapter extends ResourceCursorAdapter {
-	private static final String TAG = "com.gimranov.zandy.app.data.ItemAdapter";
+	public static final String TAG = ItemAdapter.class.getSimpleName();
 	
 	public ItemAdapter(Context context, Cursor cursor) {
 		super(context, R.layout.list_item, cursor, false);

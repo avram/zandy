@@ -57,7 +57,7 @@ import com.gimranov.zandy.app.task.ZoteroAPITask;
 
 public class ItemDataActivity extends ExpandableListActivity {
 
-	private static final String TAG = "com.gimranov.zandy.app.ItemDataActivity";
+	private static final String TAG = ItemDataActivity.class.getSimpleName();
 	
 	static final int DIALOG_SINGLE_VALUE = 0;
 	static final int DIALOG_ITEM_TYPE = 1;
@@ -191,23 +191,23 @@ public class ItemDataActivity extends ExpandableListActivity {
             		BundleListAdapter adapter = (BundleListAdapter) ((ExpandableListView) info.targetView.getParent()).getExpandableListAdapter();;
             		Bundle row = adapter.getGroup(group);
             		// Show the right type of dialog for the row in question
-            		if (row.getString("label").equals("itemType")) {
+            		if ("itemType".equals(row.getString("label"))) {
             			// XXX don't need i18n, since this should be overcome
                     	Toast.makeText(getApplicationContext(), "Item type cannot be changed.", 
                 				Toast.LENGTH_SHORT).show();
             			//removeDialog(DIALOG_ITEM_TYPE);
             			//showDialog(DIALOG_ITEM_TYPE, row);
             			return;
-            		} else if (row.getString("label").equals("children")) {
+            		} else if ("children".equals(row.getString("label"))) {
             	    	Log.d(TAG, "Not starting children activity on click-and-hold");
             	    	return;
-            		} else if (row.getString("label").equals("creators")) {
+            		} else if ("creators".equals(row.getString("label"))) {
             	    	Log.d(TAG, "Trying to start creators activity");
             	    	Intent i = new Intent(getBaseContext(), CreatorActivity.class);
         		    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
             	    	startActivity(i);
             	    	return;
-            		} else if (row.getString("label").equals("tags")) {
+            		} else if ("tags".equals(row.getString("label"))) {
             	    	Log.d(TAG, "Trying to start tag activity");
             	    	Intent i = new Intent(getBaseContext(), TagActivity.class);
             	    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
@@ -421,7 +421,7 @@ public class ItemDataActivity extends ExpandableListActivity {
             TextView textView = new TextView(ItemDataActivity.this);
             textView.setLayoutParams(lp);
             // Center the text vertically
-            textView.setGravity(Gravity.CENTER_VERTICAL | Gravity.LEFT);
+            textView.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
             // Set the text starting position
             textView.setPadding(0, 0, 0, 0);
             return textView;

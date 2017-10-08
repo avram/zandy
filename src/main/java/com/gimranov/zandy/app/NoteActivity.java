@@ -20,9 +20,11 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.Html;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -45,7 +47,7 @@ import com.gimranov.zandy.app.task.APIRequest;
  */
 public class NoteActivity extends Activity {
 
-	private static final String TAG = "com.gimranov.zandy.app.NoteActivity";
+	private static final String TAG = NoteActivity.class.getSimpleName();
 	
 	static final int DIALOG_NOTE = 3;
 	
@@ -76,12 +78,19 @@ public class NoteActivity extends Activity {
         
         setTitle(getResources().getString(R.string.note_for_item, item.getTitle()));
 
-        TextView text = (TextView) findViewById(R.id.noteText);
-        TextView title = (TextView) findViewById(R.id.noteTitle);
+        TextView text = findViewById(R.id.noteText);
+        TextView title = findViewById(R.id.noteTitle);
         title.setText(att.title);
-        text.setText(Html.fromHtml(att.content.optString("note", "")));
-        
-        Button editButton = (Button) findViewById(R.id.editNote);
+		Spanned spanned;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			spanned = Html.fromHtml(att.content.optString("note", ""), Html.FROM_HTML_MODE_COMPACT);
+		} else {
+			//noinspection deprecation
+			spanned = Html.fromHtml(att.content.optString("note", ""));
+		}
+		text.setText(spanned);
+
+		Button editButton = findViewById(R.id.editNote);
 		editButton.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View arg0) {
@@ -113,8 +122,8 @@ public class NoteActivity extends Activity {
 	    	            att.dirty = APIRequest.API_DIRTY;
 	    	            att.save(db);
 	    	            
-				        TextView text = (TextView) findViewById(R.id.noteText);
-				        TextView title = (TextView) findViewById(R.id.noteTitle);
+				        TextView text = findViewById(R.id.noteText);
+				        TextView title = findViewById(R.id.noteTitle);
 				        title.setText(att.title);
 				        text.setText(Html.fromHtml(att.content.optString("note", "")));
 	    	        }

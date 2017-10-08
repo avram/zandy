@@ -3,7 +3,7 @@ package com.gimranov.zandy.app;
 import com.squareup.otto.Bus;
 
 public class Application extends android.app.Application {
-    private static final String TAG = Application.class.getCanonicalName();
+    private static final String TAG = Application.class.getSimpleName();
 
     private static Application instance;
 

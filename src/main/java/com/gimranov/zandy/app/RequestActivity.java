@@ -19,6 +19,7 @@ package com.gimranov.zandy.app;
 import android.app.ListActivity;
 import android.content.Context;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
 import android.view.View;
@@ -44,7 +45,7 @@ import com.gimranov.zandy.app.task.APIRequest;
 public class RequestActivity extends ListActivity {
 
 	@SuppressWarnings("unused")
-	private static final String TAG = "com.gimranov.zandy.app.RequestActivity";
+	private static final String TAG = RequestActivity.class.getSimpleName();
 	private Database db;
 		
     /** Called when the activity is first created. */
@@ -62,12 +63,17 @@ public class RequestActivity extends ListActivity {
 			@Override
 			public void bindView(View view, Context c, Cursor cur) {
 				APIRequest req = new APIRequest(cur);
-				TextView tvTitle = (TextView)view.findViewById(android.R.id.text1);
-				TextView tvInfo = (TextView)view.findViewById(android.R.id.text2);
+				TextView tvTitle = view.findViewById(android.R.id.text1);
+				TextView tvInfo = view.findViewById(android.R.id.text2);
 							
 				tvTitle.setText(req.query);
 				// Set to an html-formatted representation of the request
-				tvInfo.setText(Html.fromHtml(req.toHtmlString()));
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+					tvInfo.setText(Html.fromHtml(req.toHtmlString(), Html.FROM_HTML_MODE_COMPACT));
+				} else {
+					//noinspection deprecation
+					tvInfo.setText(Html.fromHtml(req.toHtmlString()));
+				}
 			}
         	
         });
@@ -97,10 +103,8 @@ public class RequestActivity extends ListActivity {
 		String[] cols = Database.REQUESTCOLS;
 		String[] args = { };
 
-		Cursor cur = db.query("apirequests", cols, "", args, null, null,
+		return db.query("apirequests", cols, "", args, null, null,
 				null, null);
-
-		return cur;
 	}
     
 }

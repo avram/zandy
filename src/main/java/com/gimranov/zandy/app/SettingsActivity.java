@@ -31,7 +31,7 @@ import com.gimranov.zandy.app.data.Database;
 
 public class SettingsActivity extends PreferenceActivity implements OnClickListener {
 	
-	private static final String TAG = "com.gimranov.zandy.app.SettingsActivity";
+	private static final String TAG = SettingsActivity.class.getSimpleName();
 
 	static final int DIALOG_CONFIRM_DELETE = 5;
 

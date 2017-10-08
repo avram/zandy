@@ -89,7 +89,7 @@ import java.util.zip.ZipFile;
  */
 public class AttachmentActivity extends ListActivity {
 
-    private static final String TAG = "com.gimranov.zandy.app.AttachmentActivity";
+    private static final String TAG = AttachmentActivity.class.getSimpleName();
 
     static final int DIALOG_CONFIRM_NAVIGATE = 4;
     static final int DIALOG_FILE_PROGRESS = 6;

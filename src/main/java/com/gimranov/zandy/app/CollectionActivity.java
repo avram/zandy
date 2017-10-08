@@ -43,7 +43,7 @@ import com.gimranov.zandy.app.task.ZoteroAPITask;
 
 public class CollectionActivity extends ListActivity {
 
-	private static final String TAG = "com.gimranov.zandy.app.CollectionActivity";
+	private static final String TAG = CollectionActivity.class.getSimpleName();
 	private ItemCollection collection;
 	private Database db;
 	

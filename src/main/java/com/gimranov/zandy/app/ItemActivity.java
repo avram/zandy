@@ -52,7 +52,6 @@ import com.google.zxing.integration.android.IntentResult;
 import com.squareup.otto.Subscribe;
 
 import org.apache.http.util.ByteArrayBuffer;
-import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -66,7 +65,7 @@ import java.util.ArrayList;
 
 public class ItemActivity extends ListActivity {
 
-    private static final String TAG = "com.gimranov.zandy.app.ItemActivity";
+    private static final String TAG = ItemActivity.class.getSimpleName();
 
     static final int DIALOG_VIEW = 0;
     static final int DIALOG_NEW = 1;
@@ -397,8 +396,7 @@ public class ItemActivity extends ListActivity {
                                 Persistence.write(SORT_CHOICE, SORTS[pos]);
                             }
                         });
-                AlertDialog dialog2 = builder2.create();
-                return dialog2;
+                return builder2.create();
             case DIALOG_PROGRESS:
                 mProgressDialog = new ProgressDialog(this);
                 mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -430,7 +428,7 @@ public class ItemActivity extends ListActivity {
                                 // If we're about to download from Google play, cancel that dialog
                                 // and prompt from Amazon if we're on an Amazon device
                                 IntentIntegrator integrator = new IntentIntegrator(current);
-                                @Nullable AlertDialog producedDialog = integrator.initiateScan();
+                                AlertDialog producedDialog = integrator.initiateScan();
                                 if (producedDialog != null && "amazon".equals(BuildConfig.FLAVOR)) {
                                     producedDialog.dismiss();
                                     AmazonZxingGlue.showDownloadDialog(current);

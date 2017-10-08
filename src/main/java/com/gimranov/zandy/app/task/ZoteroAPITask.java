@@ -48,7 +48,7 @@ import com.gimranov.zandy.app.data.Item;
  *
  */
 public class ZoteroAPITask extends AsyncTask<APIRequest, Message, Message> {
-	private static final String TAG = "com.gimranov.zandy.app.task.ZoteroAPITask";
+	private static final String TAG = ZoteroAPITask.class.getSimpleName();
 	
 	public ArrayList<APIRequest> deletions;
 	public ArrayList<APIRequest> queue;

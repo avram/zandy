@@ -50,7 +50,7 @@ import com.gimranov.zandy.app.data.Database;
  */
 public class LookupActivity extends Activity implements OnClickListener {
 
-	private static final String TAG = "com.gimranov.zandy.app.LookupActivity";
+	private static final String TAG = LookupActivity.class.getSimpleName();
 	
 	static final int DIALOG_PROGRESS = 6;
 	
@@ -234,7 +234,7 @@ public class LookupActivity extends Activity implements OnClickListener {
         	mHandler.sendMessage(msg);
 		}
 		
-		public void setState(int state) {
+		void setState(int state) {
 			mState = state;
 		}
 	}

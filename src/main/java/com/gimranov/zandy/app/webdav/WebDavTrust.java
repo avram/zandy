@@ -8,7 +8,7 @@ import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 
 public class WebDavTrust {
-    private static final String TAG = WebDavTrust.class.getCanonicalName();
+    private static final String TAG = WebDavTrust.class.getSimpleName();
 
     // Kudos and blame to http://stackoverflow.com/a/1201102/950790
     public static void installAllTrustingCertificate() {
