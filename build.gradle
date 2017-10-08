@@ -30,7 +30,7 @@ apply plugin: 'io.fabric'
 
 dependencies {
     compile('oauth.signpost:signpost-commonshttp4:1.2.1.2') {
-        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+        exclude group: 'org.apache.httpcomponents'
     }
     compile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
         transitive = true;
@@ -43,6 +43,9 @@ dependencies {
 //    compile project(":libzotero-java")
 }
 
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
 android {
     compileSdkVersion 26
@@ -62,10 +65,10 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("keystore")
-            keyAlias "zandy"
-            storePassword ""
-            keyPassword ""
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
         }
     }
 
