@@ -28,12 +28,12 @@ import com.gimranov.zandy.app.task.APIRequest;
 
 public class ServerCredentials {
 	/** Application key -- available from Zotero */
-	public static final String CONSUMERKEY = "93a5aac13612aed2a236";
-	public static final String CONSUMERSECRET = "196d86bd1298cb78511c";
+	static final String CONSUMERKEY = "93a5aac13612aed2a236";
+	static final String CONSUMERSECRET = "196d86bd1298cb78511c";
 	
 	/** This is the zotero:// protocol we intercept
 	 * It probably shouldn't be changed. */
-	public static final String CALLBACKURL = "zotero://";
+	static final String CALLBACKURL = "zotero://";
 	
 	/** This is the Zotero API server. Those who set up independent
 	 * Zotero installations will need to change this. */
@@ -60,26 +60,26 @@ public class ServerCredentials {
 	 * http://www.zotero.org/support/dev/server_api/oauth#requesting_specific_permissions
 	 * for more details.
 	 */
-	public static final String OAUTHREQUEST = "https://www.zotero.org/oauth/request?" +
+	static final String OAUTHREQUEST = "https://www.zotero.org/oauth/request?" +
 			"library_access=1&" +
 			"notes_access=1&" +
 			"write_access=1&" +
 			"all_groups=write";
-	public static final String OAUTHACCESS = "https://www.zotero.org/oauth/access?" +
+	static final String OAUTHACCESS = "https://www.zotero.org/oauth/access?" +
 			"library_access=1&" +
 			"notes_access=1&" +
 			"write_access=1&" +
 			"all_groups=write";
-	public static final String OAUTHAUTHORIZE = "https://www.zotero.org/oauth/authorize?" +
+	static final String OAUTHAUTHORIZE = "https://www.zotero.org/oauth/authorize?" +
 			"library_access=1&" +
 			"notes_access=1&" +
 			"write_access=1&" +
 			"all_groups=write";
 	
 	/* More constants */
-    public static final File sBaseStorageDir = new File(Environment.getExternalStorageDirectory(), "/Android/data/com.gimranov.zandy");
-    public static final File sDocumentStorageDir = new File(sBaseStorageDir, "documents");
-    public static final File sCacheDir = new File(sBaseStorageDir, "cache");
+    static final File sBaseStorageDir = new File(Environment.getExternalStorageDirectory(), "/Android/data/com.gimranov.zandy");
+    static final File sDocumentStorageDir = new File(sBaseStorageDir, "documents");
+    static final File sCacheDir = new File(sBaseStorageDir, "cache");
 	
     private String userID;
     private String userKey;
@@ -116,11 +116,9 @@ public class ServerCredentials {
 	
 	public static boolean check(Context c) {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(c);
-		if (settings.getString("user_id", null) != null
+		return settings.getString("user_id", null) != null
 				&& settings.getString("user_key", null) != null
-				&& !settings.getString("user_id", null).equals("")
-				&& !settings.getString("user_key", null).equals(""))
-			return true;
-		else return false;
+				&& !"".equals(settings.getString("user_id", null))
+				&& !"".equals(settings.getString("user_key", null));
 	}
 }

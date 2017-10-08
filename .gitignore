@@ -1,4 +1,7 @@
+*.iml
+local.properties
 keystore
+keystore.properties
 .gradle
 build/
 .idea

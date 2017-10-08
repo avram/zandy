@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
 public class Database {
-	private static final String TAG = "com.gimranov.zandy.app.data.Database";
+	public static final String TAG = Database.class.getSimpleName();
 	
 	public static final String[] ITEMCOLS = {"item_title", "item_type", 
 		"item_content", "etag", "dirty", "_id", "item_key", "item_year", 

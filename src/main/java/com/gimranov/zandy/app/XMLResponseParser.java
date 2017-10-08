@@ -40,7 +40,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 public class XMLResponseParser extends DefaultHandler {
-	private static final String TAG = "com.gimranov.zandy.app.XMLResponseParser";
+	private static final String TAG = XMLResponseParser.class.getSimpleName();
 	
 	private InputStream input;
 	private Item item;
@@ -65,22 +65,22 @@ public class XMLResponseParser extends DefaultHandler {
 	public static final int MODE_ENTRY = 6;	
 	public static final int MODE_FEED = 7;		
 
-	static final String ATOM_NAMESPACE = "http://www.w3.org/2005/Atom";
-	static final String Z_NAMESPACE = "http://zotero.org/ns/api";
+	private static final String ATOM_NAMESPACE = "http://www.w3.org/2005/Atom";
+	private static final String Z_NAMESPACE = "http://zotero.org/ns/api";
 
 	public XMLResponseParser(InputStream in, APIRequest request) {
 		followNext = true;
 		input = in;
 		this.request = request;
 		// Initialize the request queue if needed
-		if (queue == null) queue = new ArrayList<APIRequest>();
+		if (queue == null) queue = new ArrayList<>();
 	}
 	
 	public XMLResponseParser(APIRequest request) {
 		followNext = true;
 		this.request = request;
 		// Initialize the request queue if needed
-		if (queue == null) queue = new ArrayList<APIRequest>();
+		if (queue == null) queue = new ArrayList<>();
 	}
 	
 	public void setInputStream(InputStream in) {

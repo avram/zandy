@@ -2,22 +2,21 @@ package com.gimranov.zandy.app;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.annotation.Nullable;
 
-import org.jetbrains.annotations.Nullable;
-
-public class Persistence {
+class Persistence {
     private static final String TAG = Persistence.class.getCanonicalName();
 
     private static final String FILE = "Persistence";
 
-    public static void write(String key, String value) {
+    static void write(String key, String value) {
         SharedPreferences.Editor editor = Application.getInstance().getSharedPreferences(FILE, Context.MODE_PRIVATE).edit();
         editor.putString(key, value);
-        editor.commit();
+        editor.apply();
     }
 
     @Nullable
-    public static String read(String key) {
+    static String read(String key) {
         SharedPreferences store = Application.getInstance().getSharedPreferences(FILE, Context.MODE_PRIVATE);
         if (!store.contains(key)) return null;
 

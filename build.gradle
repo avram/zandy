@@ -1,41 +1,57 @@
-import groovy.swing.SwingBuilder
 
 buildscript {
     repositories {
-        mavenCentral()
-        maven { url 'http://download.crashlytics.com/maven' }
+        jcenter()
+        maven { url 'https://maven.fabric.io/public' }
     }
+
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.12.+'
-        classpath 'com.crashlytics.tools.gradle:crashlytics-gradle:1.+'
+        classpath 'com.android.tools.build:gradle:2.3.3'
+        classpath 'io.fabric.tools:gradle:1.+'
     }
+}
+
+allprojects {
+   repositories {
+       jcenter()
+   }
 }
 
 
 repositories {
     mavenLocal()
     mavenCentral()
-    maven { url 'http://download.crashlytics.com/maven' }
+    maven { url 'https://maven.fabric.io/public' }
 }
 
-apply plugin: 'android'
-apply plugin: 'crashlytics'
+apply plugin: 'com.android.application'
+apply plugin: 'io.fabric'
+
 
 dependencies {
-    compile 'oauth.signpost:signpost-commonshttp4:1.2.1.2'
-    compile 'com.intellij:annotations:12.0'
-    compile 'com.crashlytics.android:crashlytics:1.+'
+    compile('oauth.signpost:signpost-commonshttp4:1.2.1.2') {
+        exclude group: 'org.apache.httpcomponents'
+    }
+    compile('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
+        transitive = true;
+    }
     compile 'commons-io:commons-io:2.4'
     compile 'com.squareup:otto:1.3.4'
     compile 'com.google.zxing:android-integration:2.3.0'
 
+    compile 'com.android.support:support-annotations:25.3.1'
 //    compile project(":libzotero-java")
 }
 
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "20.0.0"
+    compileSdkVersion 26
+    buildToolsVersion "26.0.2"
+
+    useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
         versionCode 1440
@@ -49,85 +65,30 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("keystore")
-            keyAlias "zandy"
-            storePassword ""
-            keyPassword "" 
+            keyAlias keystoreProperties.getProperty('keyAlias', '')
+            keyPassword keystoreProperties.getProperty('keyPassword', '')
+            storeFile file(keystoreProperties.getProperty('storeFile', 'dummy'))
+            storePassword keystoreProperties.getProperty('storePassword', '')
         }
     }
 
     buildTypes {
         release {
-            zipAlign true
+            zipAlignEnabled true
             signingConfig signingConfigs.release
-            runProguard false
-            proguardFile getDefaultProguardFile('proguard-android.txt')
+            minifyEnabled true
         }
     }
 
     lintOptions {
         abortOnError false
     }
-    
+
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'
     }
 }
 
-gradle.taskGraph.whenReady { taskGraph ->
-
-  println taskGraph.allTasks
-  if(taskGraph.hasTask(':zandy:assembleGoogleRelease')) {
- 
-    def storePass = ''
-    def keyPass = ''
-    if(System.console() == null) {
-      new SwingBuilder().edt {
-        dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
-            title: 'Enter password', // Dialog title
-            alwaysOnTop: true, // pretty much what the name says
-            resizable: false, // Don't allow the user to resize the dialog
-            locationRelativeTo: null, // Place dialog in center of the screen
-            pack: true, // We need to pack the dialog (so it will take the size of it's children)
-            show: true // Let's show it
-        ) {
-          vbox { // Put everything below each other
-            label(text: "Please enter store passphrase:")
-            storeInput = passwordField()
-            label(text: "Please enter key passphrase:")
-            keyInput = passwordField()
-            button(defaultButton: true, text: 'OK', actionPerformed: {
-              storePass = storeInput.password; // Set pass variable to value of input field
-              keyPass = storeInput.password; // Set pass variable to value of input field
-              dispose(); // Close dialog
-            })
-          } // vbox end
-        } // dialog end
-      } // edt end
-    } else {
-      storePass = System.console().readPassword("\nPlease enter store passphrase: ")
-      storePass = new String(storePass)
-      keyPass = System.console().readPassword("\nPlease enter key passphrase: ")
-      keyPass = new String(keyPass)
-    }
- 
-    if(storePass.size() <= 0) {
-      throw new InvalidUserDataException("You must enter a store password to proceed.")
-    }
-    
-    if(keyPass.size() <= 0) {
-      throw new InvalidUserDataException("You must enter a key password to proceed.")
-    }
- 
-    // -----
-    // Do what you need to do with pass here!
-    // -----
-        android.signingConfigs.release.storePassword = storePass
-        android.signingConfigs.release.keyPassword = keyPass
- 
-  } // end if has task
-} // end whenRead
-
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.12'
+    gradleVersion = '4.2.1'
 }

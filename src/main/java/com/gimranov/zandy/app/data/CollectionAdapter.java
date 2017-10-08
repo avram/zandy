@@ -33,7 +33,7 @@ import com.gimranov.zandy.app.task.APIRequest;
  *
  */
 public class CollectionAdapter extends ResourceCursorAdapter {
-	public static final String TAG = "com.gimranov.zandy.app.data.CollectionAdapter";
+	public static final String TAG = CollectionAdapter.class.getSimpleName();
 
 	public Context context;
 		

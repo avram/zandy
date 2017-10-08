@@ -11,7 +11,7 @@ import android.util.Log;
 import com.google.zxing.integration.android.IntentIntegrator;
 
 public class AmazonZxingGlue {
-    private static final String TAG = AmazonZxingGlue.class.getCanonicalName();
+    private static final String TAG = AmazonZxingGlue.class.getSimpleName();
 
     public static AlertDialog showDownloadDialog(final Context activity) {
         AlertDialog.Builder downloadDialog = new AlertDialog.Builder(activity);

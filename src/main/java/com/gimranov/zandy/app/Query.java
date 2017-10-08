@@ -28,14 +28,14 @@ import com.gimranov.zandy.app.data.Database;
  * @author ajlyon
  *
  */
-public class Query {
+class Query {
 	
 	private ArrayList<Bundle> parameters;
 	
 	private String sortBy;
 	
-	public Query () {
-		parameters = new ArrayList<Bundle>();
+	Query() {
+		parameters = new ArrayList<>();
 	}
 	
 	public void set(String field, String value) {
@@ -54,17 +54,16 @@ public class Query {
 		String[] args = new String[parameters.size()];
 		int i = 0;
 		for (Bundle b : parameters) {
-			if (b.getString("field").equals("tag")) {
+			if ("tag".equals(b.getString("field"))) {
 				sb.append("item_content LIKE ?");
 				args[i] = "%"+b.getString("value")+"%";
 			} else {
-				sb.append(b.getString("field") + "=?");
+				sb.append(b.getString("field")).append("=?");
 				args[i] = b.getString("value");
 			}
 			i++;
 			if (i < parameters.size()) sb.append(",");
 		}
-		Cursor cursor = db.query("items", Database.ITEMCOLS, sb.toString(), args, null, null, this.sortBy, null);
-		return cursor;
+		return db.query("items", Database.ITEMCOLS, sb.toString(), args, null, null, this.sortBy, null);
 	}
 }

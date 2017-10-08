@@ -22,12 +22,14 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.os.Handler;
 import android.util.Log;
+
 import com.gimranov.zandy.app.ServerCredentials;
 import com.gimranov.zandy.app.XMLResponseParser;
 import com.gimranov.zandy.app.data.Attachment;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
 import com.gimranov.zandy.app.data.ItemCollection;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -67,7 +69,7 @@ import java.util.UUID;
  *
  */
 public class APIRequest {
-	private static final String TAG = "com.gimranov.zandy.app.task.APIRequest";
+	private static final String TAG = APIRequest.class.getSimpleName();
 
 	/**
 	 * Statuses used for items and collections. They are currently strings, but
@@ -81,20 +83,23 @@ public class APIRequest {
 	public static final String API_WIP  = 	"Sync attempted";
 	public static final String API_CLEAN =	"No unsynced change";
 
-	/**
+	/*
 	 * These are constants represented by integers.
 	 *
 	 * The above should be moving down here some time.
 	 */
+
 	/**
 	 * HTTP response codes that we are used to
 	 */
-	public static final int HTTP_ERROR_CONFLICT = 412;
-	public static final int HTTP_ERROR_UNSPECIFIED = 400;
-	/**
+	private static final int HTTP_ERROR_CONFLICT = 412;
+	private static final int HTTP_ERROR_UNSPECIFIED = 400;
+
+	/*
 	 * The following are used when passing things back to the UI
 	 * from the API request service / thread.
 	 */
+
 	/** Used to indicate database data has changed. */
 	public static final int UPDATED_DATA	= 1000;
 	/** Current set of requests completed. */
@@ -107,19 +112,19 @@ public class APIRequest {
 	/**
 	 * Request types
 	 */
-	public static final int ITEMS_ALL				= 10000;
-	public static final int ITEMS_FOR_COLLECTION	= 10001;
-	public static final int ITEMS_CHILDREN			= 10002;
-	public static final int COLLECTIONS_ALL			= 10003;
-	public static final int ITEM_BY_KEY				= 10004;
+	private static final int ITEMS_ALL				= 10000;
+	private static final int ITEMS_FOR_COLLECTION	= 10001;
+	static final int ITEMS_CHILDREN			= 10002;
+	private static final int COLLECTIONS_ALL			= 10003;
+	private static final int ITEM_BY_KEY				= 10004;
 
 	// Requests that require write access
-	public static final int ITEM_NEW				= 20000;
+	private static final int ITEM_NEW				= 20000;
 	public static final int ITEM_UPDATE				= 20001;
 	public static final int ITEM_DELETE				= 20002;
 	public static final int ITEM_MEMBERSHIP_ADD		= 20003;
 	public static final int ITEM_MEMBERSHIP_REMOVE	= 20004;
-	public static final int ITEM_ATTACHMENT_NEW		= 20005;
+	private static final int ITEM_ATTACHMENT_NEW		= 20005;
 	public static final int ITEM_ATTACHMENT_UPDATE	= 20006;
 	public static final int ITEM_ATTACHMENT_DELETE	= 20007;
 
@@ -133,14 +138,14 @@ public class APIRequest {
 	 * Request status for use within the database
 	 */
 	public static final int REQ_NEW					= 40000;
-	public static final int REQ_FAILING				= 41000;
+	static final int REQ_FAILING				= 41000;
 
 	/**
 	 * We'll request the whole collection or library rather than
 	 * individual feeds when we have less than this proportion of
 	 * the items. Used when pre-fetching keys.
 	 */
-	public static double REREQUEST_CUTOFF			= 0.7;
+	private static double REREQUEST_CUTOFF			= 0.7;
 
 	/**
 	 * Type of request we're sending. This should be one of

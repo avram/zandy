@@ -42,8 +42,8 @@ public class ItemCollection extends HashSet<Item> {
 	 * What is this for?
 	 */
 	private static final long serialVersionUID = -4673800475017605707L;
-	
-	private static final String TAG = "com.gimranov.zandy.app.data.ItemCollection";
+
+	public static final String TAG = ItemCollection.class.getSimpleName();
 
 	/**
 	 * Queue of dirty collections to be sent to the server

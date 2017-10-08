@@ -26,15 +26,15 @@ public class APIException extends Exception {
 	/**
 	 * Exception types
 	 */
-	public static final int INVALID_METHOD = 10;
-	public static final int INVALID_UUID = 11;
-	public static final int INVALID_URI = 12;
-	public static final int HTTP_ERROR = 13;
+	static final int INVALID_METHOD = 10;
+	static final int INVALID_UUID = 11;
+	static final int INVALID_URI = 12;
+	static final int HTTP_ERROR = 13;
 
 	public APIRequest request;
 	public int type;
 	
-	public APIException(int type, String message, APIRequest request) {
+	APIException(int type, String message, APIRequest request) {
 		super(message);
 		this.request = request;
 	}
