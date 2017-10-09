@@ -54,6 +54,7 @@ import com.crashlytics.android.Crashlytics;
 import com.gimranov.zandy.app.data.Attachment;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
+import com.gimranov.zandy.app.storage.StorageManager;
 import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
 import com.gimranov.zandy.app.webdav.WebDavTrust;
@@ -426,16 +427,10 @@ public class AttachmentActivity extends ListActivity {
      */
     private void loadFileAttachment(Bundle b) {
         Attachment att = Attachment.load(b.getString("attachmentKey"), db);
-        if (!ServerCredentials.sBaseStorageDir.exists())
-            ServerCredentials.sBaseStorageDir.mkdirs();
-        if (!ServerCredentials.sDocumentStorageDir.exists())
-            ServerCredentials.sDocumentStorageDir.mkdirs();
 
         File attFile = new File(att.filename);
 
-        if (att.status == Attachment.AVAILABLE
-                // Zero-length or nonexistent gives length == 0
-                || (attFile != null && attFile.length() == 0)) {
+        if (att.status == Attachment.AVAILABLE || attFile.length() == 0) {
             Log.d(TAG, "Starting to try and download attachment (status: " + att.status + ", fn: " + att.filename + ")");
             this.b = b;
             showDialog(DIALOG_FILE_PROGRESS);
@@ -534,11 +529,7 @@ public class AttachmentActivity extends ListActivity {
             }
             sanitized = sanitized.replaceFirst("^(.*?)(\\.[^.]*)?$", "$1" + "_" + att.key + "$2");
 
-            file = new File(ServerCredentials.sDocumentStorageDir, sanitized);
-            if (!ServerCredentials.sBaseStorageDir.exists())
-                ServerCredentials.sBaseStorageDir.mkdirs();
-            if (!ServerCredentials.sDocumentStorageDir.exists())
-                ServerCredentials.sDocumentStorageDir.mkdirs();
+            file = new File(StorageManager.getDocumentsDirectory(AttachmentActivity.this), sanitized);
 
             final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 
@@ -626,19 +617,14 @@ public class AttachmentActivity extends ListActivity {
 
     			/* Save to temporary directory for WebDAV */
                 if ("webdav".equals(mode)) {
-                    if (!ServerCredentials.sCacheDir.exists()) {
-                        //noinspection ResultOfMethodCallIgnored
-                        ServerCredentials.sCacheDir.mkdirs();
-                    }
-
-                    File tmpFile = File.createTempFile("zandy", ".zip", ServerCredentials.sCacheDir);
+                    File tmpFile = File.createTempFile("zandy", ".zip", StorageManager.getCacheDirectory(AttachmentActivity.this));
 
                     FileUtils.copyFile(file, tmpFile);
                     //noinspection ResultOfMethodCallIgnored
                     file.delete();
 
                     // Keep track of temp files that we've created.
-                    if (tmpFiles == null) tmpFiles = new ArrayList<File>();
+                    if (tmpFiles == null) tmpFiles = new ArrayList<>();
                     tmpFiles.add(tmpFile);
 
                     ZipFile zf = new ZipFile(tmpFile);
@@ -687,9 +673,7 @@ public class AttachmentActivity extends ListActivity {
                             } else {
                                 Log.d(TAG, "Skipping file: " + name);
                             }
-                        } catch (IllegalArgumentException e) {
-                            Crashlytics.logException(new Throwable("b64 " + name64, e));
-                        } catch (NegativeArraySizeException e) {
+                        } catch (IllegalArgumentException | NegativeArraySizeException e) {
                             Crashlytics.logException(new Throwable("b64 " + name64, e));
                         }
                     } while (entries.hasMoreElements());

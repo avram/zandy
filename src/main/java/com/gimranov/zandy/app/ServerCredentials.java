@@ -20,10 +20,10 @@ import java.io.File;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.gimranov.zandy.app.storage.StorageManager;
 import com.gimranov.zandy.app.task.APIRequest;
 
 public class ServerCredentials {
@@ -75,13 +75,8 @@ public class ServerCredentials {
 			"notes_access=1&" +
 			"write_access=1&" +
 			"all_groups=write";
-	
-	/* More constants */
-    static final File sBaseStorageDir = new File(Environment.getExternalStorageDirectory(), "/Android/data/com.gimranov.zandy");
-    static final File sDocumentStorageDir = new File(sBaseStorageDir, "documents");
-    static final File sCacheDir = new File(sBaseStorageDir, "cache");
-	
-    private String userID;
+
+	private String userID;
     private String userKey;
     
     public ServerCredentials(Context c) {
