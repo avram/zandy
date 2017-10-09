@@ -49,6 +49,7 @@ import com.squareup.otto.Subscribe;
 
 import java.util.ArrayList;
 
+import io.fabric.sdk.android.Fabric;
 import oauth.signpost.OAuthProvider;
 import oauth.signpost.basic.DefaultOAuthProvider;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
@@ -76,7 +77,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-        new Crashlytics.Builder().build();
+		Fabric.with(this, new Crashlytics());
 
 		// Let items in on the fun
 		db = new Database(getBaseContext());

@@ -54,8 +54,8 @@ android {
     useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
-        versionCode 1440
-        versionName "1.4.4"
+        versionCode 1450
+        versionName "1.4.5"
     }
 
     productFlavors {
