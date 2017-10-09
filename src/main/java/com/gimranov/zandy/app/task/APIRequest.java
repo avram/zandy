@@ -701,11 +701,11 @@ public class APIRequest {
 			} catch (Exception e) {
 				StringBuilder sb = new StringBuilder();
 				for (StackTraceElement el : e.getStackTrace()) {
-					sb.append(el.toString()+"\n");
+					sb.append(el.toString()).append("\n");
 				}
 				recordAttempt(db);
 				throw new APIException(APIException.HTTP_ERROR,
-						"An IOException was thrown: " + sb.toString(), this);
+						"An IOException was thrown: " + sb.toString(), this, e);
 			}
 		} // end if ("xml".equals(disposition)) {..}
 		/* For requests that return non-XML data:
@@ -973,8 +973,6 @@ public class APIRequest {
 
 	/**
 	 * Produces an API request for all collections
-	 *
-	 * @param c				Context
 	 */
 	public static APIRequest fetchCollections(ServerCredentials cred) {
 		APIRequest req = new APIRequest(ServerCredentials.APIBASE
@@ -1162,9 +1160,9 @@ public class APIRequest {
 	 * @return
 	 */
 	public static APIRequest update(Item item) {
-		// If we have an item markes as new, update it
-		if (item.getKey().length() > 10) {
-			ArrayList<Item> mAL = new ArrayList<Item>();
+		// If we have an item with our temporary ID, upload it
+		if (item.getKey().startsWith("zandy:")) {
+			ArrayList<Item> mAL = new ArrayList<>();
 			mAL.add(item);
 			return add(mAL);
 		}
@@ -1193,7 +1191,7 @@ public class APIRequest {
 	 * @return
 	 */
 	public static ArrayList<APIRequest> delete(Context c) {
-		ArrayList<APIRequest> list = new ArrayList<APIRequest>();
+		ArrayList<APIRequest> list = new ArrayList<>();
 		Database db = new Database(c);
 		String[] args = {};
 		Cursor cur = db.rawQuery("select item_key, etag from deleteditems", args);
@@ -1214,7 +1212,7 @@ public class APIRequest {
 			// Save the request to the database to be dispatched later
 			templ.save(db);
 			list.add(templ);
-		} while (cur.moveToNext() != false);
+		} while (cur.moveToNext());
 		cur.close();
 
 		db.rawQuery("delete from deleteditems", args);
@@ -1226,8 +1224,8 @@ public class APIRequest {
 	 * Returns APIRequest objects from the database
 	 * @return
 	 */
-	public static ArrayList<APIRequest> queue(Database db) {
-		ArrayList<APIRequest> list = new ArrayList<APIRequest>();
+	static ArrayList<APIRequest> queue(Database db) {
+		ArrayList<APIRequest> list = new ArrayList<>();
 		String[] cols = Database.REQUESTCOLS;
 		String[] args = { };
 
@@ -1239,7 +1237,7 @@ public class APIRequest {
 			APIRequest req = new APIRequest(cur);
 			list.add(req);
 			Log.d(TAG, "Queueing request: "+req.query);
-		} while (cur.moveToNext() != false);
+		} while (cur.moveToNext());
 		cur.close();
 
 		return list;

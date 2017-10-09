@@ -368,14 +368,8 @@ public class ItemDataActivity extends ExpandableListActivity {
                     return true;
                 }
                 Log.d(TAG, "Preparing sync requests, starting with present item");
-                APIRequest req;
-                if (APIRequest.API_CLEAN.equals(item.dirty)) {
-                    ArrayList<Item> items = new ArrayList<Item>();
-                    items.add(item);
-                    req = APIRequest.add(items);
-                } else {
-                    req = APIRequest.update(item);
-                }
+                APIRequest req = APIRequest.update(item);
+
                 new ZoteroAPITask(getBaseContext()).execute(req);
                 Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_started),
                         Toast.LENGTH_SHORT).show();

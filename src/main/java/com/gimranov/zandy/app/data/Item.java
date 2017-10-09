@@ -58,7 +58,7 @@ public class Item {
 	 */
 	public static ArrayList<Item> queue = new ArrayList<Item>();
 
-	private static final String TAG = "com.gimranov.zandy.app.data.Item";
+	private static final String TAG = Item.class.getSimpleName();
 
 	/**
 	 * The next two types are arrays of information on items that we need
@@ -108,7 +108,7 @@ public class Item {
 	public Item(Context c, String type) {
 		this();
 		content = fieldsForItemType(c, type);
-		key = UUID.randomUUID().toString();
+		key = "zandy:" + UUID.randomUUID().toString();
 		dirty = APIRequest.API_NEW;
 		this.type = type;
 	}

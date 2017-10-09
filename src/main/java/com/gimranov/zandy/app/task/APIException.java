@@ -33,14 +33,15 @@ public class APIException extends Exception {
 
 	public APIRequest request;
 	public int type;
-	
+
 	APIException(int type, String message, APIRequest request) {
 		super(message);
 		this.request = request;
 	}
-	
-	public APIException(int type, APIRequest request) {
-		super();
+
+	APIException(int type, String message, APIRequest request, Throwable cause) {
+		super(message, cause);
 		this.request = request;
 	}
+
 }
