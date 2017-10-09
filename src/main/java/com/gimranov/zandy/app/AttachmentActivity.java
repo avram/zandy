@@ -38,6 +38,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -380,6 +381,10 @@ public class AttachmentActivity extends ListActivity {
                     });
                 }
                 dialog = builder.create();
+
+                //noinspection ConstantConditions
+                dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
                 return dialog;
             case DIALOG_FILE_PROGRESS:
                 mProgressDialog = new ProgressDialog(this);
@@ -754,6 +759,7 @@ public class AttachmentActivity extends ListActivity {
             case R.id.do_new:
                 b.putString("itemKey", this.item.getKey());
                 b.putString("mode", "new");
+                AttachmentActivity.this.b = b;
                 removeDialog(DIALOG_NOTE);
                 showDialog(DIALOG_NOTE);
                 return true;

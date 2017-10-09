@@ -264,6 +264,7 @@ public class ItemDataActivity extends ExpandableListActivity {
                             }
                         }).create();
 
+                //noinspection ConstantConditions
                 dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
                 return dialog;

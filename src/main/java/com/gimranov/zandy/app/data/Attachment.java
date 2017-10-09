@@ -41,7 +41,7 @@ public class Attachment {
 	 */
 	public JSONObject content;
 	
-	private static final String TAG = "com.gimranov.zandy.app.data.Attachment";
+	private static final String TAG = Attachment.class.getSimpleName();
 	
 	public static final int AVAILABLE = 1;
 	public static final int LOCAL = 2;	
