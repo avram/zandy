@@ -40,7 +40,6 @@ dependencies {
     compile 'com.google.zxing:android-integration:2.3.0'
 
     compile 'com.android.support:support-annotations:25.3.1'
-//    compile project(":libzotero-java")
 }
 
 def keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -54,8 +53,8 @@ android {
     useLibrary 'org.apache.http.legacy'
 
     defaultConfig {
-        versionCode 1450
-        versionName "1.4.5"
+        versionCode 1451
+        versionName "1.4.5.1"
     }
 
     productFlavors {

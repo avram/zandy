@@ -155,7 +155,7 @@ public class XMLResponseParser extends DefaultHandler {
             }
 
             public void end() {
-            	if (items == true) {
+            	if (items) {
             		if (updateKey != null && updateType != null && updateType.equals("item")) {
             			// We have an incoming new version of an item
             			Item existing = Item.load(updateKey, db);
@@ -192,8 +192,7 @@ public class XMLResponseParser extends DefaultHandler {
 	            		item.dirty = APIRequest.API_CLEAN;
         				attachment.dirty = APIRequest.API_CLEAN;
 	            		if ((attachment.url != null && !"".equals(attachment.url))
-	            				|| attachment.content.optInt("linkMode") == Attachment.MODE_IMPORTED_FILE
-	            				|| attachment.content.optInt("linkMode") == Attachment.MODE_IMPORTED_URL)
+								|| attachment.isDownloadable())
 	            			attachment.status = Attachment.AVAILABLE;
 	            		
             			
