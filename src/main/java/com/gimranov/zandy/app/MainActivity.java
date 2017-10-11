@@ -1,16 +1,16 @@
 /*******************************************************************************
  * This file is part of Zandy.
- * 
+ *
  * Zandy is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Zandy is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
@@ -24,7 +24,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -47,6 +49,7 @@ import com.gimranov.zandy.app.task.APIRequest;
 import com.gimranov.zandy.app.task.ZoteroAPITask;
 import com.squareup.otto.Subscribe;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import io.fabric.sdk.android.Fabric;
@@ -60,78 +63,90 @@ import oauth.signpost.exception.OAuthNotAuthorizedException;
 import oauth.signpost.http.HttpParameters;
 
 public class MainActivity extends Activity implements OnClickListener {
-	private CommonsHttpOAuthConsumer httpOAuthConsumer;
-	private OAuthProvider httpOAuthProvider;
+    private CommonsHttpOAuthConsumer httpOAuthConsumer;
+    private OAuthProvider httpOAuthProvider;
 
-	private static final String TAG = MainActivity.class.getSimpleName();
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     private static final String DEFAULT_SORT = "timestamp ASC, item_title COLLATE NOCASE";
 
-	static final int DIALOG_CHOOSE_COLLECTION = 1;
-	
-	private Database db;
-	private Bundle b = new Bundle();
-	
-	/** Called when the activity is first created. */
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+    static final int DIALOG_CHOOSE_COLLECTION = 1;
 
-		Fabric.with(this, new Crashlytics());
+    private Database db;
+    private Bundle b = new Bundle();
 
-		// Let items in on the fun
-		db = new Database(getBaseContext());
-		
-		Intent intent = getIntent();
-		String action = intent.getAction();
-		if (action != null
-				&& action.equals("android.intent.action.SEND")
-				&& intent.getExtras() != null) {
-			// Browser sends us no data, just extras
-			Bundle extras = intent.getExtras();
-			for (String s : extras.keySet()) {
-				try {
-					Log.d("TAG","Got extra: "+s +" => "+extras.getString(s));
-				} catch (ClassCastException e) {
-					Log.e(TAG, "Not a string, it seems", e);
-				}
-			}
-			
-			Bundle b = new Bundle();
-			b.putString("url", extras.getString("android.intent.extra.TEXT"));
-			b.putString("title", extras.getString("android.intent.extra.SUBJECT"));
-			this.b = b;
-			showDialog(DIALOG_CHOOSE_COLLECTION);
-		}
+    /**
+     * Called when the activity is first created.
+     */
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.main);
+        Fabric.with(this, new Crashlytics());
 
-		Button collectionButton = (Button) findViewById(R.id.collectionButton);
-		collectionButton.setOnClickListener(this);
-		Button itemButton = (Button) findViewById(R.id.itemButton);
-		itemButton.setOnClickListener(this);
-		Button loginButton = (Button) findViewById(R.id.loginButton);
-		loginButton.setOnClickListener(this);
+        // Disable death due to exposing file:// URIs
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            try {
+                Method m = StrictMode.class.getMethod("disableDeathOnFileUriExposure");
+                m.invoke(null);
+            } catch (Exception e) {
+                Crashlytics.getInstance().core.logException(e);
+            }
+        }
 
-		if (ServerCredentials.check(getBaseContext())) {
-			setUpLoggedInUser();
-		}
-	}
+        // Let items in on the fun
+        db = new Database(getBaseContext());
+
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        if (action != null
+                && action.equals("android.intent.action.SEND")
+                && intent.getExtras() != null) {
+            // Browser sends us no data, just extras
+            Bundle extras = intent.getExtras();
+            for (String s : extras.keySet()) {
+                try {
+                    Log.d("TAG", "Got extra: " + s + " => " + extras.getString(s));
+                } catch (ClassCastException e) {
+                    Log.e(TAG, "Not a string, it seems", e);
+                }
+            }
+
+            Bundle b = new Bundle();
+            b.putString("url", extras.getString("android.intent.extra.TEXT"));
+            b.putString("title", extras.getString("android.intent.extra.SUBJECT"));
+            this.b = b;
+            showDialog(DIALOG_CHOOSE_COLLECTION);
+        }
+
+        setContentView(R.layout.main);
+
+        Button collectionButton = (Button) findViewById(R.id.collectionButton);
+        collectionButton.setOnClickListener(this);
+        Button itemButton = (Button) findViewById(R.id.itemButton);
+        itemButton.setOnClickListener(this);
+        Button loginButton = (Button) findViewById(R.id.loginButton);
+        loginButton.setOnClickListener(this);
+
+        if (ServerCredentials.check(getBaseContext())) {
+            setUpLoggedInUser();
+        }
+    }
 
     @Override
-	public void onResume() {
+    public void onResume() {
         Application.getInstance().getBus().register(this);
 
-		Button loginButton = (Button) findViewById(R.id.loginButton);
+        Button loginButton = (Button) findViewById(R.id.loginButton);
 
-		if (!ServerCredentials.check(getBaseContext())) {
-			loginButton.setText(getResources().getString(R.string.log_in));
-			loginButton.setClickable(true);
-		} else {
+        if (!ServerCredentials.check(getBaseContext())) {
+            loginButton.setText(getResources().getString(R.string.log_in));
+            loginButton.setClickable(true);
+        } else {
             refreshList();
         }
         super.onResume();
-	}
+    }
 
     @Override
     protected void onPause() {
@@ -155,64 +170,64 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
     /**
-	 * Implementation of the OnClickListener interface, to handle button events.
-	 * 
-	 * Note: When adding a button, it needs to be added here, but the
-	 * ClickListener needs to be set in the main onCreate(..) as well.
-	 */
-	public void onClick(View v) {
-		Log.d(TAG, "Click on: " + v.getId());
-		if (v.getId() == R.id.collectionButton) {
-			Log.d(TAG, "Trying to start collection activity");
-			Intent i = new Intent(this, CollectionActivity.class);
-			startActivity(i);
-		} else if (v.getId() == R.id.itemButton) {
-			Log.d(TAG, "Trying to start all-item activity");
-			Intent i = new Intent(this, ItemActivity.class);
-			startActivity(i);
-		} else if (v.getId() == R.id.loginButton) {
-			Log.d(TAG, "Starting OAuth");
-			  new Thread(new Runnable() {
-				    public void run() {
-						startOAuth();
-				    }
-				  }).start();
+     * Implementation of the OnClickListener interface, to handle button events.
+     * <p>
+     * Note: When adding a button, it needs to be added here, but the
+     * ClickListener needs to be set in the main onCreate(..) as well.
+     */
+    public void onClick(View v) {
+        Log.d(TAG, "Click on: " + v.getId());
+        if (v.getId() == R.id.collectionButton) {
+            Log.d(TAG, "Trying to start collection activity");
+            Intent i = new Intent(this, CollectionActivity.class);
+            startActivity(i);
+        } else if (v.getId() == R.id.itemButton) {
+            Log.d(TAG, "Trying to start all-item activity");
+            Intent i = new Intent(this, ItemActivity.class);
+            startActivity(i);
+        } else if (v.getId() == R.id.loginButton) {
+            Log.d(TAG, "Starting OAuth");
+            new Thread(new Runnable() {
+                public void run() {
+                    startOAuth();
+                }
+            }).start();
 
-		} else {
-			Log.w(TAG, "Uncaught click on: " + v.getId());
-		}
-	}
+        } else {
+            Log.w(TAG, "Uncaught click on: " + v.getId());
+        }
+    }
 
-	/**
-	 * Makes the OAuth call. The response on the callback is handled by the
-	 * onNewIntent(..) method below.
-	 * 
-	 * This will send the user to the OAuth server to get set up.
-	 */
-	protected void startOAuth() {
-		try {
-			this.httpOAuthConsumer = new CommonsHttpOAuthConsumer(
-					ServerCredentials.CONSUMERKEY,
-					ServerCredentials.CONSUMERSECRET);
-			this.httpOAuthProvider = new DefaultOAuthProvider(
-					ServerCredentials.OAUTHREQUEST,
-					ServerCredentials.OAUTHACCESS,
-					ServerCredentials.OAUTHAUTHORIZE);
+    /**
+     * Makes the OAuth call. The response on the callback is handled by the
+     * onNewIntent(..) method below.
+     * <p>
+     * This will send the user to the OAuth server to get set up.
+     */
+    protected void startOAuth() {
+        try {
+            this.httpOAuthConsumer = new CommonsHttpOAuthConsumer(
+                    ServerCredentials.CONSUMERKEY,
+                    ServerCredentials.CONSUMERSECRET);
+            this.httpOAuthProvider = new DefaultOAuthProvider(
+                    ServerCredentials.OAUTHREQUEST,
+                    ServerCredentials.OAUTHACCESS,
+                    ServerCredentials.OAUTHAUTHORIZE);
 
-			String authUrl;
-			authUrl = httpOAuthProvider.retrieveRequestToken(httpOAuthConsumer,
-					ServerCredentials.CALLBACKURL);
-			startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl)));
-		} catch (OAuthMessageSignerException e) {
+            String authUrl;
+            authUrl = httpOAuthProvider.retrieveRequestToken(httpOAuthConsumer,
+                    ServerCredentials.CALLBACKURL);
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl)));
+        } catch (OAuthMessageSignerException e) {
             toastError(e.getMessage());
-		} catch (OAuthNotAuthorizedException e) {
+        } catch (OAuthNotAuthorizedException e) {
             toastError(e.getMessage());
-		} catch (OAuthExpectationFailedException e) {
+        } catch (OAuthExpectationFailedException e) {
             toastError(e.getMessage());
-		} catch (OAuthCommunicationException e) {
+        } catch (OAuthCommunicationException e) {
             toastError(e.getMessage());
-		}
-	}
+        }
+    }
 
     private void toastError(final String message) {
         runOnUiThread(new Runnable() {
@@ -223,149 +238,149 @@ public class MainActivity extends Activity implements OnClickListener {
         });
     }
 
-	/**
-	 * Receives intents that the app knows how to interpret. These will probably
-	 * all be URIs with the protocol "zotero://".
-	 * 
-	 * This is currently only used to receive OAuth responses, but it could be
-	 * used with things like zotero://select and zotero://attachment in the
-	 * future.
-	 */
-	@Override
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
-		Log.d(TAG, "Got new intent");
-		
-		if (intent == null) return;
-		
-		// Here's what we do if we get a share request from the browser
-			String action = intent.getAction();
-			if (action != null
-					&& action.equals("android.intent.action.SEND")
-					&& intent.getExtras() != null) {
-				// Browser sends us no data, just extras
-				Bundle extras = intent.getExtras();
-				for (String s : extras.keySet()) {
-					try {
-						Log.d("TAG","Got extra: "+s +" => "+extras.getString(s));
-					} catch (ClassCastException e) {
-						Log.e(TAG, "Not a string, it seems", e);
-					}
-				}
-				
-				Bundle b = new Bundle();
-				b.putString("url", extras.getString("android.intent.extra.TEXT"));
-				b.putString("title", extras.getString("android.intent.extra.SUBJECT"));
-				this.b=b;
-				showDialog(DIALOG_CHOOSE_COLLECTION);
-				return;
-			}
-		
+    /**
+     * Receives intents that the app knows how to interpret. These will probably
+     * all be URIs with the protocol "zotero://".
+     * <p>
+     * This is currently only used to receive OAuth responses, but it could be
+     * used with things like zotero://select and zotero://attachment in the
+     * future.
+     */
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Log.d(TAG, "Got new intent");
+
+        if (intent == null) return;
+
+        // Here's what we do if we get a share request from the browser
+        String action = intent.getAction();
+        if (action != null
+                && action.equals("android.intent.action.SEND")
+                && intent.getExtras() != null) {
+            // Browser sends us no data, just extras
+            Bundle extras = intent.getExtras();
+            for (String s : extras.keySet()) {
+                try {
+                    Log.d("TAG", "Got extra: " + s + " => " + extras.getString(s));
+                } catch (ClassCastException e) {
+                    Log.e(TAG, "Not a string, it seems", e);
+                }
+            }
+
+            Bundle b = new Bundle();
+            b.putString("url", extras.getString("android.intent.extra.TEXT"));
+            b.putString("title", extras.getString("android.intent.extra.SUBJECT"));
+            this.b = b;
+            showDialog(DIALOG_CHOOSE_COLLECTION);
+            return;
+        }
+
 		/*
 		 * It's possible we've lost these to garbage collection, so we
 		 * reinstantiate them if they turn out to be null at this point.
 		 */
-		if (this.httpOAuthConsumer == null)
-			this.httpOAuthConsumer = new CommonsHttpOAuthConsumer(
-					ServerCredentials.CONSUMERKEY,
-					ServerCredentials.CONSUMERSECRET);
-		if (this.httpOAuthProvider == null)
-			this.httpOAuthProvider = new DefaultOAuthProvider(
-					ServerCredentials.OAUTHREQUEST,
-					ServerCredentials.OAUTHACCESS,
-					ServerCredentials.OAUTHAUTHORIZE);
+        if (this.httpOAuthConsumer == null)
+            this.httpOAuthConsumer = new CommonsHttpOAuthConsumer(
+                    ServerCredentials.CONSUMERKEY,
+                    ServerCredentials.CONSUMERSECRET);
+        if (this.httpOAuthProvider == null)
+            this.httpOAuthProvider = new DefaultOAuthProvider(
+                    ServerCredentials.OAUTHREQUEST,
+                    ServerCredentials.OAUTHACCESS,
+                    ServerCredentials.OAUTHAUTHORIZE);
 
 		/*
 		 * Also double-check that intent isn't null, because something here
 		 * caused a NullPointerException for a user.
 		 */
-		Uri uri;
-		uri = intent.getData();
-		
-		if (uri != null) {
+        Uri uri;
+        uri = intent.getData();
+
+        if (uri != null) {
 			/*
 			 * TODO The logic should have cases for the various things coming in
 			 * on this protocol.
 			 */
-			final String verifier = uri
-					.getQueryParameter(oauth.signpost.OAuth.OAUTH_VERIFIER);
+            final String verifier = uri
+                    .getQueryParameter(oauth.signpost.OAuth.OAUTH_VERIFIER);
 
-			new Thread(new Runnable() {
-				public void run() {
-				    	try {
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
 				    		/*
 				    		 * Here, we're handling the callback from the completed OAuth.
 				    		 * We don't need to do anything highly visible, although it
 				    		 * would be nice to show a Toast or something.
 				    		 */
-				    		httpOAuthProvider.retrieveAccessToken(
-				    				httpOAuthConsumer, verifier);
-				    		HttpParameters params = httpOAuthProvider
-				    				.getResponseParameters();
-				    		final String userID = params.getFirst("userID");
-				    		Log.d(TAG, "uid: " + userID);
-				    		final String userKey = httpOAuthConsumer.getToken();
-				    		Log.d(TAG, "ukey: " + userKey);
-				    		final String userSecret = httpOAuthConsumer.getTokenSecret();
-				    		Log.d(TAG, "usecret: " + userSecret);
-				    		
-					    	runOnUiThread(new Runnable(){
-					    		public void run(){
+                        httpOAuthProvider.retrieveAccessToken(
+                                httpOAuthConsumer, verifier);
+                        HttpParameters params = httpOAuthProvider
+                                .getResponseParameters();
+                        final String userID = params.getFirst("userID");
+                        Log.d(TAG, "uid: " + userID);
+                        final String userKey = httpOAuthConsumer.getToken();
+                        Log.d(TAG, "ukey: " + userKey);
+                        final String userSecret = httpOAuthConsumer.getTokenSecret();
+                        Log.d(TAG, "usecret: " + userSecret);
+
+                        runOnUiThread(new Runnable() {
+                            public void run() {
 					    			/*
 					    			 * These settings live in the Zotero preferences tree.
 					    			 */
-					    			SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-					    			SharedPreferences.Editor editor = settings.edit();
-					    			// For Zotero, the key and secret are identical, it seems
-					    			editor.putString("user_key", userKey);
-					    			editor.putString("user_secret", userSecret);
-					    			editor.putString("user_id", userID);
+                                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+                                SharedPreferences.Editor editor = settings.edit();
+                                // For Zotero, the key and secret are identical, it seems
+                                editor.putString("user_key", userKey);
+                                editor.putString("user_secret", userSecret);
+                                editor.putString("user_id", userID);
 
-					    			editor.apply();
+                                editor.apply();
 
-                                    setUpLoggedInUser();
+                                setUpLoggedInUser();
 
-                                    doSync();
+                                doSync();
 
-					    		}
-					    	});
-				    	} catch (OAuthMessageSignerException | OAuthNotAuthorizedException | OAuthExpectationFailedException e) {
-                            toastError(e.getMessage());
-				    	} catch (OAuthCommunicationException e) {
-                            toastError("Error communicating with server. Check your time settings, network connectivity, and try again. OAuth error: " + e.getMessage());
-				    	}
-				    }
-			  }).start();
-		}
-	}
+                            }
+                        });
+                    } catch (OAuthMessageSignerException | OAuthNotAuthorizedException | OAuthExpectationFailedException e) {
+                        toastError(e.getMessage());
+                    } catch (OAuthCommunicationException e) {
+                        toastError("Error communicating with server. Check your time settings, network connectivity, and try again. OAuth error: " + e.getMessage());
+                    }
+                }
+            }).start();
+        }
+    }
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.zotero_menu, menu);
-		
-		// button doesn't make sense here.
-		menu.removeItem(R.id.do_new);
-		
-		return true;
-	}
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.zotero_menu, menu);
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle item selection
-		switch (item.getItemId()) {
-		case R.id.do_sync:
-			return doSync();
-		case R.id.do_prefs:
-			startActivity(new Intent(this, SettingsActivity.class));
-			return true;
-        case R.id.do_search:
-        	onSearchRequested();
-            return true;
-		default:
-			return super.onOptionsItemSelected(item);
-		}
-	}
+        // button doesn't make sense here.
+        menu.removeItem(R.id.do_new);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.do_sync:
+                return doSync();
+            case R.id.do_prefs:
+                startActivity(new Intent(this, SettingsActivity.class));
+                return true;
+            case R.id.do_search:
+                onSearchRequested();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 
     private boolean doSync() {
         if (!ServerCredentials.check(getApplicationContext())) {
@@ -401,7 +416,7 @@ public class MainActivity extends Activity implements OnClickListener {
                     // and load an activity for the item
                     Item item = Item.load(cur);
 
-                    Log.d(TAG, "Loading item data with key: "+item.getKey());
+                    Log.d(TAG, "Loading item data with key: " + item.getKey());
                     // We create and issue a specified intent with the necessary data
                     Intent i = new Intent(getBaseContext(), ItemDataActivity.class);
                     i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
@@ -409,7 +424,7 @@ public class MainActivity extends Activity implements OnClickListener {
                     startActivity(i);
                 } else {
                     // failed to move cursor-- show a toast
-                    TextView tvTitle = (TextView)view.findViewById(R.id.item_title);
+                    TextView tvTitle = (TextView) view.findViewById(R.id.item_title);
                     Toast.makeText(getApplicationContext(),
                             getResources().getString(R.string.cant_open_item, tvTitle.getText()),
                             Toast.LENGTH_SHORT).show();
@@ -427,50 +442,51 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
     @Override
-	protected Dialog onCreateDialog(int id) {
-		final String url = b.getString("url");
-		final String title = b.getString("title");
-		AlertDialog dialog;
-		switch (id) {			
-		case DIALOG_CHOOSE_COLLECTION:
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			// Now we're dealing with share link, it seems.
-			// For now, just add it to the main library-- we'd like to let the person choose a library,
-			// but not yet.
-			final ArrayList<ItemCollection> collections = ItemCollection.getCollections(db);
-			int size = collections.size();
-			String[] collectionNames = new String[size];
-			for (int i = 0; i < size; i++) {
-				collectionNames[i] = collections.get(i).getTitle();
-			}
-			builder.setTitle(getResources().getString(R.string.choose_parent_collection))
-		    	    .setItems(collectionNames, new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int pos) {
-		    	            Item item = new Item(getBaseContext(), "webpage");
-		    	            item.save(db);
-		    	            Log.d(TAG,"New item has key: "+item.getKey() + ", dbId: "+item.dbId);
-							Item.set(item.getKey(), "url", url, db);
-							Item.set(item.getKey(), "title", title, db);
-							Item.setTag(item.getKey(), null, "#added-by-zandy", 1, db);
-							collections.get(pos).add(item);
-							collections.get(pos).saveChildren(db);
-							Log.d(TAG, "Loading item data with key: "+item.getKey());
-							// We create and issue a specified intent with the necessary data
-					    	Intent i = new Intent(getBaseContext(), ItemDataActivity.class);
-					    	i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
-					    	i.putExtra("com.gimranov.zandy.app.itemDbId", item.dbId);
-					    	startActivity(i);
-		    	        }
-		    	    });
-			dialog = builder.create();
-			return dialog;
-		default:
-			Log.e(TAG, "Invalid dialog requested");
-			return null;
-		}
-	}
+    protected Dialog onCreateDialog(int id) {
+        final String url = b.getString("url");
+        final String title = b.getString("title");
+        AlertDialog dialog;
+        switch (id) {
+            case DIALOG_CHOOSE_COLLECTION:
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                // Now we're dealing with share link, it seems.
+                // For now, just add it to the main library-- we'd like to let the person choose a library,
+                // but not yet.
+                final ArrayList<ItemCollection> collections = ItemCollection.getCollections(db);
+                int size = collections.size();
+                String[] collectionNames = new String[size];
+                for (int i = 0; i < size; i++) {
+                    collectionNames[i] = collections.get(i).getTitle();
+                }
+                builder.setTitle(getResources().getString(R.string.choose_parent_collection))
+                        .setItems(collectionNames, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int pos) {
+                                Item item = new Item(getBaseContext(), "webpage");
+                                item.save(db);
+                                Log.d(TAG, "New item has key: " + item.getKey() + ", dbId: " + item.dbId);
+                                Item.set(item.getKey(), "url", url, db);
+                                Item.set(item.getKey(), "title", title, db);
+                                Item.setTag(item.getKey(), null, "#added-by-zandy", 1, db);
+                                collections.get(pos).add(item);
+                                collections.get(pos).saveChildren(db);
+                                Log.d(TAG, "Loading item data with key: " + item.getKey());
+                                // We create and issue a specified intent with the necessary data
+                                Intent i = new Intent(getBaseContext(), ItemDataActivity.class);
+                                i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
+                                i.putExtra("com.gimranov.zandy.app.itemDbId", item.dbId);
+                                startActivity(i);
+                            }
+                        });
+                dialog = builder.create();
+                return dialog;
+            default:
+                Log.e(TAG, "Invalid dialog requested");
+                return null;
+        }
+    }
 
-    @Subscribe public void syncComplete(SyncEvent event) {
+    @Subscribe
+    public void syncComplete(SyncEvent event) {
         refreshList();
     }
 }
