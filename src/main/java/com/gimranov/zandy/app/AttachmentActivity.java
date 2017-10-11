@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.text.Editable;
 import android.util.Base64;
 import android.util.Log;
@@ -84,7 +85,7 @@ import java.util.zip.ZipFile;
 /**
  * This Activity handles displaying and editing attachments. It works almost the same as
  * ItemDataActivity and TagActivity, using a simple ArrayAdapter on Bundles with the creator info.
- *
+ * <p>
  * This currently operates by showing the attachments for a given item
  *
  * @author ajlyon
@@ -111,7 +112,9 @@ public class AttachmentActivity extends ListActivity {
 
     private ArrayList<File> tmpFiles;
 
-    /** Called when the activity is first created. */
+    /**
+     * Called when the activity is first created.
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -141,8 +144,9 @@ public class AttachmentActivity extends ListActivity {
          * we can do that anonymously.
          */
         setListAdapter(new ArrayAdapter<Attachment>(this, R.layout.list_attach, rows) {
+            @NonNull
             @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
+            public View getView(int position, View convertView, @NonNull ViewGroup parent) {
                 View row;
 
                 // We are reusing views, but we need to initialize it if null
@@ -153,8 +157,8 @@ public class AttachmentActivity extends ListActivity {
                     row = convertView;
                 }
 
-                ImageView tvType = (ImageView) row.findViewById(R.id.attachment_type);
-                TextView tvSummary = (TextView) row.findViewById(R.id.attachment_summary);
+                ImageView tvType = row.findViewById(R.id.attachment_type);
+                TextView tvSummary = row.findViewById(R.id.attachment_summary);
 
                 Attachment att = getItem(position);
                 Log.d(TAG, "Have an attachment: " + att.title + " fn:" + att.filename + " status:" + att.status);
@@ -174,7 +178,7 @@ public class AttachmentActivity extends ListActivity {
                     }
                     tvSummary.setText(note);
                 } else {
-                    StringBuffer status = new StringBuffer(getResources().getString(R.string.status));
+                    StringBuilder status = new StringBuilder(getResources().getString(R.string.status));
                     if (att.status == Attachment.AVAILABLE)
                         status.append(getResources().getString(R.string.attachment_zfs_available));
                     else if (att.status == Attachment.LOCAL)
@@ -224,15 +228,13 @@ public class AttachmentActivity extends ListActivity {
                     b.putString("attachmentKey", row.key);
                     b.putString("content", url);
                     SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-                    int linkMode = row.content.optInt("linkMode", Attachment.MODE_IMPORTED_URL);
 
                     if (settings.getBoolean("webdav_enabled", false))
                         b.putString("mode", "webdav");
                     else
                         b.putString("mode", "zfs");
 
-                    if (linkMode == Attachment.MODE_IMPORTED_FILE
-                            || linkMode == Attachment.MODE_IMPORTED_URL) {
+                    if (row.isDownloadable()) {
                         loadFileAttachment(b);
                     } else {
                         AttachmentActivity.this.b = b;
@@ -249,7 +251,6 @@ public class AttachmentActivity extends ListActivity {
                     AttachmentActivity.this.b = b;
                     showDialog(DIALOG_NOTE);
                 }
-                return;
             }
         });
     }
@@ -295,13 +296,13 @@ public class AttachmentActivity extends ListActivity {
                                 try {
                                     Uri uri = Uri.parse(content);
                                     startActivity(new Intent(Intent.ACTION_VIEW)
-                                                          .setData(uri));
+                                            .setData(uri));
                                 } catch (ActivityNotFoundException e) {
                                     // There can be exceptions here; not sure what would prompt us to have
                                     // URIs that the browser can't load, but it apparently happens.
                                     Toast.makeText(getApplicationContext(),
-                                                   getResources().getString(R.string.attachment_intent_failed_for_uri, content),
-                                                   Toast.LENGTH_SHORT).show();
+                                            getResources().getString(R.string.attachment_intent_failed_for_uri, content),
+                                            Toast.LENGTH_SHORT).show();
                                 }
                             }
                         }).setNeutralButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
@@ -344,7 +345,7 @@ public class AttachmentActivity extends ListActivity {
                                 String fixed = value.toString().replaceAll("\n\n", "\n<br>");
                                 if (mode != null && mode.equals("new")) {
                                     Log.d(TAG, "Attachment created with parent key: " + itemKey);
-                                    Attachment att = new Attachment(getBaseContext(), "note", itemKey);
+                                    Attachment att = new Attachment("note", itemKey);
                                     att.setNoteText(fixed);
                                     att.dirty = APIRequest.API_NEW;
                                     att.save(db);
@@ -362,11 +363,11 @@ public class AttachmentActivity extends ListActivity {
                                 la.notifyDataSetChanged();
                             }
                         }).setNeutralButton(getResources().getString(R.string.cancel),
-                                            new DialogInterface.OnClickListener() {
-                                                public void onClick(DialogInterface dialog, int whichButton) {
-                                                    // do nothing
-                                                }
-                                            });
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int whichButton) {
+                                        // do nothing
+                                    }
+                                });
                 // We only want the delete option when this isn't a new note
                 if (mode == null || !"new".equals(mode)) {
                     builder = builder.setNegativeButton(getResources().getString(R.string.menu_delete), new DialogInterface.OnClickListener() {
@@ -409,17 +410,17 @@ public class AttachmentActivity extends ListActivity {
 
     private void showAttachment(Attachment att) {
         if (att.status == Attachment.LOCAL) {
-            Log.d(TAG, "Starting to display local attachment");
+            Log.d(TAG, "Starting to display local attachment " + att.title);
             Uri uri = Uri.fromFile(new File(att.filename));
-            String mimeType = att.content.optString("mimeType", "application/pdf");
+            String contentType = att.getContentType();
             try {
                 startActivity(new Intent(Intent.ACTION_VIEW)
-                                      .setDataAndType(uri, mimeType));
+                        .setDataAndType(uri, contentType));
             } catch (ActivityNotFoundException e) {
                 Log.e(TAG, "No activity for intent", e);
                 Toast.makeText(getApplicationContext(),
-                               getResources().getString(R.string.attachment_intent_failed, mimeType),
-                               Toast.LENGTH_SHORT).show();
+                        getResources().getString(R.string.attachment_intent_failed, contentType),
+                        Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -467,8 +468,8 @@ public class AttachmentActivity extends ListActivity {
                 case ProgressThread.STATE_FAILED:
                     // Notify that we failed to get anything
                     Toast.makeText(getApplicationContext(),
-                                   getResources().getString(R.string.attachment_no_download_url),
-                                   Toast.LENGTH_SHORT).show();
+                            getResources().getString(R.string.attachment_no_download_url),
+                            Toast.LENGTH_SHORT).show();
 
                     if (mProgressDialog.isShowing())
                         dismissDialog(DIALOG_FILE_PROGRESS);
@@ -525,28 +526,19 @@ public class AttachmentActivity extends ListActivity {
             String urlstring;
             Attachment att = Attachment.load(attachmentKey, db);
 
-            String sanitized = att.title.replace(' ', '_');
-
-            // If no 1-6-character extension, try to add one using MIME type
-            if (!sanitized.matches(".*\\.[a-zA-Z0-9]{1,6}$")) {
-                String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(att.getType());
-                if (extension != null) sanitized = sanitized + "." + extension;
-            }
-            sanitized = sanitized.replaceFirst("^(.*?)(\\.[^.]*)?$", "$1" + "_" + att.key + "$2");
+            String sanitized = att.getCanonicalStorageName();
 
             file = new File(StorageManager.getDocumentsDirectory(AttachmentActivity.this), sanitized);
 
             final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 
             if ("webdav".equals(mode)) {
-                //urlstring = "https://dfs.humnet.ucla.edu/home/ajlyon/zotero/223RMC7C.zip";
-                //urlstring = "http://www.gimranov.com/research/zotero/223RMC7C.zip";
-                urlstring = settings.getString("webdav_path", "") + "/" + att.key + ".zip";
+                urlstring = att.getDownloadUrlWebDav(settings);
 
                 Authenticator.setDefault(new Authenticator() {
                     protected PasswordAuthentication getPasswordAuthentication() {
                         return new PasswordAuthentication(settings.getString("webdav_username", ""),
-                                                          settings.getString("webdav_password", "").toCharArray());
+                                settings.getString("webdav_password", "").toCharArray());
                     }
                 });
 
@@ -554,7 +546,7 @@ public class AttachmentActivity extends ListActivity {
                     WebDavTrust.installAllTrustingCertificate();
                 }
             } else {
-                urlstring = att.url + "?key=" + settings.getString("user_key", "");
+                urlstring = att.getDownloadUrlZfs(settings);
             }
 
             try {
@@ -724,9 +716,9 @@ public class AttachmentActivity extends ListActivity {
             @Override
             public void run() {
                 Toast.makeText(AttachmentActivity.this,
-                               AttachmentActivity.this.getString(resource)
-                                       + "\n " + detail,
-                               Toast.LENGTH_LONG
+                        AttachmentActivity.this.getString(resource)
+                                + "\n " + detail,
+                        Toast.LENGTH_LONG
                 ).show();
             }
         });
@@ -747,13 +739,13 @@ public class AttachmentActivity extends ListActivity {
             case R.id.do_sync:
                 if (!ServerCredentials.check(getApplicationContext())) {
                     Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_log_in_first),
-                                   Toast.LENGTH_SHORT).show();
+                            Toast.LENGTH_SHORT).show();
                     return true;
                 }
                 Log.d(TAG, "Preparing sync requests, starting with present item");
                 new ZoteroAPITask(getBaseContext()).execute(APIRequest.update(this.item));
                 Toast.makeText(getApplicationContext(), getResources().getString(R.string.sync_started),
-                               Toast.LENGTH_SHORT).show();
+                        Toast.LENGTH_SHORT).show();
 
                 return true;
             case R.id.do_new:
