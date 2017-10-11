@@ -4,7 +4,12 @@ by Avram Lyon (ajlyon@gmail.com)
 [![Build Status](https://travis-ci.org/avram/zandy.svg?branch=master)](https://travis-ci.org/avram/zandy)
 
 ## Installation
-A built and signed version of Zandy is available for purchase on the Android Market (https://market.android.com/details?id=com.gimranov.zandy.app). You can also check out this project and built an APK yourself using Eclipse with the ADT plugin, or another alternate toolchain. Note that you will need to add the oauth-signpost libraries to your classpath to build the application.
+A built and signed version of Zandy is available for purchase on the Android Market (https://market.android.com/details?id=com.gimranov.zandy.app). 
+
+You can also check out this project and build an APK yourself:
+```
+./gradlew installGoogleDebug
+```
 
 ## Requirements
 Android 4.0.4 or later.
