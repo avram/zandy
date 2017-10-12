@@ -1,16 +1,16 @@
 /*******************************************************************************
  * This file is part of Zandy.
- * 
+ *
  * Zandy is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Zandy is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Affero General Public License
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
@@ -18,30 +18,30 @@ package com.gimranov.zandy.app.task;
 
 public class APIException extends Exception {
 
-	/**
-	 * Don't know what this is for.
-	 */
-	private static final long serialVersionUID = 1L;
-	
-	/**
-	 * Exception types
-	 */
-	static final int INVALID_METHOD = 10;
-	static final int INVALID_UUID = 11;
-	static final int INVALID_URI = 12;
-	static final int HTTP_ERROR = 13;
+    /**
+     * Don't know what this is for.
+     */
+    private static final long serialVersionUID = 1L;
 
-	public APIRequest request;
-	public int type;
+    /**
+     * Exception types
+     */
+    static final int INVALID_METHOD = 10;
+    static final int INVALID_UUID = 11;
+    static final int INVALID_URI = 12;
+    static final int HTTP_ERROR = 13;
 
-	APIException(int type, String message, APIRequest request) {
-		super(message);
-		this.request = request;
-	}
+    public APIRequest request;
+    public int type;
 
-	APIException(int type, String message, APIRequest request, Throwable cause) {
-		super(message, cause);
-		this.request = request;
-	}
+    APIException(int type, String message, APIRequest request) {
+        super(message);
+        this.request = request;
+    }
+
+    APIException(int type, String message, APIRequest request, Throwable cause) {
+        super(message, cause);
+        this.request = request;
+    }
 
 }

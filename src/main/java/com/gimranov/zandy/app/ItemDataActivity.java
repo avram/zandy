@@ -23,6 +23,7 @@ import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.InputType;
@@ -111,7 +112,13 @@ public class ItemDataActivity extends ExpandableListActivity {
         registerForContextMenu(getExpandableListView());
 
         ExpandableListView lv = getExpandableListView();
-        lv.setGroupIndicator(getResources().getDrawable(R.drawable.list_child_indicator));
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            lv.setGroupIndicator(getResources().getDrawable(R.drawable.list_child_indicator, ItemDataActivity.this.getTheme()));
+        } else {
+            //noinspection deprecation
+            lv.setGroupIndicator(getResources().getDrawable(R.drawable.list_child_indicator));
+        }
         lv.setTextFilterEnabled(true);
         lv.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
@@ -127,38 +134,38 @@ public class ItemDataActivity extends ExpandableListActivity {
                 // If we have a click on an entry, do something...
                 BundleListAdapter adapter = (BundleListAdapter) parent.getExpandableListAdapter();
                 Bundle row = adapter.getGroup(position);
-                if (row.getString("label").equals("url")) {
+                if ("url".equals(row.getString("label"))) {
                     row.putString("url", row.getString("content"));
                     removeDialog(DIALOG_CONFIRM_NAVIGATE);
                     ItemDataActivity.this.b = row;
                     showDialog(DIALOG_CONFIRM_NAVIGATE);
                     return true;
-                } else if (row.getString("label").equals("DOI")) {
+                } else if ("DOI".equals(row.getString("label"))) {
                     String url = "http://dx.doi.org/" + Uri.encode(row.getString("content"));
                     row.putString("url", url);
                     removeDialog(DIALOG_CONFIRM_NAVIGATE);
                     ItemDataActivity.this.b = row;
                     showDialog(DIALOG_CONFIRM_NAVIGATE);
                     return true;
-                } else if (row.getString("label").equals("creators")) {
+                } else if ("creators".equals(row.getString("label"))) {
                     Log.d(TAG, "Trying to start creators activity");
                     Intent i = new Intent(getBaseContext(), CreatorActivity.class);
                     i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
                     startActivity(i);
                     return true;
-                } else if (row.getString("label").equals("tags")) {
+                } else if ("tags".equals(row.getString("label"))) {
                     Log.d(TAG, "Trying to start tag activity");
                     Intent i = new Intent(getBaseContext(), TagActivity.class);
                     i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
                     startActivity(i);
                     return true;
-                } else if (row.getString("label").equals("children")) {
+                } else if ("children".equals(row.getString("label"))) {
                     Log.d(TAG, "Trying to start attachment activity");
                     Intent i = new Intent(getBaseContext(), AttachmentActivity.class);
                     i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
                     startActivity(i);
                     return true;
-                } else if (row.getString("label").equals("collections")) {
+                } else if ("collections".equals(row.getString("label"))) {
                     Log.d(TAG, "Trying to start collection membership activity");
                     Intent i = new Intent(getBaseContext(), CollectionMembershipActivity.class);
                     i.putExtra("com.gimranov.zandy.app.itemKey", item.getKey());
@@ -185,8 +192,6 @@ public class ItemDataActivity extends ExpandableListActivity {
                         (ExpandableListView.ExpandableListContextMenuInfo) menuInfo;
                 int type = ExpandableListView.getPackedPositionType(info.packedPosition);
                 int group = ExpandableListView.getPackedPositionGroup(info.packedPosition);
-                @SuppressWarnings("unused")
-                int child = ExpandableListView.getPackedPositionChild(info.packedPosition);
 
                 if (type == 0) {
                     // If we have a long click on an entry, we'll provide a way of editing it
@@ -220,7 +225,6 @@ public class ItemDataActivity extends ExpandableListActivity {
                     removeDialog(DIALOG_SINGLE_VALUE);
                     ItemDataActivity.this.b = row;
                     showDialog(DIALOG_SINGLE_VALUE);
-                    return;
                 }
             }
         });
@@ -242,8 +246,6 @@ public class ItemDataActivity extends ExpandableListActivity {
                     input.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
                 }
 
-                View dialogContents = input;
-
                 DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         Item.set(itemKey, label, input.getText().toString(), db);
@@ -256,7 +258,7 @@ public class ItemDataActivity extends ExpandableListActivity {
 
                 dialog = new AlertDialog.Builder(this)
                         .setTitle(getResources().getString(R.string.edit_item_field, Item.localizedStringForString(label)))
-                        .setView(dialogContents)
+                        .setView(input)
                         .setPositiveButton(getResources().getString(R.string.ok), listener)
                         .setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
@@ -300,7 +302,6 @@ public class ItemDataActivity extends ExpandableListActivity {
                                         } catch (ActivityNotFoundException e) {
                                             //noinspection UnnecessaryReturnStatement
                                             Toast.makeText(ItemDataActivity.this, ItemDataActivity.this.getString(R.string.attachment_intent_failed_for_uri, fixedUri), Toast.LENGTH_LONG).show();
-                                            return;
                                         }
                                     }
                                 }).setNegativeButton(getResources().getString(R.string.cancel),
@@ -392,9 +393,9 @@ public class ItemDataActivity extends ExpandableListActivity {
     /**
      * List adapter that provides our bundles in the appropriate way
      */
-    public class BundleListAdapter extends BaseExpandableListAdapter {
+    private class BundleListAdapter extends BaseExpandableListAdapter {
 
-        public ArrayList<Bundle> bundles;
+        ArrayList<Bundle> bundles;
 
         public Bundle getChild(int groupPosition, int childPosition) {
             return bundles.get(groupPosition);
@@ -412,7 +413,7 @@ public class ItemDataActivity extends ExpandableListActivity {
             }
         }
 
-        public TextView getGenericView() {
+        TextView getGenericView() {
             // Layout parameters for the ExpandableListView
             AbsListView.LayoutParams lp = new AbsListView.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, 64);
@@ -490,7 +491,7 @@ public class ItemDataActivity extends ExpandableListActivity {
             tvContent.setPadding(0, 0, 0, 0);
 
     		/* Since the field names are the API / internal form, we
-        	 * attempt to get a localized, human-readable version. */
+             * attempt to get a localized, human-readable version. */
             tvLabel.setText(Item.localizedStringForString(label));
 
             if ("title".equals(label)

@@ -29,7 +29,7 @@ public class Attachment {
     public String url;
 
 	/*
-	 {
+     {
 	   "itemType": "attachment",
 	   "linkMode": "imported_url",
 	   "title": "S00193ED1V01Y200905CAC006.pdf",
@@ -148,7 +148,7 @@ public class Attachment {
 
     public boolean isDownloadable() {
         String linkMode = content.optString("linkMode");
-        return  (MODE_IMPORTED_FILE.equals(linkMode)) || (MODE_IMPORTED_URL.equals(linkMode));
+        return (MODE_IMPORTED_FILE.equals(linkMode)) || (MODE_IMPORTED_URL.equals(linkMode));
     }
 
     public String getDownloadUrlWebDav(SharedPreferences settings) {
