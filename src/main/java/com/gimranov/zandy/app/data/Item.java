@@ -254,7 +254,7 @@ public class Item {
     public ArrayList<Bundle> toBundleArray(Database db) {
         JSONObject itemContent = this.content;
         /*
-		 * Here we walk through the data and make Bundles to send to the
+         * Here we walk through the data and make Bundles to send to the
 		 * ArrayAdapter. There should be no real risk of JSON exceptions, since
 		 * the JSON was checked when initialized in the Item object.
 		 * 

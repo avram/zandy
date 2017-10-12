@@ -6,9 +6,9 @@ class Util {
     private static final String DOI_PREFIX = "http://dx.doi.org/";
 
     static String doiToUri(String doi) {
-       if (isDoi(doi)) {
-           return DOI_PREFIX + doi.replaceAll("^doi:", "");
-       }
+        if (isDoi(doi)) {
+            return DOI_PREFIX + doi.replaceAll("^doi:", "");
+        }
         return doi;
     }
 

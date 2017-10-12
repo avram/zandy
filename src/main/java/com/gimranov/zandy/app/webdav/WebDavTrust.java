@@ -1,9 +1,12 @@
 package com.gimranov.zandy.app.webdav;
 
+import android.annotation.SuppressLint;
+
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 
@@ -19,9 +22,11 @@ public class WebDavTrust {
                         return null;
                     }
 
+                    @SuppressLint("TrustAllX509TrustManager")
                     public void checkClientTrusted(X509Certificate[] certs, String authType) {
                     }
 
+                    @SuppressLint("TrustAllX509TrustManager")
                     public void checkServerTrusted(X509Certificate[] certs, String authType) {
                     }
                 }
