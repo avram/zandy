@@ -46,7 +46,16 @@ dependencies {
     implementation 'com.google.zxing:android-integration:2.3.0'
 
     implementation 'com.android.support:support-annotations:26.1.0'
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+
+    // Required for local unit tests (JUnit 4 framework)
+    testCompile 'junit:junit:4.12'
+
+    // Required for instrumented tests
+    androidTestCompile 'com.android.support:support-annotations:26.1.0'
+    androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
+    androidTestCompile 'com.android.support.test.espresso:espresso-intents:3.0.1'
+    androidTestCompile 'com.android.support.test:runner:1.0.1'
 }
 
 def keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -62,6 +71,8 @@ android {
     defaultConfig {
         versionCode 1451
         versionName "1.4.5.1"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
     flavorDimensions "store"
