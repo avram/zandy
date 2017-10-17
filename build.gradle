@@ -56,11 +56,18 @@ dependencies {
     androidTestCompile 'com.android.support.test.espresso:espresso-core:3.0.1'
     androidTestCompile 'com.android.support.test.espresso:espresso-intents:3.0.1'
     androidTestCompile 'com.android.support.test:runner:1.0.1'
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestUtil 'com.android.support.test:orchestrator:1.0.1'
+
 }
 
 def keystorePropertiesFile = rootProject.file("keystore.properties")
 def keystoreProperties = new Properties()
 keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
+def testPropertiesFile = rootProject.file("test.properties")
+def testProperties = new Properties()
+testProperties.load(new FileInputStream(testPropertiesFile))
 
 android {
     compileSdkVersion 26
@@ -73,6 +80,10 @@ android {
         versionName "1.4.5.1"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    testOptions {
+        execution 'ANDROID_TEST_ORCHESTRATOR'
     }
 
     flavorDimensions "store"
@@ -100,6 +111,11 @@ android {
             zipAlignEnabled true
             signingConfig signingConfigs.release
             minifyEnabled true
+        }
+
+        debug {
+            buildConfigField("String", "TEST_USER_ID", "\"${testProperties.testUserId}\"")
+            buildConfigField("String", "TEST_USER_KEY_READONLY", "\"${testProperties.testUserKeyReadonly}\"")
         }
     }
 
