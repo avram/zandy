@@ -54,9 +54,9 @@ public class ItemAdapter extends ResourceCursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        TextView tvTitle = (TextView) view.findViewById(R.id.item_title);
-        ImageView tvType = (ImageView) view.findViewById(R.id.item_type);
-        TextView tvSummary = (TextView) view.findViewById(R.id.item_summary);
+        TextView tvTitle = view.findViewById(R.id.item_title);
+        ImageView tvType = view.findViewById(R.id.item_type);
+        TextView tvSummary = view.findViewById(R.id.item_summary);
 
         if (cursor == null) {
             Log.e(TAG, "cursor is null in bindView");
