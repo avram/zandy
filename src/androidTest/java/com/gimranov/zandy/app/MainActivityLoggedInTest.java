@@ -7,6 +7,8 @@ import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.test.espresso.intent.rule.IntentsTestRule;
 import android.support.test.filters.LargeTest;
+import android.support.test.orchestrator.callback.OrchestratorCallback;
+import android.support.test.orchestrator.listeners.OrchestrationRunListener;
 import android.support.test.runner.AndroidJUnit4;
 
 import com.gimranov.zandy.app.data.Database;
@@ -42,7 +44,17 @@ import static org.hamcrest.Matchers.not;
 public class MainActivityLoggedInTest {
     @Rule
     public IntentsTestRule<MainActivity> activityTestRule =
-            new IntentsTestRule<>(MainActivity.class);
+            new IntentsTestRule<MainActivity>(MainActivity.class){
+                @Override
+                protected void beforeActivityLaunched() {
+                    super.beforeActivityLaunched();
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getTargetContext());
+                    preferences.edit()
+                            .putString("user_id", BuildConfig.TEST_USER_ID)
+                            .putString("user_key", BuildConfig.TEST_USER_KEY_READONLY)
+                            .commit();
+                }
+            };
 
     @Before
     public void setUpCredentials() {
