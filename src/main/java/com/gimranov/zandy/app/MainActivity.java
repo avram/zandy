@@ -121,15 +121,16 @@ public class MainActivity extends Activity implements OnClickListener {
 
         setContentView(R.layout.main);
 
-        Button collectionButton = (Button) findViewById(R.id.collectionButton);
+        Button collectionButton = findViewById(R.id.collectionButton);
         collectionButton.setOnClickListener(this);
-        Button itemButton = (Button) findViewById(R.id.itemButton);
+        Button itemButton = findViewById(R.id.itemButton);
         itemButton.setOnClickListener(this);
-        Button loginButton = (Button) findViewById(R.id.loginButton);
+        Button loginButton = findViewById(R.id.loginButton);
         loginButton.setOnClickListener(this);
 
         if (ServerCredentials.check(getBaseContext())) {
             setUpLoggedInUser();
+            refreshList();
         }
     }
 
@@ -137,12 +138,13 @@ public class MainActivity extends Activity implements OnClickListener {
     public void onResume() {
         Application.getInstance().getBus().register(this);
 
-        Button loginButton = (Button) findViewById(R.id.loginButton);
+        Button loginButton = findViewById(R.id.loginButton);
 
         if (!ServerCredentials.check(getBaseContext())) {
             loginButton.setText(getResources().getString(R.string.log_in));
             loginButton.setClickable(true);
         } else {
+            setUpLoggedInUser();
             refreshList();
         }
         super.onResume();
@@ -158,7 +160,7 @@ public class MainActivity extends Activity implements OnClickListener {
      * Refreshes the list view, safely if possible
      */
     private void refreshList() {
-        ListView lv = ((ListView) findViewById(android.R.id.list));
+        ListView lv = findViewById(android.R.id.list);
         if (lv == null) return;
 
         ItemAdapter adapter = (ItemAdapter) lv.getAdapter();
@@ -398,12 +400,12 @@ public class MainActivity extends Activity implements OnClickListener {
     }
 
     private void setUpLoggedInUser() {
-        Button loginButton = (Button) findViewById(R.id.loginButton);
+        Button loginButton = findViewById(R.id.loginButton);
 
         loginButton.setVisibility(View.GONE);
 
         ItemAdapter adapter = new ItemAdapter(this, getCursor(DEFAULT_SORT));
-        ListView lv = ((ListView) findViewById(android.R.id.list));
+        ListView lv = findViewById(android.R.id.list);
         lv.setAdapter(adapter);
 
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -424,7 +426,7 @@ public class MainActivity extends Activity implements OnClickListener {
                     startActivity(i);
                 } else {
                     // failed to move cursor-- show a toast
-                    TextView tvTitle = (TextView) view.findViewById(R.id.item_title);
+                    TextView tvTitle = view.findViewById(R.id.item_title);
                     Toast.makeText(getApplicationContext(),
                             getResources().getString(R.string.cant_open_item, tvTitle.getText()),
                             Toast.LENGTH_SHORT).show();
