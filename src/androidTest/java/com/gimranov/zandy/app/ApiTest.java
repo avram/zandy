@@ -1,21 +1,29 @@
 package com.gimranov.zandy.app;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.test.AndroidTestCase;
-import android.test.IsolatedContext;
+import android.support.test.filters.SmallTest;
+import android.support.test.runner.AndroidJUnit4;
 
-import com.gimranov.zandy.app.ServerCredentials;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.task.APIException;
 import com.gimranov.zandy.app.task.APIRequest;
-import com.gimranov.zandy.app.test.*;
 import com.gimranov.zandy.app.test.BuildConfig;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-public class ApiTest extends AndroidTestCase {
+import static android.support.test.InstrumentationRegistry.getTargetContext;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
 
-	private IsolatedContext mContext;
+@RunWith(AndroidJUnit4.class)
+@SmallTest
+public class ApiTest {
+
+	private Context mContext;
 	private Database mDb;
 	private ServerCredentials mCred;
 	
@@ -28,12 +36,10 @@ public class ApiTest extends AndroidTestCase {
 	
 	// unlikely to exist
 	private static final String TEST_MISSING_ITEM = "ZZZZZZZZ";
-	
-	
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		mContext = new IsolatedContext(null, getContext());
+
+	@Before
+	public void setUp() throws Exception {
+		mContext = getTargetContext();
 		mDb = new Database(mContext);
 		
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(mContext);
@@ -46,22 +52,26 @@ public class ApiTest extends AndroidTestCase {
 		
 		mCred = new ServerCredentials(mContext);
 	}
-	
+
+	@Test
 	public void testPreConditions() {
 		// Make sure we do indeed have the key set up
 		assertTrue(ServerCredentials.check(mContext));
 	}
-	
+
+	@Test
 	public void testItemsRequest() throws APIException {
 		APIRequest items = APIRequest.fetchItems(false, mCred);
 		items.issue(mDb, mCred);
 	}
-	
+
+	@Test
 	public void testCollectionsRequest() throws APIException {
 		APIRequest collections = APIRequest.fetchCollections(mCred);
 		collections.issue(mDb, mCred);
 	}
-	
+
+	@Test
 	public void testItemsForCollection() throws APIException {
 		APIRequest collection = APIRequest.fetchItems(TEST_COLLECTION, false, mCred);
 		collection.issue(mDb, mCred);
