@@ -1,4 +1,4 @@
-package com.gimranov.zandy.app.test;
+package com.gimranov.zandy.app;
 
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -9,6 +9,8 @@ import com.gimranov.zandy.app.ServerCredentials;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.task.APIException;
 import com.gimranov.zandy.app.task.APIRequest;
+import com.gimranov.zandy.app.test.*;
+import com.gimranov.zandy.app.test.BuildConfig;
 
 
 public class ApiTest extends AndroidTestCase {
@@ -20,8 +22,8 @@ public class ApiTest extends AndroidTestCase {
 	/**
 	 * Access information for the Zandy test user on Zotero.org
 	 */
-	private static final String TEST_UID = "743083";
-	private static final String TEST_KEY = "JFRP2k4qvhRUm62kuDHXUUX3";
+	private static final String TEST_UID = BuildConfig.TEST_USER_ID;
+	private static final String TEST_KEY = BuildConfig.TEST_USER_KEY_READONLY;
 	private static final String TEST_COLLECTION = "U8GNSSF3";
 	
 	// unlikely to exist
@@ -71,10 +73,10 @@ public class ApiTest extends AndroidTestCase {
 		try {
 			missingItem.issue(mDb, mCred);
 			// We shouldn't get here
-			assertTrue(false);
+			fail();
 		} catch (APIException e) {
 			// We expect only one specific exception message
-			if (!"Item does not exist".equals(e.getMessage()))
+			if (!"Item does not exist".equals(e.getCause().getMessage()))
 				throw e;
 		}
 	}
