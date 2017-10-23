@@ -6,10 +6,13 @@ import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import android.view.Menu
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_drawer_navigation.*
 import kotlinx.android.synthetic.main.app_bar_drawer_navigation.*
+import kotlinx.android.synthetic.main.content_drawer_navigation.*
 
 class DrawerNavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
@@ -22,6 +25,10 @@ class DrawerNavigationActivity : AppCompatActivity(), NavigationView.OnNavigatio
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
         }
+
+        navigation_drawer_content_recycler.adapter = ItemAdapter()
+        navigation_drawer_content_recycler.setHasFixedSize(true)
+        navigation_drawer_content_recycler.layoutManager = LinearLayoutManager(this)
 
         val toggle = ActionBarDrawerToggle(
                 this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
