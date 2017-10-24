@@ -2,12 +2,12 @@ package com.gimranov.zandy.app
 
 import com.gimranov.zandy.app.data.Item
 import io.bloco.faker.Faker
-import org.json.JSONObject
 import java.util.*
 
 internal object FakeDataUtil {
+    private val faker = Faker()
+
     fun book(): Item {
-        val faker = Faker()
         val item = Item()
         item.title = faker.book.title()
         item.type = "book"

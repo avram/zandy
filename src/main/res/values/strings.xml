@@ -142,5 +142,6 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+    <string name="card_item_subtitle_format">%s (%s)</string>
 
 </resources>

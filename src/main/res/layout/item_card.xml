@@ -41,12 +41,12 @@
                         tools:text="Tale of Two Cities" />
 
                     <TextView
-                        android:id="@+id/card_item_creator"
+                        android:id="@+id/card_item_subtitle"
                         style="?android:textAppearanceListItemSmall"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@{item.creatorSummary}"
-                        tools:text="Charles Dickens" />
+                        android:text='@{@string/card_item_subtitle_format(item.creatorSummary, item.year)}'
+                        tools:text="Charles Dickens (1849)" />
                 </LinearLayout>
 
                 <LinearLayout

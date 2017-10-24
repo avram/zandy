@@ -50,4 +50,5 @@
         <!-- Zotero terms -->
     <string name="note">Note</string>
     <string name="menu_edit">Edit</string>
+    <string name="card_item_subtitle_format">%s (%s)</string>
 </resources>
