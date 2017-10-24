@@ -86,14 +86,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Organize"
-                        android:theme="@style/PrimaryFlatButton" />
+                        />
 
                     <Button
                         style="?android:buttonBarButtonStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/menu_edit"
-                        android:theme="@style/PrimaryFlatButton" />
+                        />
                 </LinearLayout>
 
             </LinearLayout>
