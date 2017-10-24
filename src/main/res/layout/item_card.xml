@@ -1,69 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+        <variable
+            name="item"
+            type="com.gimranov.zandy.app.data.Item" />
+    </data>
 
-    <android.support.v7.widget.CardView
-        android:id="@+id/card_item"
+    <LinearLayout xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="8dp"
-        android:minHeight="50dp">
+        android:orientation="vertical">
 
-        <LinearLayout
+        <android.support.v7.widget.CardView
+            android:id="@+id/card_item"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_gravity="center"
+            android:layout_margin="2dp"
+            android:animateLayoutChanges="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/card_item_title"
+                <LinearLayout
+                    android:id="@+id/card_header"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:textColor="#000"
-                    android:textSize="18sp"
-                    tools:text="Tale of Two Cities" />
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-                <TextView
-                    android:id="@+id/card_item_creator"
+                    <TextView
+                        android:id="@+id/card_item_title"
+                        style="?android:attr/textAppearanceLarge"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="@{item.title}"
+                        tools:text="Tale of Two Cities" />
+
+                    <TextView
+                        android:id="@+id/card_item_creator"
+                        style="?android:textAppearanceListItemSmall"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@{item.creatorSummary}"
+                        tools:text="Charles Dickens" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_expanded_content"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="#555"
-                    tools:text="Charles Dickens" />
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="2sp"
+                        android:layout_marginRight="2sp"
+                        android:textStyle="bold"
+                        android:text="Year"
+                        tools:text="Library" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="end"
+                        android:text="@{item.year}"
+                        tools:text="UCLA YRL" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/card_button_bar"
+                    style="?android:buttonBarStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone">
+
+                    <Button
+                        style="?android:buttonBarButtonStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Organize"
+                        android:theme="@style/PrimaryFlatButton" />
+
+                    <Button
+                        style="?android:buttonBarButtonStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/menu_edit"
+                        android:theme="@style/PrimaryFlatButton" />
+                </LinearLayout>
+
             </LinearLayout>
 
-
-            <LinearLayout
-                style="?android:buttonBarStyle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-
-                <Button
-                    style="?android:buttonBarButtonStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Organize"
-                    android:theme="@style/PrimaryFlatButton" />
-
-                <Button
-                    style="?android:buttonBarButtonStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/menu_edit"
-                    android:theme="@style/PrimaryFlatButton" />
-            </LinearLayout>
-
-        </LinearLayout>
-
-
-    </android.support.v7.widget.CardView>
-</LinearLayout>
+        </android.support.v7.widget.CardView>
+    </LinearLayout>
+</layout>
