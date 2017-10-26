@@ -10,6 +10,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.Menu
 import android.view.MenuItem
+import com.gimranov.zandy.app.data.Database
 import kotlinx.android.synthetic.main.activity_drawer_navigation.*
 import kotlinx.android.synthetic.main.app_bar_drawer_navigation.*
 import kotlinx.android.synthetic.main.content_drawer_navigation.*
@@ -26,7 +27,12 @@ class DrawerNavigationActivity : AppCompatActivity(), NavigationView.OnNavigatio
                     .setAction("Action", null).show()
         }
 
-        navigation_drawer_content_recycler.adapter = ItemAdapter()
+        val itemAdapter = ItemAdapter(Database(this))
+
+        itemAdapter.setHasStableIds(true)
+
+        navigation_drawer_content_recycler.adapter = itemAdapter
+
         navigation_drawer_content_recycler.setHasFixedSize(true)
         navigation_drawer_content_recycler.layoutManager = LinearLayoutManager(this)
 

@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
+
     <data>
+
         <variable
             name="item"
             type="com.gimranov.zandy.app.data.Item" />
+
+        <variable
+            name="itemTypeIcon"
+            type="android.graphics.drawable.Drawable" />
     </data>
 
     <LinearLayout xmlns:tools="http://schemas.android.com/tools"
@@ -38,7 +44,10 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="8dp"
                         android:text="@{item.title}"
-                        tools:text="Tale of Two Cities" />
+                        tools:text="Tale of Two Cities"
+                        android:drawableLeft="@{itemTypeIcon}"
+                        android:drawableStart="@{itemTypeIcon}"
+                        android:drawablePadding="5dp"/>
 
                     <TextView
                         android:id="@+id/card_item_subtitle"
@@ -49,30 +58,40 @@
                         tools:text="Charles Dickens (1849)" />
                 </LinearLayout>
 
-                <LinearLayout
+
+                <TableLayout
                     android:id="@+id/card_expanded_content"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:orientation="vertical"
                     android:padding="16dp"
-                    android:visibility="gone">
+                    android:visibility="gone"
+                    android:stretchColumns="1"
+                    android:shrinkColumns="1">
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="2sp"
-                        android:layout_marginRight="2sp"
-                        android:textStyle="bold"
-                        android:text="Year"
-                        tools:text="Library" />
+                    <!--<TableRow-->
+                        <!--android:layout_width="match_parent"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:orientation="horizontal">-->
 
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="end"
-                        android:text="@{item.year}"
-                        tools:text="UCLA YRL" />
-                </LinearLayout>
+                        <!--<TextView-->
+                            <!--android:layout_width="wrap_content"-->
+                            <!--android:layout_height="wrap_content"-->
+                            <!--android:layout_marginEnd="2sp"-->
+                            <!--android:layout_marginRight="2sp"-->
+                            <!--android:textStyle="bold"-->
+                            <!--tools:text="Library" />-->
+
+                        <!--<TextView-->
+                            <!--android:layout_width="match_parent"-->
+                            <!--android:layout_height="wrap_content"-->
+                            <!--android:gravity="end"-->
+                            <!--android:text="@{item.year}"-->
+                            <!--tools:text="UCLA YRL" />-->
+                    <!--</TableRow>-->
+
+                </TableLayout>
+
 
                 <LinearLayout
                     android:id="@+id/card_button_bar"
@@ -85,15 +104,13 @@
                         style="?android:buttonBarButtonStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Organize"
-                        />
+                        android:text="Organize" />
 
                     <Button
                         style="?android:buttonBarButtonStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/menu_edit"
-                        />
+                        android:text="@string/menu_edit" />
                 </LinearLayout>
 
             </LinearLayout>
