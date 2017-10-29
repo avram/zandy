@@ -30,6 +30,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.gimranov.zandy.app.ItemDisplayUtil;
 import com.gimranov.zandy.app.R;
 import com.gimranov.zandy.app.task.APIRequest;
 
@@ -293,37 +294,7 @@ public class Item {
                     // TODO handle notes
                     continue;
                 } else if (fields.getString(i).equals("creators")) {
-					/*
-					 * Creators should be labeled with role and listed nicely
-					 * This logic isn't as good as it could be.
-					 */
-                    JSONArray creatorArray = values.getJSONArray(i);
-                    JSONObject creator;
-                    StringBuilder sb = new StringBuilder();
-                    for (int j = 0; j < creatorArray.length(); j++) {
-                        creator = creatorArray.getJSONObject(j);
-                        if (creator.getString("creatorType").equals("author")) {
-                            if (creator.has("name"))
-                                sb.append(creator.getString("name"));
-                            else
-                                sb.append(creator.getString("firstName") + " "
-                                        + creator.getString("lastName"));
-                        } else {
-                            if (creator.has("name"))
-                                sb.append(creator.getString("name"));
-                            else
-                                sb.append(creator.getString("firstName")
-                                        + " "
-                                        + creator.getString("lastName")
-                                        + " ("
-                                        + Item.localizedStringForString(creator
-                                        .getString("creatorType"))
-                                        + ")");
-                        }
-                        if (j < creatorArray.length() - 1)
-                            sb.append(", ");
-                    }
-                    b.putString("content", sb.toString());
+				    b.putString("content", String.valueOf(ItemDisplayUtil.INSTANCE.formatCreatorList(values.getJSONArray(i))));
                 } else if (fields.getString(i).equals("itemType")) {
                     // We want to show the localized or human-readable type
                     b.putString("content", Item.localizedStringForString(values
@@ -1495,7 +1466,7 @@ public class Item {
         return template;
     }
 
-    private static int sortValueForLabel(String s) {
+    public static int sortValueForLabel(String s) {
         // First type, and the bare minimum...
         if (s.equals("itemType"))
             return 0;

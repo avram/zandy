@@ -39,23 +39,44 @@
 
                     <TextView
                         android:id="@+id/card_item_title"
-                        style="?android:attr/textAppearanceLarge"
+                        style="?android:attr/textAppearanceListItem"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="8dp"
-                        android:text="@{item.title}"
-                        tools:text="Tale of Two Cities"
                         android:drawableLeft="@{itemTypeIcon}"
+                        android:drawablePadding="5dp"
                         android:drawableStart="@{itemTypeIcon}"
-                        android:drawablePadding="5dp"/>
+                        android:text="@{item.title}"
+                        android:textStyle="bold"
+                        tools:text="Tale of Two Cities" />
 
-                    <TextView
-                        android:id="@+id/card_item_subtitle"
-                        style="?android:textAppearanceListItemSmall"
+
+                    <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text='@{@string/card_item_subtitle_format(item.creatorSummary, item.year)}'
-                        tools:text="Charles Dickens (1849)" />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/card_creator_summary"
+                            style="?android:textAppearanceListItemSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text='@{item.creatorSummary ?? "(no creator)"}'
+                            android:ellipsize="end"
+                            tools:text="Charles Dickens" />
+
+                        <TextView
+                            style="?android:textAppearanceListItemSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_alignParentRight="true"
+                            android:layout_toEndOf="@id/card_creator_summary"
+                            android:layout_toRightOf="@id/card_creator_summary"
+                            android:gravity="end"
+                            android:text='@{item.year ?? "(no year)"}'
+                            tools:text="1849" />
+                    </RelativeLayout>
                 </LinearLayout>
 
 
@@ -65,33 +86,9 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp"
-                    android:visibility="gone"
+                    android:shrinkColumns="1"
                     android:stretchColumns="1"
-                    android:shrinkColumns="1">
-
-                    <!--<TableRow-->
-                        <!--android:layout_width="match_parent"-->
-                        <!--android:layout_height="wrap_content"-->
-                        <!--android:orientation="horizontal">-->
-
-                        <!--<TextView-->
-                            <!--android:layout_width="wrap_content"-->
-                            <!--android:layout_height="wrap_content"-->
-                            <!--android:layout_marginEnd="2sp"-->
-                            <!--android:layout_marginRight="2sp"-->
-                            <!--android:textStyle="bold"-->
-                            <!--tools:text="Library" />-->
-
-                        <!--<TextView-->
-                            <!--android:layout_width="match_parent"-->
-                            <!--android:layout_height="wrap_content"-->
-                            <!--android:gravity="end"-->
-                            <!--android:text="@{item.year}"-->
-                            <!--tools:text="UCLA YRL" />-->
-                    <!--</TableRow>-->
-
-                </TableLayout>
-
+                    android:visibility="gone" />
 
                 <LinearLayout
                     android:id="@+id/card_button_bar"
@@ -99,12 +96,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:visibility="gone">
-
-                    <Button
-                        style="?android:buttonBarButtonStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Organize" />
 
                     <Button
                         style="?android:buttonBarButtonStyle"

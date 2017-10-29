@@ -1,26 +1,19 @@
 package com.gimranov.zandy.app
 
+import android.database.Cursor
 import android.graphics.Typeface
 import android.os.Build
 import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.RecyclerView.NO_ID
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TableRow
 import android.widget.TextView
-import com.gimranov.zandy.app.data.Database
 import com.gimranov.zandy.app.data.Item
 import com.gimranov.zandy.app.databinding.ItemCardBinding
 
 
-class ItemAdapter(val database: Database) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
-    /**
-     * Assumes the query never changes-- certainly not realistic!
-     *
-     * TODO Decouple and properly close cursors!
-     */
-    private val cursor = Query().query(database)
+class ItemAdapter(var cursor: Cursor) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ItemViewHolder {
         val layoutInflater = LayoutInflater.from(parent!!.context)
@@ -80,7 +73,9 @@ class ItemAdapter(val database: Database) : RecyclerView.Adapter<ItemAdapter.Ite
 
             binding.cardHeader.setOnClickListener { toggle() }
 
-            item.content.keys().forEach {
+            val keys = item.content.keys().asSequence().sortedBy { Item.sortValueForLabel(it) }.toList()
+
+            keys.forEach {
                 val row = TableRow(binding.root.context)
                 row.layoutParams = TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT)
 

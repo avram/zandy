@@ -97,8 +97,8 @@
 
         <activity
             android:name=".DrawerNavigationActivity"
-            android:label="@string/title_activity_drawer_navigation"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:label="@string/all_items"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
             android:exported="true" />
 
         <meta-data

@@ -1,19 +1,18 @@
 package com.gimranov.zandy.app
 
 import android.os.Bundle
-import android.support.design.widget.Snackbar
 import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.Menu
 import android.view.MenuItem
 import com.gimranov.zandy.app.data.Database
 import kotlinx.android.synthetic.main.activity_drawer_navigation.*
 import kotlinx.android.synthetic.main.app_bar_drawer_navigation.*
 import kotlinx.android.synthetic.main.content_drawer_navigation.*
+import kotlinx.android.synthetic.main.nav_header_drawer_navigation.*
 
 class DrawerNavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
@@ -22,15 +21,10 @@ class DrawerNavigationActivity : AppCompatActivity(), NavigationView.OnNavigatio
         setContentView(R.layout.activity_drawer_navigation)
         setSupportActionBar(toolbar)
 
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show()
-        }
-
-        val itemAdapter = ItemAdapter(Database(this))
+        val database = Database(this)
+        val itemAdapter = ItemAdapter(Query().query(database))
 
         navigation_drawer_content_recycler.adapter = itemAdapter
-
         navigation_drawer_content_recycler.setHasFixedSize(true)
         navigation_drawer_content_recycler.layoutManager = LinearLayoutManager(this)
 
@@ -53,6 +47,10 @@ class DrawerNavigationActivity : AppCompatActivity(), NavigationView.OnNavigatio
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.drawer_navigation, menu)
+
+        // TODO Actually provide a value that is meaningful
+        nav_header_user_name.text = "Your Name Here"
+
         return true
     }
 
