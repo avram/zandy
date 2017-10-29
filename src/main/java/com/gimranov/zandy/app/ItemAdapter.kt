@@ -7,12 +7,11 @@ import android.support.v7.widget.RecyclerView.NO_ID
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TableRow
+import android.widget.TextView
 import com.gimranov.zandy.app.data.Database
 import com.gimranov.zandy.app.data.Item
 import com.gimranov.zandy.app.databinding.ItemCardBinding
-import android.widget.TableRow
-import android.widget.TextView
-import android.util.DisplayMetrics
 
 
 class ItemAdapter(val database: Database) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
@@ -24,7 +23,7 @@ class ItemAdapter(val database: Database) : RecyclerView.Adapter<ItemAdapter.Ite
     private val cursor = Query().query(database)
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ItemViewHolder {
-        val layoutInflater = LayoutInflater.from(parent!!.context);
+        val layoutInflater = LayoutInflater.from(parent!!.context)
         val cardBinding = ItemCardBinding.inflate(layoutInflater, parent, false)
         return ItemViewHolder(cardBinding)
     }
@@ -34,22 +33,11 @@ class ItemAdapter(val database: Database) : RecyclerView.Adapter<ItemAdapter.Ite
             return
         }
 
-        holder?.let {
-            it.binding.cardHeader.setOnClickListener { holder.toggle() }
-            it.bind(Item.load(cursor))
-        }
+        holder?.bind(Item.load(cursor))
     }
 
     override fun onViewRecycled(holder: ItemViewHolder?) {
         holder?.unbind()
-    }
-
-    override fun getItemId(position: Int): Long {
-        if (!cursor.moveToPosition(position)) {
-            return NO_ID
-        }
-
-        return Item.load(cursor).id.hashCode().toLong()
     }
 
     override fun getItemCount(): Int {
@@ -57,19 +45,28 @@ class ItemAdapter(val database: Database) : RecyclerView.Adapter<ItemAdapter.Ite
     }
 
     class ItemViewHolder(cardBinding: ItemCardBinding) : RecyclerView.ViewHolder(cardBinding.root) {
-        val binding = cardBinding
+
+        private val binding = cardBinding
         private var expanded = false
 
-        fun toggle() {
-            expanded = !expanded
-
+        private fun toggle() {
             if (expanded) {
-                binding.cardExpandedContent.visibility = View.GONE
-                binding.cardButtonBar.visibility = View.GONE
+                hide()
             } else {
-                binding.cardExpandedContent.visibility = View.VISIBLE
-                binding.cardButtonBar.visibility = View.VISIBLE
+                show()
             }
+        }
+
+        private fun hide() {
+            expanded = false
+            binding.cardExpandedContent.visibility = View.GONE
+            binding.cardButtonBar.visibility = View.GONE
+        }
+
+        private fun show() {
+            expanded = true
+            binding.cardExpandedContent.visibility = View.VISIBLE
+            binding.cardButtonBar.visibility = View.VISIBLE
         }
 
         fun bind(item: Item) {
@@ -77,8 +74,11 @@ class ItemAdapter(val database: Database) : RecyclerView.Adapter<ItemAdapter.Ite
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 binding.itemTypeIcon = binding.root.context.getDrawable(Item.resourceForType(item.type))
             } else {
+                @Suppress("DEPRECATION")
                 binding.itemTypeIcon = binding.root.context.resources.getDrawable(Item.resourceForType(item.type))
             }
+
+            binding.cardHeader.setOnClickListener { toggle() }
 
             item.content.keys().forEach {
                 val row = TableRow(binding.root.context)
@@ -110,7 +110,7 @@ class ItemAdapter(val database: Database) : RecyclerView.Adapter<ItemAdapter.Ite
 
         fun unbind() {
             binding.cardExpandedContent.removeAllViews()
+            hide()
         }
-
     }
 }

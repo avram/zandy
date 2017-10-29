@@ -29,8 +29,6 @@ class DrawerNavigationActivity : AppCompatActivity(), NavigationView.OnNavigatio
 
         val itemAdapter = ItemAdapter(Database(this))
 
-        itemAdapter.setHasStableIds(true)
-
         navigation_drawer_content_recycler.adapter = itemAdapter
 
         navigation_drawer_content_recycler.setHasFixedSize(true)
