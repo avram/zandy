@@ -1,5 +1,6 @@
 package com.gimranov.zandy.app
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
@@ -9,6 +10,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.view.Menu
 import android.view.MenuItem
 import com.gimranov.zandy.app.data.Database
+import com.gimranov.zandy.app.data.Item
 import kotlinx.android.synthetic.main.activity_drawer_navigation.*
 import kotlinx.android.synthetic.main.app_bar_drawer_navigation.*
 import kotlinx.android.synthetic.main.content_drawer_navigation.*
@@ -22,7 +24,14 @@ class DrawerNavigationActivity : AppCompatActivity(), NavigationView.OnNavigatio
         setSupportActionBar(toolbar)
 
         val database = Database(this)
-        val itemAdapter = ItemAdapter(Query().query(database))
+        val itemAdapter = ItemAdapter(Query().query(database), { item: Item, _: ItemAction ->
+            run {
+                val i = Intent(baseContext, ItemDataActivity::class.java)
+                i.putExtra("com.gimranov.zandy.app.itemKey", item.key)
+                i.putExtra("com.gimranov.zandy.app.itemDbId", item.dbId)
+                startActivity(i)
+            }
+        })
 
         navigation_drawer_content_recycler.adapter = itemAdapter
         navigation_drawer_content_recycler.setHasFixedSize(true)

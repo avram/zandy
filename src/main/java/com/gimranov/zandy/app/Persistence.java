@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 
 class Persistence {
-    private static final String TAG = Persistence.class.getCanonicalName();
 
     private static final String FILE = "Persistence";
 

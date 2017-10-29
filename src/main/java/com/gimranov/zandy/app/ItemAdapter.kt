@@ -11,14 +11,16 @@ import android.widget.TableRow
 import android.widget.TextView
 import com.gimranov.zandy.app.data.Item
 import com.gimranov.zandy.app.databinding.ItemCardBinding
+import kotlinx.android.synthetic.main.item_card.view.*
 
 
-class ItemAdapter(var cursor: Cursor) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
+class ItemAdapter(var cursor: Cursor,
+                  private val onItemNavigate: (Item, ItemAction) -> Unit) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ItemViewHolder {
         val layoutInflater = LayoutInflater.from(parent!!.context)
         val cardBinding = ItemCardBinding.inflate(layoutInflater, parent, false)
-        return ItemViewHolder(cardBinding)
+        return ItemViewHolder(cardBinding, onItemNavigate)
     }
 
     override fun onBindViewHolder(holder: ItemViewHolder?, position: Int) {
@@ -37,7 +39,8 @@ class ItemAdapter(var cursor: Cursor) : RecyclerView.Adapter<ItemAdapter.ItemVie
         return cursor.count
     }
 
-    class ItemViewHolder(cardBinding: ItemCardBinding) : RecyclerView.ViewHolder(cardBinding.root) {
+    class ItemViewHolder(cardBinding: ItemCardBinding,
+                         private val onItemNavigate: (Item, ItemAction) -> Unit) : RecyclerView.ViewHolder(cardBinding.root) {
 
         private val binding = cardBinding
         private var expanded = false
@@ -72,6 +75,7 @@ class ItemAdapter(var cursor: Cursor) : RecyclerView.Adapter<ItemAdapter.ItemVie
             }
 
             binding.cardHeader.setOnClickListener { toggle() }
+            binding.cardButtonBar.card_button_bar_edit.setOnClickListener { onItemNavigate(item, ItemAction.EDIT) }
 
             val keys = item.content.keys().asSequence().sortedBy { Item.sortValueForLabel(it) }.toList()
 
@@ -109,3 +113,4 @@ class ItemAdapter(var cursor: Cursor) : RecyclerView.Adapter<ItemAdapter.ItemVie
         }
     }
 }
+
