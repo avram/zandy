@@ -1,6 +1,5 @@
 package com.gimranov.zandy.app
 
-import android.database.Cursor
 import android.graphics.Typeface
 import android.os.Build
 import android.support.v7.widget.RecyclerView
@@ -9,13 +8,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TableRow
 import android.widget.TextView
+import com.gimranov.zandy.app.data.Database
+import com.gimranov.zandy.app.data.DatabaseAccess
 import com.gimranov.zandy.app.data.Item
 import com.gimranov.zandy.app.databinding.ItemCardBinding
 import kotlinx.android.synthetic.main.item_card.view.*
 
 
-class ItemAdapter(var cursor: Cursor,
+class ItemAdapter(val database: Database,
+                  itemListingRule: ItemListingRule,
                   private val onItemNavigate: (Item, ItemAction) -> Unit) : RecyclerView.Adapter<ItemAdapter.ItemViewHolder>() {
+    val cursor = when (itemListingRule) {
+        is AllItems -> DatabaseAccess.items(database, null, null)
+        is Children -> DatabaseAccess.items(database, itemListingRule.parent, null)
+        is SearchResults -> DatabaseAccess.items(database, itemListingRule.query, null)
+    }
+
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ItemViewHolder {
         val layoutInflater = LayoutInflater.from(parent!!.context)

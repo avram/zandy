@@ -24,7 +24,10 @@ class DrawerNavigationActivity : AppCompatActivity(), NavigationView.OnNavigatio
         setSupportActionBar(toolbar)
 
         val database = Database(this)
-        val itemAdapter = ItemAdapter(Query().query(database), { item: Item, _: ItemAction ->
+        
+        val itemListingRule = AllItems
+
+        val itemAdapter = ItemAdapter(database, itemListingRule, { item: Item, _: ItemAction ->
             run {
                 val i = Intent(baseContext, ItemDataActivity::class.java)
                 i.putExtra("com.gimranov.zandy.app.itemKey", item.key)
@@ -68,7 +71,10 @@ class DrawerNavigationActivity : AppCompatActivity(), NavigationView.OnNavigatio
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         when (item.itemId) {
-            R.id.action_settings -> return true
+            R.id.action_settings -> {
+                startActivity(Intent(baseContext, SettingsActivity::class.java))
+                return true
+            }
             else -> return super.onOptionsItemSelected(item)
         }
     }

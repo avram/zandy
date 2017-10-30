@@ -27,13 +27,13 @@ import com.gimranov.zandy.app.data.Database;
  *
  * @author ajlyon
  */
-class Query {
+public class Query {
 
     private ArrayList<Bundle> parameters;
 
     private String sortBy;
 
-    Query() {
+    public Query() {
         parameters = new ArrayList<>();
     }
 

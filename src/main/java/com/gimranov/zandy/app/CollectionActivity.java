@@ -36,6 +36,7 @@ import android.widget.Toast;
 
 import com.gimranov.zandy.app.data.CollectionAdapter;
 import com.gimranov.zandy.app.data.Database;
+import com.gimranov.zandy.app.data.DatabaseAccess;
 import com.gimranov.zandy.app.data.ItemCollection;
 import com.gimranov.zandy.app.task.APIEvent;
 import com.gimranov.zandy.app.task.APIRequest;
@@ -283,26 +284,14 @@ public class CollectionActivity extends ListActivity {
      * Gives a cursor for top-level collections
      */
     public Cursor create() {
-        String[] args = {"false"};
-        Cursor cursor = db.query("collections", Database.COLLCOLS, "collection_parent=?", args, null, null, "collection_name", null);
-        if (cursor == null) {
-            Log.e(TAG, "cursor is null");
-        }
-
-        return cursor;
+        return DatabaseAccess.INSTANCE.collections(db);
     }
 
     /**
      * Gives a cursor for child collections of a given parent
      */
     public Cursor create(ItemCollection parent) {
-        String[] args = {parent.getKey()};
-        Cursor cursor = db.query("collections", Database.COLLCOLS, "collection_parent=?", args, null, null, "collection_name", null);
-        if (cursor == null) {
-            Log.e(TAG, "cursor is null");
-        }
-
-        return cursor;
+        return DatabaseAccess.INSTANCE.collectionsForParent(db, parent);
     }
 
 }
