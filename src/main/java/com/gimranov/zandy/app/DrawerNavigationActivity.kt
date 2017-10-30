@@ -24,15 +24,25 @@ class DrawerNavigationActivity : AppCompatActivity(), NavigationView.OnNavigatio
         setSupportActionBar(toolbar)
 
         val database = Database(this)
-        
+
         val itemListingRule = AllItems
 
-        val itemAdapter = ItemAdapter(database, itemListingRule, { item: Item, _: ItemAction ->
+        val itemAdapter = ItemAdapter(database, itemListingRule, { item: Item, itemAction: ItemAction ->
             run {
-                val i = Intent(baseContext, ItemDataActivity::class.java)
-                i.putExtra("com.gimranov.zandy.app.itemKey", item.key)
-                i.putExtra("com.gimranov.zandy.app.itemDbId", item.dbId)
-                startActivity(i)
+                when (itemAction) {
+                    ItemAction.EDIT -> {
+                        val i = Intent(baseContext, ItemDataActivity::class.java)
+                        i.putExtra("com.gimranov.zandy.app.itemKey", item.key)
+                        i.putExtra("com.gimranov.zandy.app.itemDbId", item.dbId)
+                        startActivity(i)
+                    }
+                    ItemAction.ORGANIZE -> {
+                        val i = Intent(baseContext, CollectionMembershipActivity::class.java)
+                        i.putExtra("com.gimranov.zandy.app.itemKey", item.key)
+                        startActivity(i)
+                    }
+                    ItemAction.VIEW -> TODO()
+                }
             }
         })
 

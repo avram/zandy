@@ -83,7 +83,10 @@ class ItemAdapter(val database: Database,
             }
 
             binding.cardHeader.setOnClickListener { toggle() }
-            binding.cardButtonBar.card_button_bar_edit.setOnClickListener { onItemNavigate(item, ItemAction.EDIT) }
+            binding.cardButtonBar.card_button_bar_edit
+                    .setOnClickListener { onItemNavigate(item, ItemAction.EDIT) }
+            binding.cardButtonBar.card_button_bar_organize
+                    .setOnClickListener { onItemNavigate(item, ItemAction.ORGANIZE) }
 
             val keys = item.content.keys().asSequence().sortedBy { Item.sortValueForLabel(it) }.toList()
 

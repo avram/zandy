@@ -103,6 +103,13 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/menu_edit" />
+
+                    <Button
+                        android:id="@+id/card_button_bar_organize"
+                        style="?android:buttonBarButtonStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/organize_button_label" />
                 </LinearLayout>
 
             </LinearLayout>
