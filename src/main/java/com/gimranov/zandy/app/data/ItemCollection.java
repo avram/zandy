@@ -18,6 +18,7 @@ package com.gimranov.zandy.app.data;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Objects;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
@@ -43,11 +44,6 @@ public class ItemCollection extends HashSet<Item> {
     private static final long serialVersionUID = -4673800475017605707L;
 
     public static final String TAG = ItemCollection.class.getSimpleName();
-
-    /**
-     * Queue of dirty collections to be sent to the server
-     */
-    public static ArrayList<ItemCollection> queue = new ArrayList<ItemCollection>();
 
     private String id;
     private String title;
@@ -98,12 +94,11 @@ public class ItemCollection extends HashSet<Item> {
      * <p>
      * When fromAPI is not true, queues a collection membership
      * request for the server as well.
-     *
-     * @param item
+     *  @param item
      * @param fromAPI False for collection memberships we receive from the server
      * @param db
      */
-    public boolean remove(Item item, boolean fromAPI, Database db) {
+    public void remove(Item item, boolean fromAPI, Database db) {
         String[] args = {dbId, item.dbId};
         db.rawQuery("delete from itemtocollections where collection_id=? and item_id=?", args);
 
@@ -113,7 +108,6 @@ public class ItemCollection extends HashSet<Item> {
             req.save(db);
         }
         super.remove(item);
-        return true;
     }
 
     /* Getters and setters */
@@ -142,7 +136,7 @@ public class ItemCollection extends HashSet<Item> {
     }
 
     public void setTitle(String title) {
-        if (this.title != title) {
+        if (!title.equals(this.title)) {
             this.title = title;
             this.dirty = APIRequest.API_DIRTY;
         }
@@ -151,7 +145,7 @@ public class ItemCollection extends HashSet<Item> {
     /* I'm not sure how easy this is to propagate to the API */
     public ItemCollection getParent(Database db) {
         if (parent != null) return parent;
-        if (parentKey == "false") return null;
+        if (Objects.equals(parentKey, "false")) return null;
         if (parentKey != null) {
             parent = load(parentKey, db);
         }
@@ -339,7 +333,7 @@ public class ItemCollection extends HashSet<Item> {
 		 * wrap the operation in a transaction, or we could try to keep track of changes.
 		 */
 
-        HashSet<String> keys = new HashSet<String>();
+        HashSet<String> keys = new HashSet<>();
         for (Item i : this) {
             if (i.dbId == null) i.save(db);
             keys.add(i.dbId);
@@ -367,7 +361,7 @@ public class ItemCollection extends HashSet<Item> {
                 "select count(distinct item_id) from itemtocollections where collection_id=?", args);
         cur.moveToFirst();
         if (!cur.isAfterLast()) this.size = cur.getInt(0);
-        if (cur != null) cur.close();
+        cur.close();
 
         save(db);
     }
@@ -387,9 +381,9 @@ public class ItemCollection extends HashSet<Item> {
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
                 Item i = Item.load(cursor);
-                Log.d(TAG, "Adding an item to the collection: " + i.getTitle());
+                Log.d(TAG, "Adding an item to the collection: " + (i != null ? i.getTitle() : null));
                 size = this.size();
-                if (i != null) super.add(i);
+                super.add(i);
                 cursor.moveToNext();
             }
             cursor.close();
@@ -426,9 +420,9 @@ public class ItemCollection extends HashSet<Item> {
             }
             Log.d(TAG, "Found subcollection: " + collection.title);
             this.subcollections.add(collection);
-        } while (cur.moveToNext() != false);
+        } while (cur.moveToNext());
 
-        if (cur != null) cur.close();
+        cur.close();
         return this.subcollections;
     }
 
@@ -481,35 +475,7 @@ public class ItemCollection extends HashSet<Item> {
     }
 
     /**
-     * Identifies stale or missing collections in the database and queues them for syncing
-     */
-    public static void queue(Database db) {
-        Log.d(TAG, "Clearing dirty queue before repopulation");
-        queue.clear();
-        ItemCollection coll;
-        String[] cols = Database.COLLCOLS;
-        String[] args = {APIRequest.API_CLEAN};
-        Cursor cur = db.query("collections", cols, "dirty!=?", args, null, null, null, null);
-
-        if (cur == null) {
-            Log.d(TAG, "No dirty items found in database");
-            queue.clear();
-            return;
-        }
-
-        do {
-            Log.d(TAG, "Adding collection to dirty queue");
-            coll = load(cur);
-            queue.add(coll);
-        } while (cur.moveToNext() != false);
-
-        if (cur != null) cur.close();
-    }
-
-    /**
      * Gives us ItemCollection objects to feed into something like UI
-     *
-     * @return
      */
     public static ArrayList<ItemCollection> getCollections(Database db) {
         ArrayList<ItemCollection> collections = new ArrayList<ItemCollection>();
@@ -526,8 +492,8 @@ public class ItemCollection extends HashSet<Item> {
             Log.d(TAG, "Adding collection to collection list");
             coll = load(cur);
             collections.add(coll);
-        } while (cur.moveToNext() != false);
-        if (cur != null) cur.close();
+        } while (cur.moveToNext());
+        cur.close();
 
         return collections;
     }
@@ -535,8 +501,6 @@ public class ItemCollection extends HashSet<Item> {
     /**
      * Gives us ItemCollection objects containing given item
      * to feed into something like UI
-     *
-     * @return
      */
     public static ArrayList<ItemCollection> getCollections(Item i, Database db) {
         ArrayList<ItemCollection> collections = new ArrayList<ItemCollection>();
@@ -558,8 +522,8 @@ public class ItemCollection extends HashSet<Item> {
             Log.d(TAG, "Adding collection to collection list");
             coll = load(cursor);
             collections.add(coll);
-        } while (cursor.moveToNext() != false);
-        if (cursor != null) cursor.close();
+        } while (cursor.moveToNext());
+        cursor.close();
 
         return collections;
     }
@@ -567,10 +531,8 @@ public class ItemCollection extends HashSet<Item> {
     /**
      * Gives us count of ItemCollection objects containing given item
      * to feed into something like UI
-     *
-     * @return
      */
-    public static int getCollectionCount(Item i, Database db) {
+    static int getCollectionCount(Item i, Database db) {
         String[] args = {i.dbId};
         Cursor cursor = db.rawQuery("SELECT COUNT(*) " +
                         " FROM collections, itemtocollections" +
@@ -583,7 +545,7 @@ public class ItemCollection extends HashSet<Item> {
         }
 
         int count = cursor.getInt(0);
-        if (cursor != null) cursor.close();
+        cursor.close();
         return count;
     }
 }
