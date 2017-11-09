@@ -2,7 +2,6 @@ package com.gimranov.zandy.app
 
 import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
@@ -11,12 +10,12 @@ import android.view.Menu
 import android.view.MenuItem
 import com.gimranov.zandy.app.data.Database
 import com.gimranov.zandy.app.data.Item
+import com.gimranov.zandy.app.data.ItemCollection
 import kotlinx.android.synthetic.main.activity_drawer_navigation.*
 import kotlinx.android.synthetic.main.app_bar_drawer_navigation.*
 import kotlinx.android.synthetic.main.content_drawer_navigation.*
-import kotlinx.android.synthetic.main.nav_header_drawer_navigation.*
 
-class DrawerNavigationActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+class DrawerNavigationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,6 +24,7 @@ class DrawerNavigationActivity : AppCompatActivity(), NavigationView.OnNavigatio
 
         val database = Database(this)
 
+        // TODO Find a way to make this actual reflect the desired context
         val itemListingRule = AllItems
 
         val itemAdapter = ItemAdapter(database, itemListingRule, { item: Item, itemAction: ItemAction ->
@@ -46,6 +46,24 @@ class DrawerNavigationActivity : AppCompatActivity(), NavigationView.OnNavigatio
             }
         })
 
+        val collectionAdapter = CollectionAdapter(database, itemListingRule, { collection: ItemCollection, itemAction: ItemAction ->
+            run {
+                when (itemAction) {
+                    ItemAction.VIEW -> {
+                        val i = Intent(baseContext, DrawerNavigationActivity::class.java)
+                        i.putExtra("com.gimranov.zandy.app.collectionKey", collection.key)
+                        startActivity(i)
+                    }
+                    ItemAction.EDIT -> TODO()
+                    ItemAction.ORGANIZE -> TODO()
+                }
+            }
+        })
+
+        navigation_drawer_sidebar_recycler.adapter = collectionAdapter
+        navigation_drawer_sidebar_recycler.setHasFixedSize(true)
+        navigation_drawer_sidebar_recycler.layoutManager = LinearLayoutManager(this)
+
         navigation_drawer_content_recycler.adapter = itemAdapter
         navigation_drawer_content_recycler.setHasFixedSize(true)
         navigation_drawer_content_recycler.layoutManager = LinearLayoutManager(this)
@@ -54,8 +72,6 @@ class DrawerNavigationActivity : AppCompatActivity(), NavigationView.OnNavigatio
                 this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
-
-        nav_view.setNavigationItemSelectedListener(this)
     }
 
     override fun onBackPressed() {
@@ -70,9 +86,6 @@ class DrawerNavigationActivity : AppCompatActivity(), NavigationView.OnNavigatio
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.drawer_navigation, menu)
 
-        // TODO Actually provide a value that is meaningful
-        nav_header_user_name.text = "Your Name Here"
-
         return true
     }
 
@@ -80,39 +93,12 @@ class DrawerNavigationActivity : AppCompatActivity(), NavigationView.OnNavigatio
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        when (item.itemId) {
+        return when (item.itemId) {
             R.id.action_settings -> {
                 startActivity(Intent(baseContext, SettingsActivity::class.java))
-                return true
+                true
             }
-            else -> return super.onOptionsItemSelected(item)
+            else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        // Handle navigation view item clicks here.
-        when (item.itemId) {
-            R.id.nav_camera -> {
-                // Handle the camera action
-            }
-            R.id.nav_gallery -> {
-
-            }
-            R.id.nav_slideshow -> {
-
-            }
-            R.id.nav_manage -> {
-
-            }
-            R.id.nav_share -> {
-
-            }
-            R.id.nav_send -> {
-
-            }
-        }
-
-        drawer_layout.closeDrawer(GravityCompat.START)
-        return true
     }
 }

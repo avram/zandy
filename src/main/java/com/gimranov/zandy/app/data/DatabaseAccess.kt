@@ -7,7 +7,7 @@ import com.gimranov.zandy.app.Query
 object DatabaseAccess {
     val TAG = this.javaClass.simpleName!!
 
-    val sortOptions = arrayOf("item_year, item_title COLLATE NOCASE",
+    private val sortOptions = arrayOf("item_year, item_title COLLATE NOCASE",
             "item_creator COLLATE NOCASE, item_year",
             "item_title COLLATE NOCASE, item_year",
             "timestamp ASC, item_title COLLATE NOCASE")
@@ -24,12 +24,7 @@ object DatabaseAccess {
 
     fun collectionsForParent(db: Database, parent: ItemCollection): Cursor {
         val args = arrayOf(parent.key)
-        val cursor = db.query("collections", Database.COLLCOLS, "collection_parent=?", args, null, null, "collection_name", null)
-        if (cursor == null) {
-            Log.e(TAG, "cursor is null")
-        }
-
-        return cursor
+        return db.query("collections", Database.COLLCOLS, "collection_parent=?", args, null, null, "collection_name", null)
     }
 
     fun items(db: Database, parent: ItemCollection?, sortRule: String?): Cursor {
@@ -39,12 +34,8 @@ object DatabaseAccess {
             null -> Query().query(db)
             else -> {
                 val args = arrayOf(parent.dbId)
-                val cursor = db.rawQuery("SELECT item_title, item_type, item_content, etag, dirty, items._id, item_key, item_year, item_creator, timestamp, item_children  FROM items, itemtocollections WHERE items._id = item_id AND collection_id=? ORDER BY $sortClause",
+                return db.rawQuery("SELECT item_title, item_type, item_content, etag, dirty, items._id, item_key, item_year, item_creator, timestamp, item_children  FROM items, itemtocollections WHERE items._id = item_id AND collection_id=? ORDER BY $sortClause",
                         args)
-                if (cursor == null) {
-                    Log.e(TAG, "cursor is null")
-                }
-                return cursor
             }
         }
         return Query().query(db)
@@ -54,11 +45,7 @@ object DatabaseAccess {
         val sortClause = sortRule ?: sortOptions[0]
 
         val args = arrayOf("%$query%", "%$query%")
-        val cursor = db.rawQuery("SELECT item_title, item_type, item_content, etag, dirty, _id, item_key, item_year, item_creator, timestamp, item_children  FROM items WHERE item_title LIKE ? OR item_creator LIKE ? ORDER BY $sortClause",
+        return db.rawQuery("SELECT item_title, item_type, item_content, etag, dirty, _id, item_key, item_year, item_creator, timestamp, item_children  FROM items WHERE item_title LIKE ? OR item_creator LIKE ? ORDER BY $sortClause",
                 args)
-        if (cursor == null) {
-            Log.e(TAG, "cursor is null")
-        }
-        return cursor
     }
 }
