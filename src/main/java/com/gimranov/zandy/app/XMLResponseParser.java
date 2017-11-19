@@ -162,7 +162,6 @@ public class XMLResponseParser extends DefaultHandler {
                         if (existing != null) {
                             Log.d(TAG, "Updating newly created item to replace temporary key: "
                                     + updateKey + " => " + item.getKey() + "");
-                            item.getKey();
                             existing.dirty = APIRequest.API_CLEAN;
                             // We need to update the parent key in attachments as well,
                             // so they aren't orphaned after we update the item key here

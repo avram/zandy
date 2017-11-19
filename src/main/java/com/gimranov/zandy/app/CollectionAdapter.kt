@@ -29,7 +29,7 @@ class CollectionAdapter(val database: Database,
     }
 
     override fun onBindViewHolder(holder: ItemCollectionViewHolder?, position: Int) {
-        if (!cursor.moveToPosition(position)) {
+        if (cursor?.moveToPosition(position) != true) {
             return
         }
 
@@ -40,7 +40,7 @@ class CollectionAdapter(val database: Database,
     }
 
     override fun getItemCount(): Int {
-        return cursor.count
+        return cursor?.count ?: 0
     }
 
     class ItemCollectionViewHolder(cardBinding: CollectionCardBinding,

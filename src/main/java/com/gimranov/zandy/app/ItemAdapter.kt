@@ -32,7 +32,7 @@ class ItemAdapter(val database: Database,
     }
 
     override fun onBindViewHolder(holder: ItemViewHolder?, position: Int) {
-        if (!cursor.moveToPosition(position)) {
+        if (cursor?.moveToPosition(position) != true) {
             return
         }
 
@@ -44,7 +44,7 @@ class ItemAdapter(val database: Database,
     }
 
     override fun getItemCount(): Int {
-        return cursor.count
+        return cursor?.count ?: 0
     }
 
     class ItemViewHolder(cardBinding: ItemCardBinding,

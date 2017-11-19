@@ -1,7 +1,6 @@
 package com.gimranov.zandy.app.data
 
 import android.database.Cursor
-import android.util.Log
 import com.gimranov.zandy.app.Query
 
 object DatabaseAccess {
@@ -12,22 +11,17 @@ object DatabaseAccess {
             "item_title COLLATE NOCASE, item_year",
             "timestamp ASC, item_title COLLATE NOCASE")
 
-    fun collections(db: Database): Cursor {
+    fun collections(db: Database): Cursor? {
         val args = arrayOf("false")
-        val cursor = db.query("collections", Database.COLLCOLS, "collection_parent=?", args, null, null, "collection_name", null)
-        if (cursor == null) {
-            Log.e(TAG, "cursor is null")
-        }
-
-        return cursor
+        return db.query("collections", Database.COLLCOLS, "collection_parent=?", args, null, null, "collection_name", null)
     }
 
-    fun collectionsForParent(db: Database, parent: ItemCollection): Cursor {
+    fun collectionsForParent(db: Database, parent: ItemCollection): Cursor? {
         val args = arrayOf(parent.key)
         return db.query("collections", Database.COLLCOLS, "collection_parent=?", args, null, null, "collection_name", null)
     }
 
-    fun items(db: Database, parent: ItemCollection?, sortRule: String?): Cursor {
+    fun items(db: Database, parent: ItemCollection?, sortRule: String?): Cursor? {
         val sortClause = sortRule ?: sortOptions[0]
 
         when (parent) {
@@ -41,7 +35,7 @@ object DatabaseAccess {
         return Query().query(db)
     }
 
-    fun items(db: Database, query: String, sortRule: String?): Cursor {
+    fun items(db: Database, query: String, sortRule: String?): Cursor? {
         val sortClause = sortRule ?: sortOptions[0]
 
         val args = arrayOf("%$query%", "%$query%")
