@@ -269,7 +269,7 @@ public class APIRequest {
      * "query", "key", "method", "disposition", "if_match", "update_key",
      * "update_type", "created", "last_attempt", "status"};
      *
-     * @param uuid
+     * @param cur
      */
     public APIRequest(Cursor cur) {
         // N.B.: getString and such use 0-based indexing
