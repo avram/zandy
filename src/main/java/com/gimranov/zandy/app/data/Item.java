@@ -306,19 +306,13 @@ public class Item {
                             if (creator.has("name"))
                                 sb.append(creator.getString("name"));
                             else
-                                sb.append(creator.getString("firstName") + " "
-                                        + creator.getString("lastName"));
+                                sb.append(creator.getString("firstName")).append(" ").append(creator.getString("lastName"));
                         } else {
                             if (creator.has("name"))
                                 sb.append(creator.getString("name"));
                             else
-                                sb.append(creator.getString("firstName")
-                                        + " "
-                                        + creator.getString("lastName")
-                                        + " ("
-                                        + Item.localizedStringForString(creator
-                                        .getString("creatorType"))
-                                        + ")");
+                                sb.append(creator.getString("firstName")).append(" ").append(creator.getString("lastName")).append(" (").append(Item.localizedStringForString(creator
+                                        .getString("creatorType"))).append(")");
                         }
                         if (j < creatorArray.length() - 1)
                             sb.append(", ");

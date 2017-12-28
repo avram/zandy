@@ -67,6 +67,7 @@ import java.util.UUID;
  *
  * @author ajlyon
  */
+@SuppressWarnings("DanglingJavadoc")
 public class APIRequest {
     private static final String TAG = APIRequest.class.getSimpleName();
 
@@ -542,7 +543,7 @@ public class APIRequest {
         sb.append(status);
         sb.append("</h1>");
         sb.append("<p><i>");
-        sb.append(method + "</i> " + query);
+        sb.append(method).append("</i> ").append(query);
         sb.append("</p>");
         sb.append("<p>Body: ");
         sb.append(body);
@@ -779,7 +780,7 @@ public class APIRequest {
             } catch (IOException e) {
                 StringBuilder sb = new StringBuilder();
                 for (StackTraceElement el : e.getStackTrace()) {
-                    sb.append(el.toString() + "\n");
+                    sb.append(el.toString()).append("\n");
                 }
                 recordAttempt(db);
                 throw new APIException(APIException.HTTP_ERROR,
