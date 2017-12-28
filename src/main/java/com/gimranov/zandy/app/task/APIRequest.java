@@ -822,10 +822,10 @@ public class APIRequest {
                     }
 
                     ArrayList<Item> recd = new ArrayList<Item>();
-                    for (int j = 0; j < keys.length; j++) {
-                        Item got = Item.load(keys[j], db);
+                    for (String key1 : keys) {
+                        Item got = Item.load(key1, db);
                         if (got == null) {
-                            missing.add(keys[j]);
+                            missing.add(key1);
                         } else {
                             // We can update the collection membership immediately
                             if (coll != null) coll.add(got, true, db);
@@ -882,9 +882,9 @@ public class APIRequest {
                             query.substring(itemloc + 7, childloc), db);
 
                     ArrayList<Attachment> recd = new ArrayList<Attachment>();
-                    for (int j = 0; j < keys.length; j++) {
-                        Attachment got = Attachment.load(keys[j], db);
-                        if (got == null) missing.add(keys[j]);
+                    for (String key1 : keys) {
+                        Attachment got = Attachment.load(key1, db);
+                        if (got == null) missing.add(key1);
                         else recd.add(got);
                     }
 
