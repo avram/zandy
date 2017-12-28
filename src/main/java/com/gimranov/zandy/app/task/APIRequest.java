@@ -1049,10 +1049,11 @@ public class APIRequest {
                 + collection.getKey() + "/items",
                 "POST",
                 null);
-        templ.body = "";
+        StringBuilder sb = new StringBuilder();
         for (Item i : items) {
-            templ.body += i.getKey() + " ";
+            sb.append(i.getKey()).append(" ");
         }
+        templ.body = sb.toString();
         templ.disposition = "none";
         return templ;
     }
