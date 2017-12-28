@@ -1399,76 +1399,113 @@ public class Item {
         String json = "";
         try {
             // And item types
-            if (s.equals("artwork"))
-                json = c.getString(R.string.template_artwork);
-            else if (s.equals("audioRecording"))
-                json = c.getString(R.string.template_audioRecording);
-            else if (s.equals("bill"))
-                json = c.getString(R.string.template_bill);
-            else if (s.equals("blogPost"))
-                json = c.getString(R.string.template_blogPost);
-            else if (s.equals("book"))
-                json = c.getString(R.string.template_book);
-            else if (s.equals("bookSection"))
-                json = c.getString(R.string.template_bookSection);
-            else if (s.equals("case"))
-                json = c.getString(R.string.template_case);
-            else if (s.equals("computerProgram"))
-                json = c.getString(R.string.template_computerProgram);
-            else if (s.equals("conferencePaper"))
-                json = c.getString(R.string.template_conferencePaper);
-            else if (s.equals("dictionaryEntry"))
-                json = c.getString(R.string.template_dictionaryEntry);
-            else if (s.equals("document"))
-                json = c.getString(R.string.template_document);
-            else if (s.equals("email"))
-                json = c.getString(R.string.template_email);
-            else if (s.equals("encyclopediaArticle"))
-                json = c.getString(R.string.template_encyclopediaArticle);
-            else if (s.equals("film"))
-                json = c.getString(R.string.template_film);
-            else if (s.equals("forumPost"))
-                json = c.getString(R.string.template_forumPost);
-            else if (s.equals("hearing"))
-                json = c.getString(R.string.template_hearing);
-            else if (s.equals("instantMessage"))
-                json = c.getString(R.string.template_instantMessage);
-            else if (s.equals("interview"))
-                json = c.getString(R.string.template_interview);
-            else if (s.equals("journalArticle"))
-                json = c.getString(R.string.template_journalArticle);
-            else if (s.equals("letter"))
-                json = c.getString(R.string.template_letter);
-            else if (s.equals("magazineArticle"))
-                json = c.getString(R.string.template_magazineArticle);
-            else if (s.equals("manuscript"))
-                json = c.getString(R.string.template_manuscript);
-            else if (s.equals("map"))
-                json = c.getString(R.string.template_map);
-            else if (s.equals("newspaperArticle"))
-                json = c.getString(R.string.template_newspaperArticle);
-            else if (s.equals("note"))
-                json = c.getString(R.string.template_note);
-            else if (s.equals("patent"))
-                json = c.getString(R.string.template_patent);
-            else if (s.equals("podcast"))
-                json = c.getString(R.string.template_podcast);
-            else if (s.equals("presentation"))
-                json = c.getString(R.string.template_presentation);
-            else if (s.equals("radioBroadcast"))
-                json = c.getString(R.string.template_radioBroadcast);
-            else if (s.equals("report"))
-                json = c.getString(R.string.template_report);
-            else if (s.equals("statute"))
-                json = c.getString(R.string.template_statute);
-            else if (s.equals("tvBroadcast"))
-                json = c.getString(R.string.template_tvBroadcast);
-            else if (s.equals("thesis"))
-                json = c.getString(R.string.template_thesis);
-            else if (s.equals("videoRecording"))
-                json = c.getString(R.string.template_videoRecording);
-            else if (s.equals("webpage"))
-                json = c.getString(R.string.template_webpage);
+            switch (s) {
+                case "artwork":
+                    json = c.getString(R.string.template_artwork);
+                    break;
+                case "audioRecording":
+                    json = c.getString(R.string.template_audioRecording);
+                    break;
+                case "bill":
+                    json = c.getString(R.string.template_bill);
+                    break;
+                case "blogPost":
+                    json = c.getString(R.string.template_blogPost);
+                    break;
+                case "book":
+                    json = c.getString(R.string.template_book);
+                    break;
+                case "bookSection":
+                    json = c.getString(R.string.template_bookSection);
+                    break;
+                case "case":
+                    json = c.getString(R.string.template_case);
+                    break;
+                case "computerProgram":
+                    json = c.getString(R.string.template_computerProgram);
+                    break;
+                case "conferencePaper":
+                    json = c.getString(R.string.template_conferencePaper);
+                    break;
+                case "dictionaryEntry":
+                    json = c.getString(R.string.template_dictionaryEntry);
+                    break;
+                case "document":
+                    json = c.getString(R.string.template_document);
+                    break;
+                case "email":
+                    json = c.getString(R.string.template_email);
+                    break;
+                case "encyclopediaArticle":
+                    json = c.getString(R.string.template_encyclopediaArticle);
+                    break;
+                case "film":
+                    json = c.getString(R.string.template_film);
+                    break;
+                case "forumPost":
+                    json = c.getString(R.string.template_forumPost);
+                    break;
+                case "hearing":
+                    json = c.getString(R.string.template_hearing);
+                    break;
+                case "instantMessage":
+                    json = c.getString(R.string.template_instantMessage);
+                    break;
+                case "interview":
+                    json = c.getString(R.string.template_interview);
+                    break;
+                case "journalArticle":
+                    json = c.getString(R.string.template_journalArticle);
+                    break;
+                case "letter":
+                    json = c.getString(R.string.template_letter);
+                    break;
+                case "magazineArticle":
+                    json = c.getString(R.string.template_magazineArticle);
+                    break;
+                case "manuscript":
+                    json = c.getString(R.string.template_manuscript);
+                    break;
+                case "map":
+                    json = c.getString(R.string.template_map);
+                    break;
+                case "newspaperArticle":
+                    json = c.getString(R.string.template_newspaperArticle);
+                    break;
+                case "note":
+                    json = c.getString(R.string.template_note);
+                    break;
+                case "patent":
+                    json = c.getString(R.string.template_patent);
+                    break;
+                case "podcast":
+                    json = c.getString(R.string.template_podcast);
+                    break;
+                case "presentation":
+                    json = c.getString(R.string.template_presentation);
+                    break;
+                case "radioBroadcast":
+                    json = c.getString(R.string.template_radioBroadcast);
+                    break;
+                case "report":
+                    json = c.getString(R.string.template_report);
+                    break;
+                case "statute":
+                    json = c.getString(R.string.template_statute);
+                    break;
+                case "tvBroadcast":
+                    json = c.getString(R.string.template_tvBroadcast);
+                    break;
+                case "thesis":
+                    json = c.getString(R.string.template_thesis);
+                    break;
+                case "videoRecording":
+                    json = c.getString(R.string.template_videoRecording);
+                    break;
+                case "webpage":
+                    json = c.getString(R.string.template_webpage);
+                    break;
+            }
             template = new JSONObject(json);
 
             JSONArray names = template.names();
