@@ -67,6 +67,7 @@ import java.util.UUID;
  *
  * @author ajlyon
  */
+@SuppressWarnings("DanglingJavadoc")
 public class APIRequest {
     private static final String TAG = APIRequest.class.getSimpleName();
 
@@ -269,7 +270,7 @@ public class APIRequest {
      * "query", "key", "method", "disposition", "if_match", "update_key",
      * "update_type", "created", "last_attempt", "status"};
      *
-     * @param uuid
+     * @param cur
      */
     public APIRequest(Cursor cur) {
         // N.B.: getString and such use 0-based indexing
@@ -542,7 +543,7 @@ public class APIRequest {
         sb.append(status);
         sb.append("</h1>");
         sb.append("<p><i>");
-        sb.append(method + "</i> " + query);
+        sb.append(method).append("</i> ").append(query);
         sb.append("</p>");
         sb.append("<p>Body: ");
         sb.append(body);
@@ -779,7 +780,7 @@ public class APIRequest {
             } catch (IOException e) {
                 StringBuilder sb = new StringBuilder();
                 for (StackTraceElement el : e.getStackTrace()) {
-                    sb.append(el.toString() + "\n");
+                    sb.append(el.toString()).append("\n");
                 }
                 recordAttempt(db);
                 throw new APIException(APIException.HTTP_ERROR,
@@ -822,10 +823,10 @@ public class APIRequest {
                     }
 
                     ArrayList<Item> recd = new ArrayList<Item>();
-                    for (int j = 0; j < keys.length; j++) {
-                        Item got = Item.load(keys[j], db);
+                    for (String key1 : keys) {
+                        Item got = Item.load(key1, db);
                         if (got == null) {
-                            missing.add(keys[j]);
+                            missing.add(key1);
                         } else {
                             // We can update the collection membership immediately
                             if (coll != null) coll.add(got, true, db);
@@ -882,9 +883,9 @@ public class APIRequest {
                             query.substring(itemloc + 7, childloc), db);
 
                     ArrayList<Attachment> recd = new ArrayList<Attachment>();
-                    for (int j = 0; j < keys.length; j++) {
-                        Attachment got = Attachment.load(keys[j], db);
-                        if (got == null) missing.add(keys[j]);
+                    for (String key1 : keys) {
+                        Attachment got = Attachment.load(key1, db);
+                        if (got == null) missing.add(key1);
                         else recd.add(got);
                     }
 
@@ -1048,10 +1049,11 @@ public class APIRequest {
                 + collection.getKey() + "/items",
                 "POST",
                 null);
-        templ.body = "";
+        StringBuilder sb = new StringBuilder();
         for (Item i : items) {
-            templ.body += i.getKey() + " ";
+            sb.append(i.getKey()).append(" ");
         }
+        templ.body = sb.toString();
         templ.disposition = "none";
         return templ;
     }

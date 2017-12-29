@@ -133,7 +133,6 @@ public class ItemActivity extends ListActivity {
                 Toast.makeText(getApplicationContext(),
                         getResources().getString(R.string.sync_error),
                         Toast.LENGTH_SHORT).show();
-                return;
             }
         }
     };
@@ -660,7 +659,6 @@ public class ItemActivity extends ListActivity {
                         getResources().getString(R.string.identifier_lookup_failed),
                         Toast.LENGTH_SHORT).show();
                 progressThread.setState(ProgressThread.STATE_DONE);
-                return;
             }
         }
     };
@@ -821,13 +819,11 @@ public class ItemActivity extends ListActivity {
                 msg.setData(data);
                 msg.arg2 = STATE_DONE;
                 mHandler.sendMessage(msg);
-                return;
             } catch (JSONException e) {
                 Log.e(TAG, "exception parsing response", e);
                 msg = mHandler.obtainMessage();
                 msg.arg2 = STATE_ERROR;
                 mHandler.sendMessage(msg);
-                return;
             }
         }
 
