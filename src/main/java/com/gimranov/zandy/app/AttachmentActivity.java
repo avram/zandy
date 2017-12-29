@@ -500,7 +500,6 @@ public class AttachmentActivity extends ListActivity {
         }
     };
 
-
     private class ProgressThread extends Thread {
         Handler mHandler;
         Bundle arguments;
