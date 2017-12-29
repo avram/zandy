@@ -289,6 +289,8 @@ public class ItemActivity extends ListActivity {
         if (cur != null) cur.close();
         if (db != null) db.close();
         super.onDestroy();
+        handler.removeCallbacksAndMessages(null);
+        syncHandler.removeCallbacksAndMessages(null);
     }
 
     @Override

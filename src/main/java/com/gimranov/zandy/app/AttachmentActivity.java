@@ -270,6 +270,8 @@ public class AttachmentActivity extends ListActivity {
         }
 
         super.onDestroy();
+        handler.removeCallbacksAndMessages(null);
+
     }
 
     @Override
@@ -497,6 +499,7 @@ public class AttachmentActivity extends ListActivity {
             }
         }
     };
+
 
     private class ProgressThread extends Thread {
         Handler mHandler;
