@@ -426,7 +426,7 @@ public class ItemCollection extends HashSet<Item> {
             }
             Log.d(TAG, "Found subcollection: " + collection.title);
             this.subcollections.add(collection);
-        } while (cur.moveToNext() != false);
+        } while (cur.moveToNext());
 
         if (cur != null) cur.close();
         return this.subcollections;
@@ -501,7 +501,7 @@ public class ItemCollection extends HashSet<Item> {
             Log.d(TAG, "Adding collection to dirty queue");
             coll = load(cur);
             queue.add(coll);
-        } while (cur.moveToNext() != false);
+        } while (cur.moveToNext());
 
         if (cur != null) cur.close();
     }
@@ -526,7 +526,7 @@ public class ItemCollection extends HashSet<Item> {
             Log.d(TAG, "Adding collection to collection list");
             coll = load(cur);
             collections.add(coll);
-        } while (cur.moveToNext() != false);
+        } while (cur.moveToNext());
         if (cur != null) cur.close();
 
         return collections;
@@ -558,7 +558,7 @@ public class ItemCollection extends HashSet<Item> {
             Log.d(TAG, "Adding collection to collection list");
             coll = load(cursor);
             collections.add(coll);
-        } while (cursor.moveToNext() != false);
+        } while (cursor.moveToNext());
         if (cursor != null) cursor.close();
 
         return collections;
