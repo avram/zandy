@@ -196,7 +196,6 @@ public class ItemDataActivity extends ExpandableListActivity {
                 if (type == 0) {
                     // If we have a long click on an entry, we'll provide a way of editing it
                     BundleListAdapter adapter = (BundleListAdapter) ((ExpandableListView) info.targetView.getParent()).getExpandableListAdapter();
-                    ;
                     Bundle row = adapter.getGroup(group);
                     // Show the right type of dialog for the row in question
                     if ("itemType".equals(row.getString("label"))) {
