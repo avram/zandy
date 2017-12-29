@@ -181,7 +181,6 @@ public class CollectionActivity extends ListActivity {
                             Toast.LENGTH_SHORT).show();
                     return;
                 }
-                return;
             }
         });
     }
