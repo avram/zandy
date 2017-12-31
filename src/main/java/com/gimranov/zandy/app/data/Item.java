@@ -1501,95 +1501,98 @@ public class Item {
 
     private static int sortValueForLabel(String s) {
         // First type, and the bare minimum...
-        if (s.equals("itemType"))
-            return 0;
-        if (s.equals("title"))
-            return 1;
-        if (s.equals("creators"))
-            return 2;
-        if (s.equals("date"))
-            return 3;
+        switch (s) {
+            case "itemType":
+                return 0;
+            case "title":
+                return 1;
+            case "creators":
+                return 2;
+            case "date":
+                return 3;
 
-        // Then container titles, with one value
-        if (s.equals("publicationTitle"))
-            return 5;
-        if (s.equals("blogTitle"))
-            return 5;
-        if (s.equals("bookTitle"))
-            return 5;
-        if (s.equals("dictionaryTitle"))
-            return 5;
-        if (s.equals("encyclopediaTitle"))
-            return 5;
-        if (s.equals("forumTitle"))
-            return 5;
-        if (s.equals("proceedingsTitle"))
-            return 5;
-        if (s.equals("programTitle"))
-            return 5;
-        if (s.equals("websiteTitle"))
-            return 5;
-        if (s.equals("meetingName"))
-            return 5;
 
-        // Abstracts
-        if (s.equals("abstractNote"))
-            return 10;
+            // Then container titles, with one value
+            case "publicationTitle":
+                return 5;
+            case "blogTitle":
+                return 5;
+            case "bookTitle":
+                return 5;
+            case "dictionaryTitle":
+                return 5;
+            case "encyclopediaTitle":
+                return 5;
+            case "forumTitle":
+                return 5;
+            case "proceedingsTitle":
+                return 5;
+            case "programTitle":
+                return 5;
+            case "websiteTitle":
+                return 5;
+            case "meetingName":
+                return 5;
 
-        // Publishing data
-        if (s.equals("publisher"))
-            return 12;
-        if (s.equals("place"))
-            return 13;
+            // Abstracts
+            case "abstractNote":
+                return 10;
 
-        // Series, publication numbers
-        if (s.equals("pages"))
-            return 14;
-        if (s.equals("numPages"))
-            return 16;
-        if (s.equals("series"))
-            return 16;
-        if (s.equals("seriesTitle"))
-            return 17;
-        if (s.equals("seriesText"))
-            return 18;
-        if (s.equals("volume"))
-            return 19;
-        if (s.equals("numberOfVolumes"))
-            return 20;
-        if (s.equals("issue"))
-            return 20;
-        if (s.equals("section"))
-            return 21;
-        if (s.equals("publicationNumber"))
-            return 22;
-        if (s.equals("edition"))
-            return 23;
+            // Publishing data
+            case "publisher":
+                return 12;
+            case "place":
+                return 13;
 
-        // Locators
-        if (s.equals("DOI"))
-            return 50;
-        if (s.equals("archive"))
-            return 51;
-        if (s.equals("archiveLocation"))
-            return 52;
-        if (s.equals("ISBN"))
-            return 53;
-        if (s.equals("ISSN"))
-            return 54;
-        if (s.equals("libraryCatalog"))
-            return 55;
-        if (s.equals("callNumber"))
-            return 56;
+            // Series, publication numbers
+            case "pages":
+                return 14;
+            case "numPages":
+                return 16;
+            case "series":
+                return 16;
+            case "seriesTitle":
+                return 17;
+            case "seriesText":
+                return 18;
+            case "volume":
+                return 19;
+            case "numberOfVolumes":
+                return 20;
+            case "issue":
+                return 20;
+            case "section":
+                return 21;
+            case "publicationNumber":
+                return 22;
+            case "edition":
+                return 23;
 
-        // Housekeeping and navigation, at the very end
-        if (s.equals("attachments"))
-            return 250;
-        if (s.equals("tags"))
-            return 251;
-        if (s.equals("related"))
-            return 252;
+            // Locators
+            case "DOI":
+                return 50;
+            case "archive":
+                return 51;
+            case "archiveLocation":
+                return 52;
+            case "ISBN":
+                return 53;
+            case "ISSN":
+                return 54;
+            case "libraryCatalog":
+                return 55;
+            case "callNumber":
+                return 56;
 
-        return 200;
+            // Housekeeping and navigation, at the very end
+            case "attachments":
+                return 250;
+            case "tags":
+                return 251;
+            case "related":
+                return 252;
+            default:
+                return 200;
+        }
     }
 }
