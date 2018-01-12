@@ -19,7 +19,7 @@ public class ApiResponse implements Serializable
     public Library library;
     @SerializedName("links")
     @Expose
-    public Links_ links;
+    public Links links;
     @SerializedName("meta")
     @Expose
     public Meta meta;
