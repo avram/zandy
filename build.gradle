@@ -62,6 +62,7 @@ dependencies {
     // Api v3
     compile 'com.google.code.gson:gson:2.8.2'
     compileOnly 'org.projectlombok:lombok:1.16.20'
+    compile 'com.squareup.retrofit2:retrofit:2.3.0'
 
 }
 
