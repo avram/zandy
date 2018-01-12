@@ -7,7 +7,7 @@ import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import java.util.List;
 @lombok.Data
-public class Data implements Serializable
+public class Item implements Serializable
 {
 
     @SerializedName("key")

@@ -6,7 +6,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 @lombok.Data
-public class ApiResponse<T> implements Serializable
+public class Response<T> implements Serializable
 {
 
     @SerializedName("key")
