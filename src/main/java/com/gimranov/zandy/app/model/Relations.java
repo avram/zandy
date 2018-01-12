@@ -1,10 +1,12 @@
 
 package com.gimranov.zandy.app.model;
 
-import java.io.Serializable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.io.Serializable;
+
+@lombok.Data
 public class Relations implements Serializable
 {
 
