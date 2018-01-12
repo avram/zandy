@@ -6,7 +6,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 @lombok.Data
-public class ApiResponse implements Serializable
+public class ApiResponse<T> implements Serializable
 {
 
     @SerializedName("key")
@@ -26,7 +26,7 @@ public class ApiResponse implements Serializable
     public Meta meta;
     @SerializedName("data")
     @Expose
-    public Data data;
+    public T data;
     private final static long serialVersionUID = -8693618652266258725L;
 
 }
