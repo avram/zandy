@@ -180,7 +180,7 @@ public class APIRequest {
      */
     public String method;
     /**
-     * Response disposition: xml or raw. JSON also planned
+     * ApiResponse disposition: xml or raw. JSON also planned
      */
     public String disposition;
 
@@ -709,7 +709,7 @@ public class APIRequest {
                         // to the database, and also notify our handler.
                         getHandler().onError(this, APIRequest.HTTP_ERROR_CONFLICT);
                     } else {
-                        Log.e(TAG, "Response status " + status + " : " + ostream.toString());
+                        Log.e(TAG, "ApiResponse status " + status + " : " + ostream.toString());
                         getHandler().onError(this, APIRequest.HTTP_ERROR_UNSPECIFIED);
                     }
                     status = getHttpStatus() + REQ_FAILING;

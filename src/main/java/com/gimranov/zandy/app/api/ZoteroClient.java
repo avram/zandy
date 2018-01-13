@@ -1,5 +1,9 @@
 package com.gimranov.zandy.app.api;
 
+import com.gimranov.zandy.app.model.ApiResponse;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -27,9 +31,13 @@ public class ZoteroClient {
         if (sInstance == null) {
             synchronized (ZoteroClient.class) {
                 if (sInstance == null) {
+                    Gson gson = new GsonBuilder()
+                            .registerTypeAdapter(ApiResponse.class, new ZoteroDeserializer<ApiResponse>())
+                            .create();
+
                     Retrofit retrofit = new Retrofit.Builder()
                             .baseUrl(BASE_URL)
-                            .addConverterFactory(GsonConverterFactory.create())
+                            .addConverterFactory(GsonConverterFactory.create(gson))
                             .build();
 
                     return retrofit.create(ZoteroService.class);
