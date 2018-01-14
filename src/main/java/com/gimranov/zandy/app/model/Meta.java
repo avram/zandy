@@ -6,7 +6,9 @@ import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 
-@lombok.Data
+import lombok.Data;
+
+@Data
 public class Meta implements Serializable
 {
 

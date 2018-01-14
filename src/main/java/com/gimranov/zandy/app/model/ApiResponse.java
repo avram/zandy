@@ -5,7 +5,9 @@ import java.io.Serializable;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-@lombok.Data
+import lombok.Data;
+
+@Data
 public class ApiResponse<T> implements Serializable
 {
 

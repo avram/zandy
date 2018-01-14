@@ -6,10 +6,14 @@ import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 import java.util.List;
-@lombok.Data
+
+import lombok.Data;
+
+@Data
 public class Item implements Serializable
 {
 
+    private final static long serialVersionUID = 6882430443711812702L;
     @SerializedName("key")
     @Expose
     public String key;
@@ -103,6 +107,5 @@ public class Item implements Serializable
     @SerializedName("relations")
     @Expose
     public Relations relations;
-    private final static long serialVersionUID = 6882430443711812702L;
 
 }
