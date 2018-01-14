@@ -65,6 +65,11 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.16.20'
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
     compile 'com.squareup.retrofit2:converter-gson:2.3.0'
+    compile 'com.squareup.okhttp3:okhttp:3.9.1'
+    compile 'com.squareup.okio:okio:1.13.0'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:3.9.1'
+
+
 }
 
 def keystorePropertiesFile = rootProject.file("keystore.properties")

@@ -1,6 +1,7 @@
 package com.gimranov.zandy.app.api;
 
 import com.gimranov.zandy.app.model.ApiResponse;
+import com.gimranov.zandy.app.model.Collection;
 import com.gimranov.zandy.app.model.Item;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -34,6 +35,7 @@ public class ZoteroClient {
                 if (sInstance == null) {
                     Gson gson = new GsonBuilder()
                             .registerTypeAdapter(Item.class, new ZoteroDeserializer())
+                            .registerTypeAdapter(Collection.class, new ZoteroDeserializer())
                             .create();
 
                     Retrofit retrofit = new Retrofit.Builder()
