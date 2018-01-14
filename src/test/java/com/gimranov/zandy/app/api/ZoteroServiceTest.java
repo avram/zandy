@@ -49,7 +49,7 @@ public class ZoteroServiceTest {
 
     @Test
     public void getItemforUser() throws Exception {
-        Response<List<Item>> response = mZoteroService.getItemsforUser("475425").execute();
+        Response<List<Item>> response = mZoteroService.getItemsForUser("475425").execute();
         List<Item> items = response.body();
         Assert.assertEquals(mItemforArray, items.get(24));
     }
@@ -57,7 +57,7 @@ public class ZoteroServiceTest {
 
     @Test
     public void getItemsForUser() throws Exception {
-        Response<Item> response = mZoteroService.getItemforUser("475425", mItemforSingle.key).execute();
+        Response<Item> response = mZoteroService.getItemForUser("475425", mItemforSingle.key).execute();
         Item item = response.body();
         Assert.assertEquals(mItemforSingle, item);
     }
