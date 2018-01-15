@@ -32,7 +32,7 @@ repositories {
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'io.fabric'
-
+apply plugin: 'kotlin-kapt'
 
 dependencies {
     implementation('oauth.signpost:signpost-commonshttp4:1.2.1.2') {
@@ -62,7 +62,7 @@ dependencies {
     // Api v3
     compile 'com.google.code.gson:gson:2.8.2'
     provided 'org.projectlombok:lombok:1.16.20'
-    annotationProcessor 'org.projectlombok:lombok:1.16.20'
+    kapt 'org.projectlombok:lombok:1.16.20'
     compile 'com.squareup.retrofit2:retrofit:2.3.0'
     compile 'com.squareup.retrofit2:converter-gson:2.3.0'
     compile 'com.squareup.okhttp3:okhttp:3.9.1'

@@ -21,5 +21,5 @@ public interface ZoteroService {
 
     @Headers("Zoter-API-Version: 3")
     @GET("{userId}/collections")
-    Call<List<Collection>> getCollectonsForUser(@Path("userId") String userId);
+    Call<List<Collection>> getCollectionsForUser(@Path("userId") String userId);
 }
