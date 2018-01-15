@@ -1,6 +1,5 @@
 package com.gimranov.zandy.app.api;
 
-import com.gimranov.zandy.app.model.ApiResponse;
 import com.gimranov.zandy.app.model.Collection;
 import com.gimranov.zandy.app.model.Item;
 import com.google.gson.Gson;
