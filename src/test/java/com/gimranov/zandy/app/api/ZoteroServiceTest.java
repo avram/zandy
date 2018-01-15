@@ -5,8 +5,6 @@ import com.gimranov.zandy.app.model.Item;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import junit.framework.Assert;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +27,8 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
 
 /*
  * This file is part of Zandy.
@@ -69,9 +68,6 @@ public class ZoteroServiceTest {
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build()
                 .create(ZoteroService.class);
-
-        mItemforSingle = new Gson().fromJson("{\"key\":\"X42A7DEE\",\"version\":1,\"itemType\":\"book\",\"title\":\"Electron Microscopy and Analysis 1993: Proceedings of the Institute of Physics Electron Microscopy and Analysis Group Conference, University of Liverpool, 14-17 September1993\",\"creators\":[{\"creatorType\":\"author\",\"name\":\"Institute of Physics (Great Britain)\"},{\"creatorType\":\"contributor\",\"firstName\":\"A. J\",\"lastName\":\"Craven\"},{\"creatorType\":\"contributor\",\"name\":\"Institute of Physics (Great Britain)\"},{\"creatorType\":\"contributor\",\"name\":\"Institute of Physics (Great Britain)\"},{\"creatorType\":\"contributor\",\"name\":\"Institute of Materials (Great Britain)\"},{\"creatorType\":\"contributor\",\"name\":\"Royal Microscopical Society (Great Britain)\"},{\"creatorType\":\"contributor\",\"name\":\"University of Liverpool\"}],\"abstractNote\":\"\",\"series\":\"Institute of Physics conference series\",\"seriesNumber\":\"no. 138\",\"volume\":\"\",\"numberOfVolumes\":\"\",\"edition\":\"\",\"place\":\"Bristol, UK\",\"publisher\":\"Institute of Physics Pub\",\"date\":\"1993\",\"numPages\":\"546\",\"language\":\"\",\"ISBN\":\"0750303212\",\"shortTitle\":\"Electron Microscopy and Analysis 1993\",\"url\":\"\",\"accessDate\":\"\",\"archive\":\"\",\"archiveLocation\":\"\",\"libraryCatalog\":\"cat.cisti-icist.nrc-cnrc.gc.ca Library Catalog\",\"callNumber\":\"QC1 I584 v. 138\",\"rights\":\"\",\"extra\":\"\",\"tags\":[{\"tag\":\"Analysis\",\"type\":1},{\"tag\":\"Congresses\",\"type\":1},{\"tag\":\"Electron microscopy\",\"type\":1},{\"tag\":\"Materials\",\"type\":1},{\"tag\":\"Microscopy\",\"type\":1}],\"collections\":[\"BX9965IJ\",\"9KH9TNSJ\"],\"relations\":{\"owl:sameAs\":\"http://zotero.org/groups/36222/items/E6IGUT5Z\"},\"dateAdded\":\"2011-01-13T03:37:29Z\",\"dateModified\":\"2011-01-13T03:37:29Z\"}", Item.class);
-        mItemforArray = new Gson().fromJson("{\"key\":\"FHCSUTJ7\",\"version\":1,\"parentItem\":\"TWZWDCXM\",\"itemType\":\"attachment\",\"linkMode\":\"imported_url\",\"title\":\"JavaScript: The Good Parts: Proquest Tech & Business Books\",\"accessDate\":\"2011-04-10T19:42:57Z\",\"url\":\"http://proquestcombo.safaribooksonline.com.proxy2.library.illinois.edu/book/programming/javascript/9780596517748\",\"note\":\"\",\"contentType\":\"text/html\",\"charset\":\"utf-8\",\"filename\":\"9780596517748.html\",\"md5\":null,\"mtime\":1302464576000,\"tags\":[],\"relations\":{\"owl:sameAs\":\"http://zotero.org/groups/36222/items/PIQTI4QF\"},\"dateAdded\":\"2011-04-10T19:42:57Z\",\"dateModified\":\"2011-04-10T19:45:55Z\"}", Item.class);
     }
 
     @After
@@ -88,8 +84,32 @@ public class ZoteroServiceTest {
         assertEquals("/475425/items/X42A7DEE", request.getPath() );
         assertNotNull(item);
         assertEquals("Bristol, UK", item.place);
+        assertEquals("Institute of Physics conference series", item.series);
     }
 
+    @Test
+    public void getCollectionsForUser() throws Exception {
+        enqueueResponse("collections.json");
+        Response<List<Collection>> response = mZoteroService.getCollectionsForUser("475425").execute();
+        List<Collection> collections = response.body();
+        RecordedRequest request = mMockWebServer.takeRequest();
+        assertEquals("/475425/collections", request.getPath());
+        assertEquals(15, collections.size());
+        Collection collection = collections.get(0);
+        assertEquals("LoC", collection.name);
+    }
+
+    @Test
+    public void getItemsForUser() throws Exception {
+        enqueueResponse("items.json");
+        Response<List<Item>> response = mZoteroService.getItemsForUser("475425").execute();
+        List<Item> items = response.body();
+        RecordedRequest request = mMockWebServer.takeRequest();
+        assertEquals("/475425/items", request.getPath());
+        assertEquals(25, items.size());
+        Item item = items.get(0);
+        assertEquals("Zotero Blog » Blog Archive » A Unified Zotero Experience", item.title);
+    }
 
     private void enqueueResponse(String fileName) throws IOException {
         enqueueResponse(fileName, Collections.<String, String>emptyMap());
