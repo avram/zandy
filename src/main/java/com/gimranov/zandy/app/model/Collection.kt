@@ -15,31 +15,25 @@
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.gimranov.zandy.app.model;
+package com.gimranov.zandy.app.model
 
-import com.google.gson.annotations.Expose;
-import com.google.gson.annotations.SerializedName;
+import com.google.gson.annotations.Expose
+import com.google.gson.annotations.SerializedName
 
-import java.io.Serializable;
-
-import lombok.Data;
-
-@Data
-public class Collection implements Serializable {
-    @SerializedName("key")
-    @Expose
-    public String key;
-    @SerializedName("version")
-    @Expose
-    public int version;
-    @SerializedName("name")
-    @Expose
-    public String name;
-    @SerializedName("parentCollection")
-    @Expose
-    public boolean parentCollection;
-    @SerializedName("relations")
-    @Expose
-    public Relations relations;
-    private final static long serialVersionUID = 2086885096076287463L;
-}
+data class Collection(
+        @SerializedName("key")
+        @Expose
+        var key: String? = null,
+        @SerializedName("version")
+        @Expose
+        var version: Int = 0,
+        @SerializedName("name")
+        @Expose
+        var name: String? = null,
+        @SerializedName("parentCollection")
+        @Expose
+        var parentCollection: Boolean = false,
+        @SerializedName("relations")
+        @Expose
+        var relations: Relations? = null
+)
