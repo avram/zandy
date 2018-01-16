@@ -7,6 +7,7 @@ import com.google.gson.GsonBuilder;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 /*
  * This file is part of Zandy.
@@ -25,7 +26,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * along with Zandy.  If not, see <http://www.gnu.org/licenses/>.
  */
 public class ZoteroClient {
-    public static final String BASE_URL = "https://api.zotero.org/users/";
+    private static final String BASE_URL = "https://api.zotero.org/users/";
     private static ZoteroService sInstance;
 
     public static ZoteroService getInstance() {
@@ -33,12 +34,13 @@ public class ZoteroClient {
             synchronized (ZoteroClient.class) {
                 if (sInstance == null) {
                     Gson gson = new GsonBuilder()
-                            .registerTypeAdapter(Item.class, new ZoteroDeserializer())
-                            .registerTypeAdapter(Collection.class, new ZoteroDeserializer())
+                            .registerTypeAdapter(Item.class, new ZoteroDeserializer<Item>())
+                            .registerTypeAdapter(Collection.class, new ZoteroDeserializer<Collection>())
                             .create();
 
                     Retrofit retrofit = new Retrofit.Builder()
                             .baseUrl(BASE_URL)
+                            .addConverterFactory(ScalarsConverterFactory.create())
                             .addConverterFactory(GsonConverterFactory.create(gson))
                             .build();
 
