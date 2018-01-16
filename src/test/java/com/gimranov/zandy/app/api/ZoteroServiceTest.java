@@ -51,6 +51,7 @@ import static junit.framework.Assert.assertNotNull;
  */
 @RunWith(JUnit4.class)
 public class ZoteroServiceTest {
+    public static final String USER_ID = "475425";
     private ZoteroService mZoteroService;
     private MockWebServer mMockWebServer;
 
@@ -77,7 +78,7 @@ public class ZoteroServiceTest {
     @Test
     public void getItemForUser() throws Exception {
         enqueueResponse("item.json");
-        Item item = getValue(mZoteroService.getItemForUser("475425", "X42A7DEE"));
+        Item item = getValue(mZoteroService.getItemForUser(USER_ID, "X42A7DEE"));
         RecordedRequest request = mMockWebServer.takeRequest();
         assertEquals("/475425/items/X42A7DEE", request.getPath() );
         assertNotNull(item);
@@ -88,7 +89,7 @@ public class ZoteroServiceTest {
     @Test
     public void getCollectionsForUser() throws Exception {
         enqueueResponse("collections.json");
-        List<Collection> collections = getValue(mZoteroService.getCollectionsForUser("475425"));
+        List<Collection> collections = getValue(mZoteroService.getCollectionsForUser(USER_ID));
         RecordedRequest request = mMockWebServer.takeRequest();
         assertEquals("/475425/collections", request.getPath());
         assertEquals(15, collections.size());
@@ -99,7 +100,7 @@ public class ZoteroServiceTest {
     @Test
     public void getItemsForUser() throws Exception {
         enqueueResponse("items.json");
-        List<Item> items = getValue(mZoteroService.getItemsForUser("475425"));
+        List<Item> items = getValue(mZoteroService.getItemsForUser(USER_ID));
         RecordedRequest request = mMockWebServer.takeRequest();
         assertEquals("/475425/items", request.getPath());
         assertEquals(25, items.size());
@@ -110,7 +111,7 @@ public class ZoteroServiceTest {
     @Test
     public void getItemKeysForUser() throws Exception {
         enqueueResponse("itemKeys.txt");
-        Response<ResponseBody> response = mZoteroService.getItemKeysForUser("475425").execute();
+        Response<ResponseBody> response = mZoteroService.getItemKeysForUser(USER_ID).execute();
         String body = response.body().string();
         RecordedRequest request = mMockWebServer.takeRequest();
         List<String> keys = Arrays.asList(body.split("[\r\n]+"));
