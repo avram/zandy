@@ -14,10 +14,12 @@ import org.junit.runners.JUnit4;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import okhttp3.ResponseBody;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -27,6 +29,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import static com.gimranov.zandy.app.api.CallTestUtil.getValue;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 
@@ -50,10 +53,6 @@ import static junit.framework.Assert.assertNotNull;
 public class ZoteroServiceTest {
     private ZoteroService mZoteroService;
     private MockWebServer mMockWebServer;
-    private Item mItemforSingle;
-    private Item mItemforArray;
-    private String mJson;
-    private String mJsonArray;
 
     @Before
     public void setUp() throws Exception {
@@ -78,37 +77,47 @@ public class ZoteroServiceTest {
     @Test
     public void getItemForUser() throws Exception {
         enqueueResponse("item.json");
-        Response<Item> response = mZoteroService.getItemForUser("475425", "X42A7DEE").execute();
-        Item item = response.body();
+        Item item = getValue(mZoteroService.getItemForUser("475425", "X42A7DEE"));
         RecordedRequest request = mMockWebServer.takeRequest();
         assertEquals("/475425/items/X42A7DEE", request.getPath() );
         assertNotNull(item);
-        assertEquals("Bristol, UK", item.place);
-        assertEquals("Institute of Physics conference series", item.series);
+        assertEquals("Bristol, UK", item.getPlace());
+        assertEquals("Institute of Physics conference series", item.getSeries());
     }
 
     @Test
     public void getCollectionsForUser() throws Exception {
         enqueueResponse("collections.json");
-        Response<List<Collection>> response = mZoteroService.getCollectionsForUser("475425").execute();
-        List<Collection> collections = response.body();
+        List<Collection> collections = getValue(mZoteroService.getCollectionsForUser("475425"));
         RecordedRequest request = mMockWebServer.takeRequest();
         assertEquals("/475425/collections", request.getPath());
         assertEquals(15, collections.size());
         Collection collection = collections.get(0);
-        assertEquals("LoC", collection.name);
+        assertEquals("LoC", collection.getName());
     }
 
     @Test
     public void getItemsForUser() throws Exception {
         enqueueResponse("items.json");
-        Response<List<Item>> response = mZoteroService.getItemsForUser("475425").execute();
-        List<Item> items = response.body();
+        List<Item> items = getValue(mZoteroService.getItemsForUser("475425"));
         RecordedRequest request = mMockWebServer.takeRequest();
         assertEquals("/475425/items", request.getPath());
         assertEquals(25, items.size());
         Item item = items.get(0);
-        assertEquals("Zotero Blog » Blog Archive » A Unified Zotero Experience", item.title);
+        assertEquals("Zotero Blog » Blog Archive » A Unified Zotero Experience", item.getTitle());
+    }
+
+    @Test
+    public void getItemKeysForUser() throws Exception {
+        enqueueResponse("itemKeys.txt");
+        Response<ResponseBody> response = mZoteroService.getItemKeysForUser("475425").execute();
+        String body = response.body().string();
+        RecordedRequest request = mMockWebServer.takeRequest();
+        List<String> keys = Arrays.asList(body.split("[\r\n]+"));
+        assertEquals("/475425/items?format=keys", request.getPath());
+        assertEquals(240, keys.size());
+        assertEquals("4TZXUMKG", keys.get(177));
+
     }
 
     private void enqueueResponse(String fileName) throws IOException {
