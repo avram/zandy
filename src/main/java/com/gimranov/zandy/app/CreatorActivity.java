@@ -142,7 +142,7 @@ public class CreatorActivity extends ListActivity {
         		}
         		
         		if (row.getString("label").equals("DOI")) {
-        			String url = "http://dx.doi.org/"+Uri.encode(row.getString("content"));
+        			String url = "https://doi.org/"+Uri.encode(row.getString("content"));
         			row.putString("url", url);
         			removeDialog(DIALOG_CONFIRM_NAVIGATE);
         			showDialog(DIALOG_CONFIRM_NAVIGATE, row);

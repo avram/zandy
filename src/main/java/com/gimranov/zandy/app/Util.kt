@@ -1,7 +1,7 @@
 package com.gimranov.zandy.app
 
 internal object Util {
-    private val DOI_PREFIX = "http://dx.doi.org/"
+    private val DOI_PREFIX = "https://doi.org/"
 
     fun doiToUri(doi: String): String {
         return if (isDoi(doi)) {
