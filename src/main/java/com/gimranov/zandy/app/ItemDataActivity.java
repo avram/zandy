@@ -141,7 +141,7 @@ public class ItemDataActivity extends ExpandableListActivity {
                     showDialog(DIALOG_CONFIRM_NAVIGATE);
                     return true;
                 } else if ("DOI".equals(row.getString("label"))) {
-                    String url = "http://dx.doi.org/" + Uri.encode(row.getString("content"));
+                    String url = "https://doi.org/" + Uri.encode(row.getString("content"));
                     row.putString("url", url);
                     removeDialog(DIALOG_CONFIRM_NAVIGATE);
                     ItemDataActivity.this.b = row;
