@@ -72,6 +72,8 @@ def testPropertiesFile = rootProject.file("test.properties")
 def testProperties = new Properties()
 testProperties.load(new FileInputStream(testPropertiesFile))
 
+testProperties.putAll(gradle.getStartParameter().getProjectProperties())
+
 android {
     compileSdkVersion 28
     buildToolsVersion "28.0.3"

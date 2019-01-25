@@ -595,20 +595,19 @@ public class Item {
         // Don't set anything to null
         if (content == null) content = "";
 
-        if (label.equals("title")) {
-            item.title = content;
-        }
-
-        if (label.equals("itemType")) {
-            item.type = content;
-        }
-
-        if (label.equals("children")) {
-            item.children = content;
-        }
-
-        if (label.equals("date")) {
-            item.year = content.replaceAll("^.*?(\\d{4}).*$", "$1");
+        switch (label) {
+            case "title":
+                item.title = content;
+                break;
+            case "itemType":
+                item.type = content;
+                break;
+            case "children":
+                item.children = content;
+                break;
+            case "date":
+                item.year = content.replaceAll("^.*?(\\d{4}).*$", "$1");
+                break;
         }
 
         try {
@@ -754,89 +753,92 @@ public class Item {
 
         // TODO Complete this list
 
-        if (type.equals("artwork"))
-            return R.drawable.picture;
-        // if (type.equals("audioRecording")) return
-        // R.drawable.ic_menu_close_clear_cancel;
-        // if (type.equals("bill")) return
-        // R.drawable.ic_menu_close_clear_cancel;
-        // if (type.equals("blogPost")) return
-        // R.drawable.ic_menu_close_clear_cancel;
-        if (type.equals("book"))
-            return R.drawable.book;
-        if (type.equals("bookSection"))
-            return R.drawable.book_open;
-        // if (type.equals("case")) return
-        // R.drawable.ic_menu_close_clear_cancel;
-        // if (type.equals("computerProgram")) return
-        // R.drawable.ic_menu_close_clear_cancel;
-        // if (type.equals("conferencePaper")) return
-        // R.drawable.ic_menu_close_clear_cancel;
-        if (type.equals("dictionaryEntry"))
-            return R.drawable.page_white_width;
-        if (type.equals("document"))
-            return R.drawable.page_white;
-        // if (type.equals("email")) return
-        // R.drawable.ic_menu_close_clear_cancel;
-        if (type.equals("encyclopediaArticle"))
-            return R.drawable.page_white_text_width;
-        if (type.equals("film"))
-            return R.drawable.film;
-        // if (type.equals("forumPost")) return
-        // R.drawable.ic_menu_close_clear_cancel;
-        // if (type.equals("hearing")) return
-        // R.drawable.ic_menu_close_clear_cancel;
-        if (type.equals("instantMessage"))
-            return R.drawable.comment;
-        // if (type.equals("interview")) return
-        // R.drawable.ic_menu_close_clear_cancel;
-        if (type.equals("journalArticle"))
-            return R.drawable.page_white_text;
-        if (type.equals("letter"))
-            return R.drawable.email;
-        if (type.equals("magazineArticle"))
-            return R.drawable.layout;
-        if (type.equals("manuscript"))
-            return R.drawable.script;
-        if (type.equals("map"))
-            return R.drawable.map;
-        if (type.equals("newspaperArticle"))
-            return R.drawable.newspaper;
-        // if (type.equals("patent")) return
-        // R.drawable.ic_menu_close_clear_cancel;
-        // if (type.equals("podcast")) return
-        // R.drawable.ic_menu_close_clear_cancel;
-        if (type.equals("presentation"))
-            return R.drawable.page_white_powerpoint;
-        // if (type.equals("radioBroadcast")) return
-        // R.drawable.ic_menu_close_clear_cancel;
-        if (type.equals("report"))
-            return R.drawable.report;
-        // if (type.equals("statute")) return
-        // R.drawable.ic_menu_close_clear_cancel;
-        if (type.equals("thesis"))
-            return R.drawable.report_user;
-        if (type.equals("tvBroadcast"))
-            return R.drawable.television;
-        if (type.equals("videoRecording"))
-            return R.drawable.film;
-        if (type.equals("webpage"))
-            return R.drawable.page;
+        switch (type) {
+            case "artwork":
+                return R.drawable.picture;
+            // if (type.equals("audioRecording")) return
+            // R.drawable.ic_menu_close_clear_cancel;
+            // if (type.equals("bill")) return
+            // R.drawable.ic_menu_close_clear_cancel;
+            // if (type.equals("blogPost")) return
+            // R.drawable.ic_menu_close_clear_cancel;
+            case "book":
+                return R.drawable.book;
+            case "bookSection":
+                return R.drawable.book_open;
+            // if (type.equals("case")) return
+            // R.drawable.ic_menu_close_clear_cancel;
+            // if (type.equals("computerProgram")) return
+            // R.drawable.ic_menu_close_clear_cancel;
+            // if (type.equals("conferencePaper")) return
+            // R.drawable.ic_menu_close_clear_cancel;
+            case "dictionaryEntry":
+                return R.drawable.page_white_width;
+            case "document":
+                return R.drawable.page_white;
+            // if (type.equals("email")) return
+            // R.drawable.ic_menu_close_clear_cancel;
+            case "encyclopediaArticle":
+                return R.drawable.page_white_text_width;
+            case "film":
+                return R.drawable.film;
+            // if (type.equals("forumPost")) return
+            // R.drawable.ic_menu_close_clear_cancel;
+            // if (type.equals("hearing")) return
+            // R.drawable.ic_menu_close_clear_cancel;
+            case "instantMessage":
+                return R.drawable.comment;
+            // if (type.equals("interview")) return
+            // R.drawable.ic_menu_close_clear_cancel;
+            case "journalArticle":
+                return R.drawable.page_white_text;
+            case "letter":
+                return R.drawable.email;
+            case "magazineArticle":
+                return R.drawable.layout;
+            case "manuscript":
+                return R.drawable.script;
+            case "map":
+                return R.drawable.map;
+            case "newspaperArticle":
+                return R.drawable.newspaper;
+            // if (type.equals("patent")) return
+            // R.drawable.ic_menu_close_clear_cancel;
+            // if (type.equals("podcast")) return
+            // R.drawable.ic_menu_close_clear_cancel;
+            case "presentation":
+                return R.drawable.page_white_powerpoint;
+            // if (type.equals("radioBroadcast")) return
+            // R.drawable.ic_menu_close_clear_cancel;
+            case "report":
+                return R.drawable.report;
+            // if (type.equals("statute")) return
+            // R.drawable.ic_menu_close_clear_cancel;
+            case "thesis":
+                return R.drawable.report_user;
+            case "tvBroadcast":
+                return R.drawable.television;
+            case "videoRecording":
+                return R.drawable.film;
+            case "webpage":
+                return R.drawable.page;
 
-        // Not item types, but still something
-        if (type.equals("collection"))
-            return R.drawable.folder;
-        if (type.equals("application/pdf"))
-            return R.drawable.page_white_acrobat;
-        if (type.equals("note"))
-            return R.drawable.note;
-        // if (type.equals("snapshot")) return
-        // R.drawable.ic_menu_close_clear_cancel;
-        // if (type.equals("link")) return
-        // R.drawable.ic_menu_close_clear_cancel;
+            // Not item types, but still something
+            case "collection":
+                return R.drawable.folder;
+            case "application/pdf":
+                return R.drawable.page_white_acrobat;
+            case "note":
+                return R.drawable.note;
+            // if (type.equals("snapshot")) return
+            // R.drawable.ic_menu_close_clear_cancel;
+            // if (type.equals("link")) return
+            // R.drawable.ic_menu_close_clear_cancel;
 
-        // Return something generic if all else fails
-        return R.drawable.page_white;
+            // Return something generic if all else fails
+            default:
+                return R.drawable.page_white;
+        }
     }
 
     /**
@@ -855,355 +857,358 @@ public class Item {
             return "";
         }
         // Item fields from the API
-        if (s.equals("numPages"))
-            return "# of Pages";
-        if (s.equals("numberOfVolumes"))
-            return "# of Volumes";
-        if (s.equals("abstractNote"))
-            return "Abstract";
-        if (s.equals("accessDate"))
-            return "Accessed";
-        if (s.equals("applicationNumber"))
-            return "Application Number";
-        if (s.equals("archive"))
-            return "Archive";
-        if (s.equals("artworkSize"))
-            return "Artwork Size";
-        if (s.equals("assignee"))
-            return "Assignee";
-        if (s.equals("billNumber"))
-            return "Bill Number";
-        if (s.equals("blogTitle"))
-            return "Blog Title";
-        if (s.equals("bookTitle"))
-            return "Book Title";
-        if (s.equals("callNumber"))
-            return "Call Number";
-        if (s.equals("caseName"))
-            return "Case Name";
-        if (s.equals("code"))
-            return "Code";
-        if (s.equals("codeNumber"))
-            return "Code Number";
-        if (s.equals("codePages"))
-            return "Code Pages";
-        if (s.equals("codeVolume"))
-            return "Code Volume";
-        if (s.equals("committee"))
-            return "Committee";
-        if (s.equals("company"))
-            return "Company";
-        if (s.equals("conferenceName"))
-            return "Conference Name";
-        if (s.equals("country"))
-            return "Country";
-        if (s.equals("court"))
-            return "Court";
-        if (s.equals("DOI"))
-            return "DOI";
-        if (s.equals("date"))
-            return "Date";
-        if (s.equals("dateDecided"))
-            return "Date Decided";
-        if (s.equals("dateEnacted"))
-            return "Date Enacted";
-        if (s.equals("dictionaryTitle"))
-            return "Dictionary Title";
-        if (s.equals("distributor"))
-            return "Distributor";
-        if (s.equals("docketNumber"))
-            return "Docket Number";
-        if (s.equals("documentNumber"))
-            return "Document Number";
-        if (s.equals("edition"))
-            return "Edition";
-        if (s.equals("encyclopediaTitle"))
-            return "Encyclopedia Title";
-        if (s.equals("episodeNumber"))
-            return "Episode Number";
-        if (s.equals("extra"))
-            return "Extra";
-        if (s.equals("audioFileType"))
-            return "File Type";
-        if (s.equals("filingDate"))
-            return "Filing Date";
-        if (s.equals("firstPage"))
-            return "First Page";
-        if (s.equals("audioRecordingFormat"))
-            return "Format";
-        if (s.equals("videoRecordingFormat"))
-            return "Format";
-        if (s.equals("forumTitle"))
-            return "Forum/Listserv Title";
-        if (s.equals("genre"))
-            return "Genre";
-        if (s.equals("history"))
-            return "History";
-        if (s.equals("ISBN"))
-            return "ISBN";
-        if (s.equals("ISSN"))
-            return "ISSN";
-        if (s.equals("institution"))
-            return "Institution";
-        if (s.equals("issue"))
-            return "Issue";
-        if (s.equals("issueDate"))
-            return "Issue Date";
-        if (s.equals("issuingAuthority"))
-            return "Issuing Authority";
-        if (s.equals("journalAbbreviation"))
-            return "Journal Abbr";
-        if (s.equals("label"))
-            return "Label";
-        if (s.equals("language"))
-            return "Language";
-        if (s.equals("programmingLanguage"))
-            return "Language";
-        if (s.equals("legalStatus"))
-            return "Legal Status";
-        if (s.equals("legislativeBody"))
-            return "Legislative Body";
-        if (s.equals("libraryCatalog"))
-            return "Library Catalog";
-        if (s.equals("archiveLocation"))
-            return "Loc. in Archive";
-        if (s.equals("interviewMedium"))
-            return "Medium";
-        if (s.equals("artworkMedium"))
-            return "Medium";
-        if (s.equals("meetingName"))
-            return "Meeting Name";
-        if (s.equals("nameOfAct"))
-            return "Name of Act";
-        if (s.equals("network"))
-            return "Network";
-        if (s.equals("pages"))
-            return "Pages";
-        if (s.equals("patentNumber"))
-            return "Patent Number";
-        if (s.equals("place"))
-            return "Place";
-        if (s.equals("postType"))
-            return "Post Type";
-        if (s.equals("priorityNumbers"))
-            return "Priority Numbers";
-        if (s.equals("proceedingsTitle"))
-            return "Proceedings Title";
-        if (s.equals("programTitle"))
-            return "Program Title";
-        if (s.equals("publicLawNumber"))
-            return "Public Law Number";
-        if (s.equals("publicationTitle"))
-            return "Publication";
-        if (s.equals("publisher"))
-            return "Publisher";
-        if (s.equals("references"))
-            return "References";
-        if (s.equals("reportNumber"))
-            return "Report Number";
-        if (s.equals("reportType"))
-            return "Report Type";
-        if (s.equals("reporter"))
-            return "Reporter";
-        if (s.equals("reporterVolume"))
-            return "Reporter Volume";
-        if (s.equals("rights"))
-            return "Rights";
-        if (s.equals("runningTime"))
-            return "Running Time";
-        if (s.equals("scale"))
-            return "Scale";
-        if (s.equals("section"))
-            return "Section";
-        if (s.equals("series"))
-            return "Series";
-        if (s.equals("seriesNumber"))
-            return "Series Number";
-        if (s.equals("seriesText"))
-            return "Series Text";
-        if (s.equals("seriesTitle"))
-            return "Series Title";
-        if (s.equals("session"))
-            return "Session";
-        if (s.equals("shortTitle"))
-            return "Short Title";
-        if (s.equals("studio"))
-            return "Studio";
-        if (s.equals("subject"))
-            return "Subject";
-        if (s.equals("system"))
-            return "System";
-        if (s.equals("title"))
-            return "Title";
-        if (s.equals("thesisType"))
-            return "Type";
-        if (s.equals("mapType"))
-            return "Type";
-        if (s.equals("manuscriptType"))
-            return "Type";
-        if (s.equals("letterType"))
-            return "Type";
-        if (s.equals("presentationType"))
-            return "Type";
-        if (s.equals("url"))
-            return "URL";
-        if (s.equals("university"))
-            return "University";
-        if (s.equals("version"))
-            return "Version";
-        if (s.equals("volume"))
-            return "Volume";
-        if (s.equals("websiteTitle"))
-            return "Website Title";
-        if (s.equals("websiteType"))
-            return "Website Type";
+        switch (s) {
+            case "numPages":
+                return "# of Pages";
+            case "numberOfVolumes":
+                return "# of Volumes";
+            case "abstractNote":
+                return "Abstract";
+            case "accessDate":
+                return "Accessed";
+            case "applicationNumber":
+                return "Application Number";
+            case "archive":
+                return "Archive";
+            case "artworkSize":
+                return "Artwork Size";
+            case "assignee":
+                return "Assignee";
+            case "billNumber":
+                return "Bill Number";
+            case "blogTitle":
+                return "Blog Title";
+            case "bookTitle":
+                return "Book Title";
+            case "callNumber":
+                return "Call Number";
+            case "caseName":
+                return "Case Name";
+            case "code":
+                return "Code";
+            case "codeNumber":
+                return "Code Number";
+            case "codePages":
+                return "Code Pages";
+            case "codeVolume":
+                return "Code Volume";
+            case "committee":
+                return "Committee";
+            case "company":
+                return "Company";
+            case "conferenceName":
+                return "Conference Name";
+            case "country":
+                return "Country";
+            case "court":
+                return "Court";
+            case "DOI":
+                return "DOI";
+            case "date":
+                return "Date";
+            case "dateDecided":
+                return "Date Decided";
+            case "dateEnacted":
+                return "Date Enacted";
+            case "dictionaryTitle":
+                return "Dictionary Title";
+            case "distributor":
+                return "Distributor";
+            case "docketNumber":
+                return "Docket Number";
+            case "documentNumber":
+                return "Document Number";
+            case "edition":
+                return "Edition";
+            case "encyclopediaTitle":
+                return "Encyclopedia Title";
+            case "episodeNumber":
+                return "Episode Number";
+            case "extra":
+                return "Extra";
+            case "audioFileType":
+                return "File Type";
+            case "filingDate":
+                return "Filing Date";
+            case "firstPage":
+                return "First Page";
+            case "audioRecordingFormat":
+                return "Format";
+            case "videoRecordingFormat":
+                return "Format";
+            case "forumTitle":
+                return "Forum/Listserv Title";
+            case "genre":
+                return "Genre";
+            case "history":
+                return "History";
+            case "ISBN":
+                return "ISBN";
+            case "ISSN":
+                return "ISSN";
+            case "institution":
+                return "Institution";
+            case "issue":
+                return "Issue";
+            case "issueDate":
+                return "Issue Date";
+            case "issuingAuthority":
+                return "Issuing Authority";
+            case "journalAbbreviation":
+                return "Journal Abbr";
+            case "label":
+                return "Label";
+            case "language":
+                return "Language";
+            case "programmingLanguage":
+                return "Language";
+            case "legalStatus":
+                return "Legal Status";
+            case "legislativeBody":
+                return "Legislative Body";
+            case "libraryCatalog":
+                return "Library Catalog";
+            case "archiveLocation":
+                return "Loc. in Archive";
+            case "interviewMedium":
+                return "Medium";
+            case "artworkMedium":
+                return "Medium";
+            case "meetingName":
+                return "Meeting Name";
+            case "nameOfAct":
+                return "Name of Act";
+            case "network":
+                return "Network";
+            case "pages":
+                return "Pages";
+            case "patentNumber":
+                return "Patent Number";
+            case "place":
+                return "Place";
+            case "postType":
+                return "Post Type";
+            case "priorityNumbers":
+                return "Priority Numbers";
+            case "proceedingsTitle":
+                return "Proceedings Title";
+            case "programTitle":
+                return "Program Title";
+            case "publicLawNumber":
+                return "Public Law Number";
+            case "publicationTitle":
+                return "Publication";
+            case "publisher":
+                return "Publisher";
+            case "references":
+                return "References";
+            case "reportNumber":
+                return "Report Number";
+            case "reportType":
+                return "Report Type";
+            case "reporter":
+                return "Reporter";
+            case "reporterVolume":
+                return "Reporter Volume";
+            case "rights":
+                return "Rights";
+            case "runningTime":
+                return "Running Time";
+            case "scale":
+                return "Scale";
+            case "section":
+                return "Section";
+            case "series":
+                return "Series";
+            case "seriesNumber":
+                return "Series Number";
+            case "seriesText":
+                return "Series Text";
+            case "seriesTitle":
+                return "Series Title";
+            case "session":
+                return "Session";
+            case "shortTitle":
+                return "Short Title";
+            case "studio":
+                return "Studio";
+            case "subject":
+                return "Subject";
+            case "system":
+                return "System";
+            case "title":
+                return "Title";
+            case "thesisType":
+                return "Type";
+            case "mapType":
+                return "Type";
+            case "manuscriptType":
+                return "Type";
+            case "letterType":
+                return "Type";
+            case "presentationType":
+                return "Type";
+            case "url":
+                return "URL";
+            case "university":
+                return "University";
+            case "version":
+                return "Version";
+            case "volume":
+                return "Volume";
+            case "websiteTitle":
+                return "Website Title";
+            case "websiteType":
+                return "Website Type";
 
-        // Item fields not in the API
-        if (s.equals("creators"))
-            return "Creators";
-        if (s.equals("tags"))
-            return "Tags";
-        if (s.equals("itemType"))
-            return "Item Type";
-        if (s.equals("children"))
-            return "Attachments";
-        if (s.equals("collections"))
-            return "Collections";
+            // Item fields not in the API
+            case "creators":
+                return "Creators";
+            case "tags":
+                return "Tags";
+            case "itemType":
+                return "Item Type";
+            case "children":
+                return "Attachments";
+            case "collections":
+                return "Collections";
 
-        // And item types
-        if (s.equals("artwork"))
-            return "Artwork";
-        if (s.equals("audioRecording"))
-            return "Audio Recording";
-        if (s.equals("bill"))
-            return "Bill";
-        if (s.equals("blogPost"))
-            return "Blog Post";
-        if (s.equals("book"))
-            return "Book";
-        if (s.equals("bookSection"))
-            return "Book Section";
-        if (s.equals("case"))
-            return "Case";
-        if (s.equals("computerProgram"))
-            return "Computer Program";
-        if (s.equals("conferencePaper"))
-            return "Conference Paper";
-        if (s.equals("dictionaryEntry"))
-            return "Dictionary Entry";
-        if (s.equals("document"))
-            return "Document";
-        if (s.equals("email"))
-            return "E-mail";
-        if (s.equals("encyclopediaArticle"))
-            return "Encyclopedia Article";
-        if (s.equals("film"))
-            return "Film";
-        if (s.equals("forumPost"))
-            return "Forum Post";
-        if (s.equals("hearing"))
-            return "Hearing";
-        if (s.equals("instantMessage"))
-            return "Instant Message";
-        if (s.equals("interview"))
-            return "Interview";
-        if (s.equals("journalArticle"))
-            return "Journal Article";
-        if (s.equals("letter"))
-            return "Letter";
-        if (s.equals("magazineArticle"))
-            return "Magazine Article";
-        if (s.equals("manuscript"))
-            return "Manuscript";
-        if (s.equals("map"))
-            return "Map";
-        if (s.equals("newspaperArticle"))
-            return "Newspaper Article";
-        if (s.equals("note"))
-            return "Note";
-        if (s.equals("patent"))
-            return "Patent";
-        if (s.equals("podcast"))
-            return "Podcast";
-        if (s.equals("presentation"))
-            return "Presentation";
-        if (s.equals("radioBroadcast"))
-            return "Radio Broadcast";
-        if (s.equals("report"))
-            return "Report";
-        if (s.equals("statute"))
-            return "Statute";
-        if (s.equals("tvBroadcast"))
-            return "TV Broadcast";
-        if (s.equals("thesis"))
-            return "Thesis";
-        if (s.equals("videoRecording"))
-            return "Video Recording";
-        if (s.equals("webpage"))
-            return "Web Page";
+            // And item types
+            case "artwork":
+                return "Artwork";
+            case "audioRecording":
+                return "Audio Recording";
+            case "bill":
+                return "Bill";
+            case "blogPost":
+                return "Blog Post";
+            case "book":
+                return "Book";
+            case "bookSection":
+                return "Book Section";
+            case "case":
+                return "Case";
+            case "computerProgram":
+                return "Computer Program";
+            case "conferencePaper":
+                return "Conference Paper";
+            case "dictionaryEntry":
+                return "Dictionary Entry";
+            case "document":
+                return "Document";
+            case "email":
+                return "E-mail";
+            case "encyclopediaArticle":
+                return "Encyclopedia Article";
+            case "film":
+                return "Film";
+            case "forumPost":
+                return "Forum Post";
+            case "hearing":
+                return "Hearing";
+            case "instantMessage":
+                return "Instant Message";
+            case "interview":
+                return "Interview";
+            case "journalArticle":
+                return "Journal Article";
+            case "letter":
+                return "Letter";
+            case "magazineArticle":
+                return "Magazine Article";
+            case "manuscript":
+                return "Manuscript";
+            case "map":
+                return "Map";
+            case "newspaperArticle":
+                return "Newspaper Article";
+            case "note":
+                return "Note";
+            case "patent":
+                return "Patent";
+            case "podcast":
+                return "Podcast";
+            case "presentation":
+                return "Presentation";
+            case "radioBroadcast":
+                return "Radio Broadcast";
+            case "report":
+                return "Report";
+            case "statute":
+                return "Statute";
+            case "tvBroadcast":
+                return "TV Broadcast";
+            case "thesis":
+                return "Thesis";
+            case "videoRecording":
+                return "Video Recording";
+            case "webpage":
+                return "Web Page";
 
-        // Creator types
-        if (s.equals("artist"))
-            return "Artist";
-        if (s.equals("attorneyAgent"))
-            return "Attorney/Agent";
-        if (s.equals("author"))
-            return "Author";
-        if (s.equals("bookAuthor"))
-            return "Book Author";
-        if (s.equals("cartographer"))
-            return "Cartographer";
-        if (s.equals("castMember"))
-            return "Cast Member";
-        if (s.equals("commenter"))
-            return "Commenter";
-        if (s.equals("composer"))
-            return "Composer";
-        if (s.equals("contributor"))
-            return "Contributor";
-        if (s.equals("cosponsor"))
-            return "Cosponsor";
-        if (s.equals("counsel"))
-            return "Counsel";
-        if (s.equals("director"))
-            return "Director";
-        if (s.equals("editor"))
-            return "Editor";
-        if (s.equals("guest"))
-            return "Guest";
-        if (s.equals("interviewee"))
-            return "Interview With";
-        if (s.equals("interviewer"))
-            return "Interviewer";
-        if (s.equals("inventor"))
-            return "Inventor";
-        if (s.equals("performer"))
-            return "Performer";
-        if (s.equals("podcaster"))
-            return "Podcaster";
-        if (s.equals("presenter"))
-            return "Presenter";
-        if (s.equals("producer"))
-            return "Producer";
-        if (s.equals("programmer"))
-            return "Programmer";
-        if (s.equals("recipient"))
-            return "Recipient";
-        if (s.equals("reviewedAuthor"))
-            return "Reviewed Author";
-        if (s.equals("scriptwriter"))
-            return "Scriptwriter";
-        if (s.equals("seriesEditor"))
-            return "Series Editor";
-        if (s.equals("sponsor"))
-            return "Sponsor";
-        if (s.equals("translator"))
-            return "Translator";
-        if (s.equals("wordsBy"))
-            return "Words By";
+            // Creator types
+            case "artist":
+                return "Artist";
+            case "attorneyAgent":
+                return "Attorney/Agent";
+            case "author":
+                return "Author";
+            case "bookAuthor":
+                return "Book Author";
+            case "cartographer":
+                return "Cartographer";
+            case "castMember":
+                return "Cast Member";
+            case "commenter":
+                return "Commenter";
+            case "composer":
+                return "Composer";
+            case "contributor":
+                return "Contributor";
+            case "cosponsor":
+                return "Cosponsor";
+            case "counsel":
+                return "Counsel";
+            case "director":
+                return "Director";
+            case "editor":
+                return "Editor";
+            case "guest":
+                return "Guest";
+            case "interviewee":
+                return "Interview With";
+            case "interviewer":
+                return "Interviewer";
+            case "inventor":
+                return "Inventor";
+            case "performer":
+                return "Performer";
+            case "podcaster":
+                return "Podcaster";
+            case "presenter":
+                return "Presenter";
+            case "producer":
+                return "Producer";
+            case "programmer":
+                return "Programmer";
+            case "recipient":
+                return "Recipient";
+            case "reviewedAuthor":
+                return "Reviewed Author";
+            case "scriptwriter":
+                return "Scriptwriter";
+            case "seriesEditor":
+                return "Series Editor";
+            case "sponsor":
+                return "Sponsor";
+            case "translator":
+                return "Translator";
+            case "wordsBy":
+                return "Words By";
 
-        // Or just leave it the way it is
-        return s;
+            // Or just leave it the way it is
+            default:
+                return s;
+        }
     }
 
     /**
@@ -1234,124 +1239,92 @@ public class Item {
      */
     public static String[] creatorTypesForItemType(String s) {
         Log.d(TAG, "Getting creator types for item type: " + s);
-        if (s.equals("artwork")) {
-            return new String[]{"artist", "contributor"};
-        }
-        if (s.equals("audioRecording")) {
-            return new String[]{"performer", "composer", "contributor", "wordsBy"};
-        }
-        if (s.equals("bill")) {
-            return new String[]{"sponsor", "contributor", "cosponsor"};
-        }
-        if (s.equals("blogPost")) {
-            return new String[]{"author", "commenter", "contributor"};
-        }
-        if (s.equals("book")) {
-            return new String[]{"author", "contributor", "editor", "seriesEditor",
-                    "translator"};
-        }
-        if (s.equals("bookSection")) {
-            return new String[]{"author", "bookAuthor", "contributor", "editor",
-                    "seriesEditor", "translator"};
-        }
-        if (s.equals("case")) {
-            return new String[]{"author", "contributor", "counsel"};
-        }
-        if (s.equals("computerProgram")) {
-            return new String[]{"programmer", "contributor"};
-        }
-        if (s.equals("conferencePaper")) {
-            return new String[]{"author", "contributor", "editor", "seriesEditor",
-                    "translator"};
-        }
-        if (s.equals("dictionaryEntry")) {
-            return new String[]{"author", "contributor", "editor", "seriesEditor",
-                    "translator"};
-        }
-        if (s.equals("document")) {
-            return new String[]{"author", "contributor", "editor",
-                    "reviewedAuthor", "translator"};
-        }
-        if (s.equals("email")) {
-            return new String[]{"author", "contributor", "recipient"};
-        }
-        if (s.equals("encyclopediaArticle")) {
-            return new String[]{"author", "contributor", "editor", "seriesEditor",
-                    "translator"};
-        }
-        if (s.equals("film")) {
-            return new String[]{"director", "contributor", "producer",
-                    "scriptwriter"};
-        }
-        if (s.equals("forumPost")) {
-            return new String[]{"author", "contributor"};
-        }
-        if (s.equals("hearing")) {
-            return new String[]{"contributor"};
-        }
-        if (s.equals("instantMessage")) {
-            return new String[]{"author", "contributor", "recipient"};
-        }
-        if (s.equals("interview")) {
-            return new String[]{"interviewee", "contributor", "interviewer",
-                    "translator"};
-        }
-        if (s.equals("journalArticle")) {
-            return new String[]{"author", "contributor", "editor",
-                    "reviewedAuthor", "translator"};
-        }
-        if (s.equals("letter")) {
-            return new String[]{"author", "contributor", "recipient"};
-        }
-        if (s.equals("magazineArticle")) {
-            return new String[]{"author", "contributor", "reviewedAuthor",
-                    "translator"};
-        }
-        if (s.equals("manuscript")) {
-            return new String[]{"author", "contributor", "translator"};
-        }
-        if (s.equals("map")) {
-            return new String[]{"cartographer", "contributor", "seriesEditor"};
-        }
-        if (s.equals("newspaperArticle")) {
-            return new String[]{"author", "contributor", "reviewedAuthor",
-                    "translator"};
-        }
-        if (s.equals("patent")) {
-            return new String[]{"inventor", "attorneyAgent", "contributor"};
-        }
-        if (s.equals("podcast")) {
-            return new String[]{"podcaster", "contributor", "guest"};
-        }
-        if (s.equals("presentation")) {
-            return new String[]{"presenter", "contributor"};
-        }
-        if (s.equals("radioBroadcast")) {
-            return new String[]{"director", "castMember", "contributor", "guest",
-                    "producer", "scriptwriter"};
-        }
-        if (s.equals("report")) {
-            return new String[]{"author", "contributor", "seriesEditor",
-                    "translator"};
-        }
-        if (s.equals("statute")) {
-            return new String[]{"author", "contributor"};
-        }
-        if (s.equals("tvBroadcast")) {
-            return new String[]{"director", "castMember", "contributor", "guest",
-                    "producer", "scriptwriter"};
-        }
-        if (s.equals("thesis")) {
-            return new String[]{"author", "contributor"};
-        }
-        if (s.equals("videoRecording")) {
-            return new String[]{"director", "castMember", "contributor",
-                    "producer", "scriptwriter"};
-        }
-        if (s.equals("webpage")) {
-            return new String[]{"author", "contributor", "translator"};
-        } else {
-            return null;
+        switch (s) {
+            case "artwork":
+                return new String[]{"artist", "contributor"};
+            case "audioRecording":
+                return new String[]{"performer", "composer", "contributor", "wordsBy"};
+            case "bill":
+                return new String[]{"sponsor", "contributor", "cosponsor"};
+            case "blogPost":
+                return new String[]{"author", "commenter", "contributor"};
+            case "book":
+                return new String[]{"author", "contributor", "editor", "seriesEditor",
+                        "translator"};
+            case "bookSection":
+                return new String[]{"author", "bookAuthor", "contributor", "editor",
+                        "seriesEditor", "translator"};
+            case "case":
+                return new String[]{"author", "contributor", "counsel"};
+            case "computerProgram":
+                return new String[]{"programmer", "contributor"};
+            case "conferencePaper":
+                return new String[]{"author", "contributor", "editor", "seriesEditor",
+                        "translator"};
+            case "dictionaryEntry":
+                return new String[]{"author", "contributor", "editor", "seriesEditor",
+                        "translator"};
+            case "document":
+                return new String[]{"author", "contributor", "editor",
+                        "reviewedAuthor", "translator"};
+            case "email":
+                return new String[]{"author", "contributor", "recipient"};
+            case "encyclopediaArticle":
+                return new String[]{"author", "contributor", "editor", "seriesEditor",
+                        "translator"};
+            case "film":
+                return new String[]{"director", "contributor", "producer",
+                        "scriptwriter"};
+            case "forumPost":
+                return new String[]{"author", "contributor"};
+            case "hearing":
+                return new String[]{"contributor"};
+            case "instantMessage":
+                return new String[]{"author", "contributor", "recipient"};
+            case "interview":
+                return new String[]{"interviewee", "contributor", "interviewer",
+                        "translator"};
+            case "journalArticle":
+                return new String[]{"author", "contributor", "editor",
+                        "reviewedAuthor", "translator"};
+            case "letter":
+                return new String[]{"author", "contributor", "recipient"};
+            case "magazineArticle":
+                return new String[]{"author", "contributor", "reviewedAuthor",
+                        "translator"};
+            case "manuscript":
+                return new String[]{"author", "contributor", "translator"};
+            case "map":
+                return new String[]{"cartographer", "contributor", "seriesEditor"};
+            case "newspaperArticle":
+                return new String[]{"author", "contributor", "reviewedAuthor",
+                        "translator"};
+            case "patent":
+                return new String[]{"inventor", "attorneyAgent", "contributor"};
+            case "podcast":
+                return new String[]{"podcaster", "contributor", "guest"};
+            case "presentation":
+                return new String[]{"presenter", "contributor"};
+            case "radioBroadcast":
+                return new String[]{"director", "castMember", "contributor", "guest",
+                        "producer", "scriptwriter"};
+            case "report":
+                return new String[]{"author", "contributor", "seriesEditor",
+                        "translator"};
+            case "statute":
+                return new String[]{"author", "contributor"};
+            case "tvBroadcast":
+                return new String[]{"director", "castMember", "contributor", "guest",
+                        "producer", "scriptwriter"};
+            case "thesis":
+                return new String[]{"author", "contributor"};
+            case "videoRecording":
+                return new String[]{"director", "castMember", "contributor",
+                        "producer", "scriptwriter"};
+            case "webpage":
+                return new String[]{"author", "contributor", "translator"};
+            default:
+                return null;
         }
     }
 
@@ -1370,76 +1343,113 @@ public class Item {
         String json = "";
         try {
             // And item types
-            if (s.equals("artwork"))
-                json = c.getString(R.string.template_artwork);
-            else if (s.equals("audioRecording"))
-                json = c.getString(R.string.template_audioRecording);
-            else if (s.equals("bill"))
-                json = c.getString(R.string.template_bill);
-            else if (s.equals("blogPost"))
-                json = c.getString(R.string.template_blogPost);
-            else if (s.equals("book"))
-                json = c.getString(R.string.template_book);
-            else if (s.equals("bookSection"))
-                json = c.getString(R.string.template_bookSection);
-            else if (s.equals("case"))
-                json = c.getString(R.string.template_case);
-            else if (s.equals("computerProgram"))
-                json = c.getString(R.string.template_computerProgram);
-            else if (s.equals("conferencePaper"))
-                json = c.getString(R.string.template_conferencePaper);
-            else if (s.equals("dictionaryEntry"))
-                json = c.getString(R.string.template_dictionaryEntry);
-            else if (s.equals("document"))
-                json = c.getString(R.string.template_document);
-            else if (s.equals("email"))
-                json = c.getString(R.string.template_email);
-            else if (s.equals("encyclopediaArticle"))
-                json = c.getString(R.string.template_encyclopediaArticle);
-            else if (s.equals("film"))
-                json = c.getString(R.string.template_film);
-            else if (s.equals("forumPost"))
-                json = c.getString(R.string.template_forumPost);
-            else if (s.equals("hearing"))
-                json = c.getString(R.string.template_hearing);
-            else if (s.equals("instantMessage"))
-                json = c.getString(R.string.template_instantMessage);
-            else if (s.equals("interview"))
-                json = c.getString(R.string.template_interview);
-            else if (s.equals("journalArticle"))
-                json = c.getString(R.string.template_journalArticle);
-            else if (s.equals("letter"))
-                json = c.getString(R.string.template_letter);
-            else if (s.equals("magazineArticle"))
-                json = c.getString(R.string.template_magazineArticle);
-            else if (s.equals("manuscript"))
-                json = c.getString(R.string.template_manuscript);
-            else if (s.equals("map"))
-                json = c.getString(R.string.template_map);
-            else if (s.equals("newspaperArticle"))
-                json = c.getString(R.string.template_newspaperArticle);
-            else if (s.equals("note"))
-                json = c.getString(R.string.template_note);
-            else if (s.equals("patent"))
-                json = c.getString(R.string.template_patent);
-            else if (s.equals("podcast"))
-                json = c.getString(R.string.template_podcast);
-            else if (s.equals("presentation"))
-                json = c.getString(R.string.template_presentation);
-            else if (s.equals("radioBroadcast"))
-                json = c.getString(R.string.template_radioBroadcast);
-            else if (s.equals("report"))
-                json = c.getString(R.string.template_report);
-            else if (s.equals("statute"))
-                json = c.getString(R.string.template_statute);
-            else if (s.equals("tvBroadcast"))
-                json = c.getString(R.string.template_tvBroadcast);
-            else if (s.equals("thesis"))
-                json = c.getString(R.string.template_thesis);
-            else if (s.equals("videoRecording"))
-                json = c.getString(R.string.template_videoRecording);
-            else if (s.equals("webpage"))
-                json = c.getString(R.string.template_webpage);
+            switch (s) {
+                case "artwork":
+                    json = c.getString(R.string.template_artwork);
+                    break;
+                case "audioRecording":
+                    json = c.getString(R.string.template_audioRecording);
+                    break;
+                case "bill":
+                    json = c.getString(R.string.template_bill);
+                    break;
+                case "blogPost":
+                    json = c.getString(R.string.template_blogPost);
+                    break;
+                case "book":
+                    json = c.getString(R.string.template_book);
+                    break;
+                case "bookSection":
+                    json = c.getString(R.string.template_bookSection);
+                    break;
+                case "case":
+                    json = c.getString(R.string.template_case);
+                    break;
+                case "computerProgram":
+                    json = c.getString(R.string.template_computerProgram);
+                    break;
+                case "conferencePaper":
+                    json = c.getString(R.string.template_conferencePaper);
+                    break;
+                case "dictionaryEntry":
+                    json = c.getString(R.string.template_dictionaryEntry);
+                    break;
+                case "document":
+                    json = c.getString(R.string.template_document);
+                    break;
+                case "email":
+                    json = c.getString(R.string.template_email);
+                    break;
+                case "encyclopediaArticle":
+                    json = c.getString(R.string.template_encyclopediaArticle);
+                    break;
+                case "film":
+                    json = c.getString(R.string.template_film);
+                    break;
+                case "forumPost":
+                    json = c.getString(R.string.template_forumPost);
+                    break;
+                case "hearing":
+                    json = c.getString(R.string.template_hearing);
+                    break;
+                case "instantMessage":
+                    json = c.getString(R.string.template_instantMessage);
+                    break;
+                case "interview":
+                    json = c.getString(R.string.template_interview);
+                    break;
+                case "journalArticle":
+                    json = c.getString(R.string.template_journalArticle);
+                    break;
+                case "letter":
+                    json = c.getString(R.string.template_letter);
+                    break;
+                case "magazineArticle":
+                    json = c.getString(R.string.template_magazineArticle);
+                    break;
+                case "manuscript":
+                    json = c.getString(R.string.template_manuscript);
+                    break;
+                case "map":
+                    json = c.getString(R.string.template_map);
+                    break;
+                case "newspaperArticle":
+                    json = c.getString(R.string.template_newspaperArticle);
+                    break;
+                case "note":
+                    json = c.getString(R.string.template_note);
+                    break;
+                case "patent":
+                    json = c.getString(R.string.template_patent);
+                    break;
+                case "podcast":
+                    json = c.getString(R.string.template_podcast);
+                    break;
+                case "presentation":
+                    json = c.getString(R.string.template_presentation);
+                    break;
+                case "radioBroadcast":
+                    json = c.getString(R.string.template_radioBroadcast);
+                    break;
+                case "report":
+                    json = c.getString(R.string.template_report);
+                    break;
+                case "statute":
+                    json = c.getString(R.string.template_statute);
+                    break;
+                case "tvBroadcast":
+                    json = c.getString(R.string.template_tvBroadcast);
+                    break;
+                case "thesis":
+                    json = c.getString(R.string.template_thesis);
+                    break;
+                case "videoRecording":
+                    json = c.getString(R.string.template_videoRecording);
+                    break;
+                case "webpage":
+                    json = c.getString(R.string.template_webpage);
+                    break;
+            }
             template = new JSONObject(json);
 
             JSONArray names = template.names();
@@ -1468,95 +1478,98 @@ public class Item {
 
     public static int sortValueForLabel(String s) {
         // First type, and the bare minimum...
-        if (s.equals("itemType"))
-            return 0;
-        if (s.equals("title"))
-            return 1;
-        if (s.equals("creators"))
-            return 2;
-        if (s.equals("date"))
-            return 3;
+        switch (s) {
+            case "itemType":
+                return 0;
+            case "title":
+                return 1;
+            case "creators":
+                return 2;
+            case "date":
+                return 3;
 
-        // Then container titles, with one value
-        if (s.equals("publicationTitle"))
-            return 5;
-        if (s.equals("blogTitle"))
-            return 5;
-        if (s.equals("bookTitle"))
-            return 5;
-        if (s.equals("dictionaryTitle"))
-            return 5;
-        if (s.equals("encyclopediaTitle"))
-            return 5;
-        if (s.equals("forumTitle"))
-            return 5;
-        if (s.equals("proceedingsTitle"))
-            return 5;
-        if (s.equals("programTitle"))
-            return 5;
-        if (s.equals("websiteTitle"))
-            return 5;
-        if (s.equals("meetingName"))
-            return 5;
 
-        // Abstracts
-        if (s.equals("abstractNote"))
-            return 10;
+            // Then container titles, with one value
+            case "publicationTitle":
+                return 5;
+            case "blogTitle":
+                return 5;
+            case "bookTitle":
+                return 5;
+            case "dictionaryTitle":
+                return 5;
+            case "encyclopediaTitle":
+                return 5;
+            case "forumTitle":
+                return 5;
+            case "proceedingsTitle":
+                return 5;
+            case "programTitle":
+                return 5;
+            case "websiteTitle":
+                return 5;
+            case "meetingName":
+                return 5;
 
-        // Publishing data
-        if (s.equals("publisher"))
-            return 12;
-        if (s.equals("place"))
-            return 13;
+            // Abstracts
+            case "abstractNote":
+                return 10;
 
-        // Series, publication numbers
-        if (s.equals("pages"))
-            return 14;
-        if (s.equals("numPages"))
-            return 16;
-        if (s.equals("series"))
-            return 16;
-        if (s.equals("seriesTitle"))
-            return 17;
-        if (s.equals("seriesText"))
-            return 18;
-        if (s.equals("volume"))
-            return 19;
-        if (s.equals("numberOfVolumes"))
-            return 20;
-        if (s.equals("issue"))
-            return 20;
-        if (s.equals("section"))
-            return 21;
-        if (s.equals("publicationNumber"))
-            return 22;
-        if (s.equals("edition"))
-            return 23;
+            // Publishing data
+            case "publisher":
+                return 12;
+            case "place":
+                return 13;
 
-        // Locators
-        if (s.equals("DOI"))
-            return 50;
-        if (s.equals("archive"))
-            return 51;
-        if (s.equals("archiveLocation"))
-            return 52;
-        if (s.equals("ISBN"))
-            return 53;
-        if (s.equals("ISSN"))
-            return 54;
-        if (s.equals("libraryCatalog"))
-            return 55;
-        if (s.equals("callNumber"))
-            return 56;
+            // Series, publication numbers
+            case "pages":
+                return 14;
+            case "numPages":
+                return 16;
+            case "series":
+                return 16;
+            case "seriesTitle":
+                return 17;
+            case "seriesText":
+                return 18;
+            case "volume":
+                return 19;
+            case "numberOfVolumes":
+                return 20;
+            case "issue":
+                return 20;
+            case "section":
+                return 21;
+            case "publicationNumber":
+                return 22;
+            case "edition":
+                return 23;
 
-        // Housekeeping and navigation, at the very end
-        if (s.equals("attachments"))
-            return 250;
-        if (s.equals("tags"))
-            return 251;
-        if (s.equals("related"))
-            return 252;
+            // Locators
+            case "DOI":
+                return 50;
+            case "archive":
+                return 51;
+            case "archiveLocation":
+                return 52;
+            case "ISBN":
+                return 53;
+            case "ISSN":
+                return 54;
+            case "libraryCatalog":
+                return 55;
+            case "callNumber":
+                return 56;
 
-        return 200;
+            // Housekeeping and navigation, at the very end
+            case "attachments":
+                return 250;
+            case "tags":
+                return 251;
+            case "related":
+                return 252;
+            default:
+                return 200;
+        }
     }
 }

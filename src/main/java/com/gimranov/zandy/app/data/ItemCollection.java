@@ -26,6 +26,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
 import com.gimranov.zandy.app.task.APIRequest;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Represents a Zotero collection of Item objects. Collections can
@@ -94,7 +95,8 @@ public class ItemCollection extends HashSet<Item> {
      * <p>
      * When fromAPI is not true, queues a collection membership
      * request for the server as well.
-     *  @param item
+     *
+     * @param item
      * @param fromAPI False for collection memberships we receive from the server
      * @param db
      */
@@ -318,20 +320,20 @@ public class ItemCollection extends HashSet<Item> {
      */
     public void saveChildren(Database db) {
         /* The size is about to be the size of the internal ArrayList, so
-		 * set it now so it'll be propagated to the database if the collection
-		 * is new.
-		 * 
-		 * Save it now-- to fix the size, and to make sure we have a database ID.
-		 */
+         * set it now so it'll be propagated to the database if the collection
+         * is new.
+         *
+         * Save it now-- to fix the size, and to make sure we have a database ID.
+         */
 
         loadChildren(db);
 
         Log.d(TAG, "Collection has dbid: " + dbId);
 
-		/* The saving is implemented by removing all the records for this collection
-		 * and saving them anew. This is a risky way to do things. One approach is to
-		 * wrap the operation in a transaction, or we could try to keep track of changes.
-		 */
+        /* The saving is implemented by removing all the records for this collection
+         * and saving them anew. This is a risky way to do things. One approach is to
+         * wrap the operation in a transaction, or we could try to keep track of changes.
+         */
 
         HashSet<String> keys = new HashSet<>();
         for (Item i : this) {
@@ -481,6 +483,7 @@ public class ItemCollection extends HashSet<Item> {
         ArrayList<ItemCollection> collections = new ArrayList<ItemCollection>();
         ItemCollection coll;
         String[] cols = Database.COLLCOLS;
+
         Cursor cur = db.query("collections", cols, "", null, null, null, "collection_name", null);
 
         if (cur == null) {
@@ -488,14 +491,7 @@ public class ItemCollection extends HashSet<Item> {
             return collections;
         }
 
-        do {
-            Log.d(TAG, "Adding collection to collection list");
-            coll = load(cur);
-            collections.add(coll);
-        } while (cur.moveToNext());
-        cur.close();
-
-        return collections;
+        return getItemCollections(collections, cur);
     }
 
     /**
@@ -504,7 +500,6 @@ public class ItemCollection extends HashSet<Item> {
      */
     public static ArrayList<ItemCollection> getCollections(Item i, Database db) {
         ArrayList<ItemCollection> collections = new ArrayList<ItemCollection>();
-        ItemCollection coll;
         String[] args = {i.dbId};
         Cursor cursor = db.rawQuery("SELECT collection_name, collection_parent," +
                         " etag, dirty, collections._id, collection_key, collection_size," +
@@ -518,6 +513,12 @@ public class ItemCollection extends HashSet<Item> {
             return collections;
         }
 
+        return getItemCollections(collections, cursor);
+    }
+
+    @NotNull
+    private static ArrayList<ItemCollection> getItemCollections(ArrayList<ItemCollection> collections, Cursor cursor) {
+        ItemCollection coll;
         do {
             Log.d(TAG, "Adding collection to collection list");
             coll = load(cursor);

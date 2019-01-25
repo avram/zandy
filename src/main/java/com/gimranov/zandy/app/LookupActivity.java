@@ -106,6 +106,7 @@ public class LookupActivity extends Activity implements OnClickListener {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        handler.removeCallbacksAndMessages(null);
     }
 
     @Override

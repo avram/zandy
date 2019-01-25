@@ -182,7 +182,6 @@ public class CollectionActivity extends ListActivity {
                             Toast.LENGTH_SHORT).show();
                     return;
                 }
-                return;
             }
         });
     }
@@ -203,6 +202,7 @@ public class CollectionActivity extends ListActivity {
         if (cur != null) cur.close();
         if (db != null) db.close();
         super.onDestroy();
+        handler.removeCallbacksAndMessages(null);
     }
 
     @Override

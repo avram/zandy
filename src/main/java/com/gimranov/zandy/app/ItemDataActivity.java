@@ -141,7 +141,7 @@ public class ItemDataActivity extends ExpandableListActivity {
                     showDialog(DIALOG_CONFIRM_NAVIGATE);
                     return true;
                 } else if ("DOI".equals(row.getString("label"))) {
-                    String url = "http://dx.doi.org/" + Uri.encode(row.getString("content"));
+                    String url = "https://doi.org/" + Uri.encode(row.getString("content"));
                     row.putString("url", url);
                     removeDialog(DIALOG_CONFIRM_NAVIGATE);
                     ItemDataActivity.this.b = row;
@@ -196,7 +196,6 @@ public class ItemDataActivity extends ExpandableListActivity {
                 if (type == 0) {
                     // If we have a long click on an entry, we'll provide a way of editing it
                     BundleListAdapter adapter = (BundleListAdapter) ((ExpandableListView) info.targetView.getParent()).getExpandableListAdapter();
-                    ;
                     Bundle row = adapter.getGroup(group);
                     // Show the right type of dialog for the row in question
                     if ("itemType".equals(row.getString("label"))) {

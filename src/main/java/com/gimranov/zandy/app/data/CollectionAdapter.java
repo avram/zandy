@@ -64,10 +64,10 @@ public class CollectionAdapter extends ResourceCursorAdapter {
 		ItemCollection collection = ItemCollection.load(cursor);
 		tvTitle.setText(collection.getTitle());
 		StringBuilder sb = new StringBuilder();
-		sb.append(collection.getSize() + " items");
-		sb.append("; " + collection.getSubcollections(db).size() + " subcollections");
+		sb.append(collection.getSize()).append(" items");
+		sb.append("; ").append(collection.getSubcollections(db).size()).append(" subcollections");
 		if(!collection.dirty.equals(APIRequest.API_CLEAN))
-			sb.append("; "+collection.dirty);
+			sb.append("; ").append(collection.dirty);
 		tvInfo.setText(sb.toString());
 		db.close();
 	}

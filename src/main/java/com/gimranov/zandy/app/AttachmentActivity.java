@@ -269,6 +269,8 @@ public class AttachmentActivity extends ListActivity {
         }
 
         super.onDestroy();
+        handler.removeCallbacksAndMessages(null);
+
     }
 
     @Override

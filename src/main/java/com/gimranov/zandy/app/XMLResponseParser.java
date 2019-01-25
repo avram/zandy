@@ -269,7 +269,6 @@ public class XMLResponseParser extends DefaultHandler {
                     Log.d(TAG, "Status: " + collection.dirty + " for " + collection.getTitle());
                     collection.save(db);
                     Log.d(TAG, "Done parsing a collection entry.");
-                    return;
                 }
             }
         });
