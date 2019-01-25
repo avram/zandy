@@ -97,17 +97,7 @@ android {
     testOptions {
         execution 'ANDROID_TEST_ORCHESTRATOR'
     }
-
-    flavorDimensions "store"
-
-    productFlavors {
-        amazon {
-            dimension "store"
-        }
-        google {
-            dimension "store"
-        }
-    }
+    
 
     signingConfigs {
         release {
