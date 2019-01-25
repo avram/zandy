@@ -25,22 +25,22 @@ class ItemAdapter(val database: Database,
     }
 
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ItemViewHolder {
-        val layoutInflater = LayoutInflater.from(parent!!.context)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
+        val layoutInflater = LayoutInflater.from(parent.context)
         val cardBinding = ItemCardBinding.inflate(layoutInflater, parent, false)
         return ItemViewHolder(cardBinding, onItemNavigate)
     }
 
-    override fun onBindViewHolder(holder: ItemViewHolder?, position: Int) {
+    override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         if (cursor?.moveToPosition(position) != true) {
             return
         }
 
-        holder?.bind(Item.load(cursor))
+        holder.bind(Item.load(cursor))
     }
 
-    override fun onViewRecycled(holder: ItemViewHolder?) {
-        holder?.unbind()
+    override fun onViewRecycled(holder: ItemViewHolder) {
+        holder.unbind()
     }
 
     override fun getItemCount(): Int {

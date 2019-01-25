@@ -42,10 +42,10 @@ public class SettingsActivity extends PreferenceActivity implements OnClickListe
         addPreferencesFromResource(R.xml.settings);
         setContentView(R.layout.preferences);
 
-        Button requestButton = (Button) findViewById(R.id.requestQueue);
+        Button requestButton = findViewById(R.id.requestQueue);
         requestButton.setOnClickListener(this);
 
-        Button resetButton = (Button) findViewById(R.id.resetDatabase);
+        Button resetButton = findViewById(R.id.resetDatabase);
         resetButton.setOnClickListener(this);
     }
 

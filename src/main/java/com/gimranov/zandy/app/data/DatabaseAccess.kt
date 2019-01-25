@@ -4,7 +4,7 @@ import android.database.Cursor
 import com.gimranov.zandy.app.Query
 
 object DatabaseAccess {
-    val TAG = this.javaClass.simpleName!!
+    val TAG = this.javaClass.simpleName
 
     private val sortOptions = arrayOf("item_year, item_title COLLATE NOCASE",
             "item_creator COLLATE NOCASE, item_year",

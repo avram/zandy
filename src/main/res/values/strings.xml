@@ -78,7 +78,9 @@
     <string name="attachment_intent_failed">No application available to open files of type %s.</string>
     <string name="attachment_intent_failed_for_uri">No application available to open URI: %s</string>
     <string name="attachment_delete_confirm">Delete this attachment?</string>
-    <string name="attachment_note_warning">Changes to notes on attachments cannot currently be synced, due to limitations in the Zotero API.</string>
+    <string name="attachment_note_warning">Changes to notes on attachments cannot currently be synced, due to
+        limitations in the Zotero API.
+    </string>
     <string name="attachments_for_item">Attachments for %s</string>
     <!-- Tags -->
     <string name="tags_for_item">Tags for %s</string>
@@ -92,7 +94,9 @@
     <string name="collections">Collections</string>
     <string name="collections_for_item">Collections containing %s</string>
     <string name="collection_cant_open">Can\'t open %s</string>
-    <string name="collection_no_subcollections">No subcollections for collection. To view items in the collection, touch and hold the collection.</string>
+    <string name="collection_no_subcollections">No subcollections for collection. To view items in the collection, touch
+        and hold the collection.
+    </string>
     <string name="collection_empty">Collection is empty, requesting update.</string>
     <string name="collection_membership_detail">Collection options</string>
     <string name="collection_remove_item">Remove item</string>
@@ -117,17 +121,29 @@
     <string name="settings_webdav_enabled">Enable WebDAV</string>
     <string name="settings_webdav_enabled_desc">Check to have Zandy look for attachments on a WebDAV host</string>
     <string name="settings_webdav_path">Base URL</string>
-    <string name="settings_webdav_path_desc">Server and path for your WebDAV setup, including the final /zotero, like this: https://www.example.com/users/bobsmith/zotero</string>
+    <string name="settings_webdav_path_desc">Server and path for your WebDAV setup, including the final /zotero, like
+        this: https://www.example.com/users/bobsmith/zotero
+    </string>
     <string name="settings_webdav_username">Username</string>
-    <string name="settings_webdav_username_desc">Username for WebDAV server. This is separate from your Zotero username.</string>
+    <string name="settings_webdav_username_desc">Username for WebDAV server. This is separate from your Zotero
+        username.
+    </string>
     <string name="settings_webdav_password">Password</string>
-    <string name="settings_webdav_password_desc">Password for WebDAV server. This is separate from your Zotero password.</string>
+    <string name="settings_webdav_password_desc">Password for WebDAV server. This is separate from your Zotero
+        password.
+    </string>
     <string name="settings_reset_database">Clear local database</string>
-    <string name="settings_reset_database_warning">Are you sure you want to erase all local data? This cannot be undone.</string>
+    <string name="settings_reset_database_warning">Are you sure you want to erase all local data? This cannot be
+        undone.
+    </string>
     <string name="settings_read_only">Read-Only Mode</string>
-    <string name="settings_read_only_desc">Check to prevent Zandy from making modifications to data on the Zotero servers.</string>
+    <string name="settings_read_only_desc">Check to prevent Zandy from making modifications to data on the Zotero
+        servers.
+    </string>
     <string name="settings_webdav_ssl_override">Override SSL</string>
-    <string name="settings_webdav_ssl_override_desc">Check to skip SSL certificate checking, for servers using self-signed SSL certificates.</string>
+    <string name="settings_webdav_ssl_override_desc">Check to skip SSL certificate checking, for servers using
+        self-signed SSL certificates.
+    </string>
     <string name="settings_test_connections">Test Zotero and WebDAV connections</string>
 
     <!-- Zotero terms -->

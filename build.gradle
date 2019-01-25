@@ -1,17 +1,13 @@
 buildscript {
-    ext.kotlin_version = '1.1.60'
     repositories {
-        jcenter()
-        maven { url 'https://maven.fabric.io/public' }
         google()
+        jcenter()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.0-alpha04'
-        //noinspection GradleDynamicVersion
-        classpath 'io.fabric.tools:gradle:1.+'
+        classpath 'com.android.tools.build:gradle:3.5.0-alpha02'
         //noinspection DifferentKotlinGradleVersion
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.20"
     }
 }
 
@@ -23,16 +19,13 @@ allprojects {
 
 
 repositories {
-    mavenLocal()
-    mavenCentral()
-    maven { url 'https://maven.fabric.io/public' }
-    maven { url 'https://jitpack.io' }
     google()
+    jcenter()
+    maven { url 'https://jitpack.io' }
 }
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'io.fabric'
 apply plugin: 'org.jetbrains.kotlin.android.extensions'
 apply plugin: 'kotlin-kapt'
 
@@ -40,13 +33,9 @@ androidExtensions {
     experimental = true
 }
 
-
 dependencies {
     implementation('oauth.signpost:signpost-commonshttp4:1.2.1.2') {
         exclude group: 'org.apache.httpcomponents'
-    }
-    implementation('com.crashlytics.sdk.android:crashlytics:2.6.8@aar') {
-        transitive = true;
     }
     implementation 'commons-io:commons-io:2.5'
     implementation 'com.squareup:otto:1.3.4'
@@ -54,26 +43,24 @@ dependencies {
 
     implementation 'com.github.blocoio:faker:1.0.1'
 
-    implementation 'com.android.support:support-annotations:27.0.1'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    implementation 'com.android.support:support-annotations:28.0.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.20"
 
-    implementation 'com.android.support:support-v4:27.0.1'
-    implementation 'com.android.support:design:27.0.1'
-    implementation 'com.android.support:appcompat-v7:27.0.1'
-    implementation 'com.android.support:recyclerview-v7:27.0.1'
-    implementation 'com.android.support:cardview-v7:27.0.1'
-    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-
-    kapt 'com.android.databinding:compiler:3.1.0-alpha04'
+    implementation 'com.android.support:support-v4:28.0.0'
+    implementation 'com.android.support:design:28.0.0'
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support:recyclerview-v7:28.0.0'
+    implementation 'com.android.support:cardview-v7:28.0.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
 
     testImplementation 'junit:junit:4.12'
 
     // Required for instrumented tests
-    androidTestImplementation 'com.android.support:support-annotations:27.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-intents:3.0.1'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestUtil 'com.android.support.test:orchestrator:1.0.1'
+    androidTestImplementation 'com.android.support:support-annotations:28.0.0'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-intents:3.0.2'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestUtil 'com.android.support.test:orchestrator:1.0.2'
 
 }
 
@@ -86,8 +73,8 @@ def testProperties = new Properties()
 testProperties.load(new FileInputStream(testPropertiesFile))
 
 android {
-    compileSdkVersion 27
-    buildToolsVersion "27.0.1"
+    compileSdkVersion 28
+    buildToolsVersion "28.0.3"
 
     useLibrary 'org.apache.http.legacy'
 
@@ -100,7 +87,7 @@ android {
         versionName "1.4.5.1"
 
         minSdkVersion 14
-        targetSdkVersion 27
+        targetSdkVersion 28
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -149,10 +136,6 @@ android {
     packagingOptions {
         exclude 'META-INF/LICENSE.txt'
     }
-}
-
-task wrapper(type: Wrapper) {
-    gradleVersion = '4.2.1'
 }
 
 apply plugin: 'kotlin-android-extensions'

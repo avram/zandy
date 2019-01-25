@@ -97,10 +97,6 @@
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:exported="true" />
 
-        <meta-data
-            android:name="io.fabric.ApiKey"
-            android:value="d02b3d0416bed4f24247e9114e295b0f38ae0455" />
-
     </application>
 
 </manifest>

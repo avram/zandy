@@ -12,6 +12,7 @@ import kotlinx.android.synthetic.main.collection_card.view.*
 class CollectionAdapter(val database: Database,
                         itemListingRule: ItemListingRule,
                         private val onNavigate: (ItemCollection, ItemAction) -> Unit) : RecyclerView.Adapter<CollectionAdapter.ItemCollectionViewHolder>() {
+
     val cursor = when (itemListingRule) {
         is AllItems -> DatabaseAccess.collections(database)
         is Children -> when (itemListingRule.parent) {
@@ -21,22 +22,22 @@ class CollectionAdapter(val database: Database,
         is SearchResults -> TODO("No collection searches")
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): ItemCollectionViewHolder {
-        val layoutInflater = LayoutInflater.from(parent!!.context)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemCollectionViewHolder {
+        val layoutInflater = LayoutInflater.from(parent.context)
         val cardBinding = CollectionCardBinding.inflate(layoutInflater, parent, false)
 
         return ItemCollectionViewHolder(cardBinding, onNavigate)
     }
 
-    override fun onBindViewHolder(holder: ItemCollectionViewHolder?, position: Int) {
+    override fun onBindViewHolder(holder: ItemCollectionViewHolder, position: Int) {
         if (cursor?.moveToPosition(position) != true) {
             return
         }
 
-        holder?.bind(ItemCollection.load(cursor))
+        holder.bind(ItemCollection.load(cursor))
     }
 
-    override fun onViewRecycled(holder: ItemCollectionViewHolder?) {
+    override fun onViewRecycled(holder: ItemCollectionViewHolder) {
     }
 
     override fun getItemCount(): Int {
