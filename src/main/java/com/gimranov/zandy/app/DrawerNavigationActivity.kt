@@ -17,17 +17,32 @@ import kotlinx.android.synthetic.main.content_drawer_navigation.*
 
 class DrawerNavigationActivity : AppCompatActivity() {
 
+    private val collectionKey = "com.gimranov.zandy.app.collectionKey"
+    private val database = Database(this)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_drawer_navigation)
         setSupportActionBar(toolbar)
+    }
 
-        val database = Database(this)
+    override fun onResume() {
+        super.onResume()
 
-        // TODO Find a way to make this actual reflect the desired context
-        val itemListingRule = AllItems
+        val itemListingRule = intent?.extras?.getString(collectionKey)?.let {
+            Children(ItemCollection.load(it, database), true)
+        } ?: AllItems
 
-        val itemAdapter = ItemAdapter(database, itemListingRule, { item: Item, itemAction: ItemAction ->
+        title = when (itemListingRule::class) {
+            Children::class -> {
+                (itemListingRule as Children).parent?.title ?: this.getString(R.string.all_items)
+            }
+            else -> {
+                this.getString(R.string.all_items)
+            }
+        }
+
+        val itemAdapter = ItemAdapter(database, itemListingRule) { item: Item, itemAction: ItemAction ->
             run {
                 when (itemAction) {
                     ItemAction.EDIT -> {
@@ -44,21 +59,21 @@ class DrawerNavigationActivity : AppCompatActivity() {
                     ItemAction.VIEW -> TODO()
                 }
             }
-        })
+        }
 
-        val collectionAdapter = CollectionAdapter(database, itemListingRule, { collection: ItemCollection, itemAction: ItemAction ->
+        val collectionAdapter = CollectionAdapter(database, itemListingRule) { collection: ItemCollection, itemAction: ItemAction ->
             run {
                 when (itemAction) {
                     ItemAction.VIEW -> {
                         val i = Intent(baseContext, DrawerNavigationActivity::class.java)
-                        i.putExtra("com.gimranov.zandy.app.collectionKey", collection.key)
+                        i.putExtra(collectionKey, collection.key)
                         startActivity(i)
                     }
                     ItemAction.EDIT -> TODO()
                     ItemAction.ORGANIZE -> TODO()
                 }
             }
-        })
+        }
 
         navigation_drawer_sidebar_recycler.adapter = collectionAdapter
         navigation_drawer_sidebar_recycler.setHasFixedSize(true)

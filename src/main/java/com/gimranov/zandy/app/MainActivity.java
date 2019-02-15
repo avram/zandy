@@ -84,6 +84,7 @@ public class MainActivity extends Activity implements OnClickListener {
         // Disable death due to exposing file:// URIs
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             try {
+                //noinspection JavaReflectionMemberAccess
                 Method m = StrictMode.class.getMethod("disableDeathOnFileUriExposure");
                 m.invoke(null);
             } catch (Exception e) {

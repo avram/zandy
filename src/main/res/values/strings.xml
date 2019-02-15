@@ -160,5 +160,6 @@
     <string name="action_settings">Settings</string>
     <string name="card_item_subtitle_format">%s (%s)</string>
     <string name="organize_button_label">Organize</string>
+    <string name="no_items_to_show_try_syncing_or_create_some">No items to show. Try syncing, or create some.</string>
 
 </resources>
