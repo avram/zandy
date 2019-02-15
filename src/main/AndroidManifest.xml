@@ -2,25 +2,24 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.gimranov.zandy.app">
 
-    <uses-sdk
-        android:minSdkVersion="14"
-        android:targetSdkVersion="26" />
-
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
-        android:name="com.gimranov.zandy.app.Application"
-        android:icon="@drawable/zandy72"
-        android:label="@string/app_name"
+        android:name=".Application"
         android:allowBackup="true"
-        android:fullBackupContent="true">
+        android:fullBackupContent="true"
+        android:icon="@drawable/zandy72"
+        android:label="@string/app_name">
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
@@ -33,7 +32,9 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
@@ -48,6 +49,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
+
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
@@ -88,9 +90,13 @@
             android:name=".NoteActivity"
             android:label="@string/app_name"
             android:launchMode="standard" />
-        <meta-data
-            android:name="io.fabric.ApiKey"
-            android:value="d02b3d0416bed4f24247e9114e295b0f38ae0455"
-            />
+
+        <activity
+            android:name=".DrawerNavigationActivity"
+            android:label="@string/all_items"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:exported="true" />
+
     </application>
+
 </manifest>

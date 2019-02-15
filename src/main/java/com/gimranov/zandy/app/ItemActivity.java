@@ -41,6 +41,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gimranov.zandy.app.data.Database;
+import com.gimranov.zandy.app.data.DatabaseAccess;
 import com.gimranov.zandy.app.data.Item;
 import com.gimranov.zandy.app.data.ItemAdapter;
 import com.gimranov.zandy.app.data.ItemCollection;
@@ -549,36 +550,15 @@ public class ItemActivity extends ListActivity {
 
     /* Handling the ListView and keeping it up to date */
     public Cursor getCursor() {
-        Cursor cursor = db.query("items", Database.ITEMCOLS, null, null, null, null, this.sortBy, null);
-        if (cursor == null) {
-            Log.e(TAG, "cursor is null");
-        }
-        return cursor;
+        return DatabaseAccess.INSTANCE.items(db, (ItemCollection) null, sortBy);
     }
 
     public Cursor getCursor(ItemCollection parent) {
-        String[] args = {parent.dbId};
-        Cursor cursor = db.rawQuery("SELECT item_title, item_type, item_content, etag, dirty, " +
-                "items._id, item_key, item_year, item_creator, timestamp, item_children " +
-                " FROM items, itemtocollections WHERE items._id = item_id AND collection_id=? ORDER BY " + this.sortBy,
-                args);
-        if (cursor == null) {
-            Log.e(TAG, "cursor is null");
-        }
-        return cursor;
+        return DatabaseAccess.INSTANCE.items(db, parent, sortBy);
     }
 
     public Cursor getCursor(String query) {
-        String[] args = {"%" + query + "%", "%" + query + "%"};
-        Cursor cursor = db.rawQuery("SELECT item_title, item_type, item_content, etag, dirty, " +
-                "_id, item_key, item_year, item_creator, timestamp, item_children " +
-                " FROM items WHERE item_title LIKE ? OR item_creator LIKE ?" +
-                " ORDER BY " + this.sortBy,
-                args);
-        if (cursor == null) {
-            Log.e(TAG, "cursor is null");
-        }
-        return cursor;
+        return DatabaseAccess.INSTANCE.items(db, query, sortBy);
     }
 
     public Cursor getCursor(Query query) {

@@ -52,7 +52,6 @@ import android.widget.TextView;
 import android.widget.TextView.BufferType;
 import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
 import com.gimranov.zandy.app.data.Attachment;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
@@ -122,7 +121,7 @@ public class AttachmentActivity extends ListActivity {
         tmpFiles = new ArrayList<File>();
 
         db = new Database(this);
-        
+
         /* Get the incoming data from the calling activity */
         final String itemKey = getIntent().getStringExtra("com.gimranov.zandy.app.itemKey");
         Item item = Item.load(itemKey, db);
@@ -137,8 +136,8 @@ public class AttachmentActivity extends ListActivity {
         this.setTitle(getResources().getString(R.string.attachments_for_item, item.getTitle()));
 
         ArrayList<Attachment> rows = Attachment.forItem(item, db);
-        
-        /* 
+
+        /*
          * We use the standard ArrayAdapter, passing in our data as a Attachment.
          * Since it's no longer a simple TextView, we need to override getView, but
          * we can do that anonymously.
@@ -569,7 +568,7 @@ public class AttachmentActivity extends ListActivity {
                 Log.d(TAG, "download beginning");
                 Log.d(TAG, "download url:" + url.toString());
                 Log.d(TAG, "downloaded file name:" + file.getPath());
-                                
+
                 /* Open a connection to that URL. */
                 URLConnection ucon = url.openConnection();
                 ucon.setRequestProperty("User-Agent", "Mozilla/5.0 ( compatible ) ");
@@ -614,7 +613,7 @@ public class AttachmentActivity extends ListActivity {
                     }
                 }
 
-    			/* Save to temporary directory for WebDAV */
+                /* Save to temporary directory for WebDAV */
                 if ("webdav".equals(mode)) {
                     File tmpFile = File.createTempFile("zandy", ".zip", StorageManager.getCacheDirectory(AttachmentActivity.this));
 
@@ -673,7 +672,7 @@ public class AttachmentActivity extends ListActivity {
                                 Log.d(TAG, "Skipping file: " + name);
                             }
                         } catch (IllegalArgumentException | NegativeArraySizeException e) {
-                            Crashlytics.logException(new Throwable("b64 " + name64, e));
+                            Log.e(TAG, "b64 " + name64, e);
                         }
                     } while (entries.hasMoreElements());
 
@@ -691,7 +690,6 @@ public class AttachmentActivity extends ListActivity {
                         + " sec");
             } catch (IOException e) {
                 Log.e(TAG, "Error: ", e);
-                Crashlytics.logException(e);
                 toastError(R.string.attachment_download_failed, e.getMessage());
             }
 

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   This file is part of Zandy.
   
   Zandy is free software: you can redistribute it and/or modify
@@ -73,62 +72,78 @@
     <string name="attachment_downloading">Downloading attachment for %s</string>
     <string name="attachment_unzipping">Unzipping&#8230;</string>
     <string name="attachment_no_download_url">No download URL for attachment. Try syncing again.</string>
-	<string name="attachment_download_initiated">File download initiated.</string>
+    <string name="attachment_download_initiated">File download initiated.</string>
     <string name="attachment_download_failed">File download may have failed; try again.</string>
     <string name="attachment_download_failed_cant_write">Couldn\'t write downloaded file.</string>
-	<string name="attachment_intent_failed">No application available to open files of type %s.</string>
-	<string name="attachment_intent_failed_for_uri">No application available to open URI: %s</string>
+    <string name="attachment_intent_failed">No application available to open files of type %s.</string>
+    <string name="attachment_intent_failed_for_uri">No application available to open URI: %s</string>
     <string name="attachment_delete_confirm">Delete this attachment?</string>
-    <string name="attachment_note_warning">Changes to notes on attachments cannot currently be synced, due to limitations in the Zotero API.</string>
+    <string name="attachment_note_warning">Changes to notes on attachments cannot currently be synced, due to
+        limitations in the Zotero API.
+    </string>
     <string name="attachments_for_item">Attachments for %s</string>
-	<!-- Tags -->
-	<string name="tags_for_item">Tags for %s</string>
-	<string name="tag_auto">Auto</string>
-	<string name="tag_user">User</string>
-	<string name="tag_edit">Edit tag</string>
-	<string name="tag_view_confirm">View items for this tag?</string>
- 	<string name="tag_view">View</string>
- 	<string name="tag_viewing_items">Tag: %s</string>
-	<!-- Collections -->
-	<string name="collections">Collections</string>
-	<string name="collections_for_item">Collections containing %s</string>
-	<string name="collection_cant_open">Can\'t open %s</string>
-	<string name="collection_no_subcollections">No subcollections for collection. To view items in the collection, touch and hold the collection.</string>
-	<string name="collection_empty">Collection is empty, requesting update.</string>
-	<string name="collection_membership_detail">Collection options</string>
-	<string name="collection_remove_item">Remove item</string>
-	<!-- Syncing -->
-	<string name="sync_log_in_first">Log in to sync</string>
-	<string name="sync_started">Started syncing&#8230;</string>
-	<string name="sync_collection">Started syncing; refreshing collection list</string>
-	<string name="sync_error">Synchronization error</string>
-	<string name="sync_complete">Synchronization complete</string>
-	<string name="sync_queued_more">Added %1$d requests to queue</string>
-	<string name="sync_no_queued">No pending requests.</string>
-	<string name="sync_pending_requests">Pending Requests</string>
-		<!-- Settings -->
-	<string name="settings_basic">Basic</string>
-	<string name="settings_aggressive_syncing">Aggressive Syncing</string>
-	<string name="settings_aggressive_syncing_desc">Check to have Zandy attempt to keep all collections synced</string>
-	<string name="settings_user_id">User ID</string>
-	<string name="settings_user_id_desc">This is the numeric user ID for your account at Zotero.org</string>
-	<string name="settings_api_key">API Key</string>
-	<string name="settings_api_key_desc">This is the API key to access your account at Zotero.org</string>
-	<string name="settings_webdav">WebDAV</string>
-	<string name="settings_webdav_enabled">Enable WebDAV</string>
-	<string name="settings_webdav_enabled_desc">Check to have Zandy look for attachments on a WebDAV host</string>
-	<string name="settings_webdav_path">Base URL</string>
-	<string name="settings_webdav_path_desc">Server and path for your WebDAV setup, including the final /zotero, like this: https://www.example.com/users/bobsmith/zotero</string>
-	<string name="settings_webdav_username">Username</string>
-	<string name="settings_webdav_username_desc">Username for WebDAV server. This is separate from your Zotero username.</string>
-	<string name="settings_webdav_password">Password</string>
-	<string name="settings_webdav_password_desc">Password for WebDAV server. This is separate from your Zotero password.</string>
-	<string name="settings_reset_database">Clear local database</string>
-	<string name="settings_reset_database_warning">Are you sure you want to erase all local data? This cannot be undone.</string>
+    <!-- Tags -->
+    <string name="tags_for_item">Tags for %s</string>
+    <string name="tag_auto">Auto</string>
+    <string name="tag_user">User</string>
+    <string name="tag_edit">Edit tag</string>
+    <string name="tag_view_confirm">View items for this tag?</string>
+    <string name="tag_view">View</string>
+    <string name="tag_viewing_items">Tag: %s</string>
+    <!-- Collections -->
+    <string name="collections">Collections</string>
+    <string name="collections_for_item">Collections containing %s</string>
+    <string name="collection_cant_open">Can\'t open %s</string>
+    <string name="collection_no_subcollections">No subcollections for collection. To view items in the collection, touch
+        and hold the collection.
+    </string>
+    <string name="collection_empty">Collection is empty, requesting update.</string>
+    <string name="collection_membership_detail">Collection options</string>
+    <string name="collection_remove_item">Remove item</string>
+    <!-- Syncing -->
+    <string name="sync_log_in_first">Log in to sync</string>
+    <string name="sync_started">Started syncing&#8230;</string>
+    <string name="sync_collection">Started syncing; refreshing collection list</string>
+    <string name="sync_error">Synchronization error</string>
+    <string name="sync_complete">Synchronization complete</string>
+    <string name="sync_queued_more">Added %1$d requests to queue</string>
+    <string name="sync_no_queued">No pending requests.</string>
+    <string name="sync_pending_requests">Pending Requests</string>
+    <!-- Settings -->
+    <string name="settings_basic">Basic</string>
+    <string name="settings_aggressive_syncing">Aggressive Syncing</string>
+    <string name="settings_aggressive_syncing_desc">Check to have Zandy attempt to keep all collections synced</string>
+    <string name="settings_user_id">User ID</string>
+    <string name="settings_user_id_desc">This is the numeric user ID for your account at Zotero.org</string>
+    <string name="settings_api_key">API Key</string>
+    <string name="settings_api_key_desc">This is the API key to access your account at Zotero.org</string>
+    <string name="settings_webdav">WebDAV</string>
+    <string name="settings_webdav_enabled">Enable WebDAV</string>
+    <string name="settings_webdav_enabled_desc">Check to have Zandy look for attachments on a WebDAV host</string>
+    <string name="settings_webdav_path">Base URL</string>
+    <string name="settings_webdav_path_desc">Server and path for your WebDAV setup, including the final /zotero, like
+        this: https://www.example.com/users/bobsmith/zotero
+    </string>
+    <string name="settings_webdav_username">Username</string>
+    <string name="settings_webdav_username_desc">Username for WebDAV server. This is separate from your Zotero
+        username.
+    </string>
+    <string name="settings_webdav_password">Password</string>
+    <string name="settings_webdav_password_desc">Password for WebDAV server. This is separate from your Zotero
+        password.
+    </string>
+    <string name="settings_reset_database">Clear local database</string>
+    <string name="settings_reset_database_warning">Are you sure you want to erase all local data? This cannot be
+        undone.
+    </string>
     <string name="settings_read_only">Read-Only Mode</string>
-    <string name="settings_read_only_desc">Check to prevent Zandy from making modifications to data on the Zotero servers.</string>
+    <string name="settings_read_only_desc">Check to prevent Zandy from making modifications to data on the Zotero
+        servers.
+    </string>
     <string name="settings_webdav_ssl_override">Override SSL</string>
-    <string name="settings_webdav_ssl_override_desc">Check to skip SSL certificate checking, for servers using self-signed SSL certificates.</string>
+    <string name="settings_webdav_ssl_override_desc">Check to skip SSL certificate checking, for servers using
+        self-signed SSL certificates.
+    </string>
     <string name="settings_test_connections">Test Zotero and WebDAV connections</string>
 
     <!-- Zotero terms -->
@@ -136,6 +151,15 @@
     <string name="note_for_item">Note for %s</string>
     <string name="note_edit">Edit note</string>
 
-   <string name="menu_edit">Edit</string>
+    <string name="menu_edit">Edit</string>
+    <string name="title_activity_drawer_navigation">DrawerNavigationActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="card_item_subtitle_format">%s (%s)</string>
+    <string name="organize_button_label">Organize</string>
+    <string name="no_items_to_show_try_syncing_or_create_some">No items to show. Try syncing, or create some.</string>
 
 </resources>

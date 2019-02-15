@@ -16,8 +16,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static android.support.test.InstrumentationRegistry.getTargetContext;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
+import static junit.framework.TestCase.assertTrue;
+import static junit.framework.TestCase.fail;
+
 
 @RunWith(AndroidJUnit4.class)
 @SmallTest
@@ -38,7 +39,7 @@ public class ApiTest {
 	private static final String TEST_MISSING_ITEM = "ZZZZZZZZ";
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		mContext = getTargetContext();
 		mDb = new Database(mContext);
 		

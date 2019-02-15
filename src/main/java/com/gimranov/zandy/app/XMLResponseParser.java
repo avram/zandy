@@ -24,7 +24,6 @@ import android.sax.StartElementListener;
 import android.util.Log;
 import android.util.Xml;
 
-import com.crashlytics.android.Crashlytics;
 import com.gimranov.zandy.app.data.Attachment;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
@@ -386,7 +385,6 @@ public class XMLResponseParser extends DefaultHandler {
             db.close();
         } catch (Exception e) {
             Log.e(TAG, "exception loading content", e);
-            Crashlytics.logException(new Exception("Exception parsing data", e));
         }
     }
 }

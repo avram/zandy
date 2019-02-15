@@ -40,7 +40,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.data.Item;
 import com.gimranov.zandy.app.data.ItemAdapter;
@@ -52,7 +51,6 @@ import com.squareup.otto.Subscribe;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-import io.fabric.sdk.android.Fabric;
 import oauth.signpost.OAuthProvider;
 import oauth.signpost.basic.DefaultOAuthProvider;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
@@ -82,15 +80,15 @@ public class MainActivity extends Activity implements OnClickListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Fabric.with(this, new Crashlytics());
 
         // Disable death due to exposing file:// URIs
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             try {
+                //noinspection JavaReflectionMemberAccess
                 Method m = StrictMode.class.getMethod("disableDeathOnFileUriExposure");
                 m.invoke(null);
             } catch (Exception e) {
-                Crashlytics.getInstance().core.logException(e);
+                Log.e(TAG, "Error disabling file uri exposure issue", e);
             }
         }
 
@@ -278,10 +276,10 @@ public class MainActivity extends Activity implements OnClickListener {
             return;
         }
 
-		/*
-		 * It's possible we've lost these to garbage collection, so we
-		 * reinstantiate them if they turn out to be null at this point.
-		 */
+        /*
+         * It's possible we've lost these to garbage collection, so we
+         * reinstantiate them if they turn out to be null at this point.
+         */
         if (this.httpOAuthConsumer == null)
             this.httpOAuthConsumer = new CommonsHttpOAuthConsumer(
                     ServerCredentials.CONSUMERKEY,
@@ -292,29 +290,29 @@ public class MainActivity extends Activity implements OnClickListener {
                     ServerCredentials.OAUTHACCESS,
                     ServerCredentials.OAUTHAUTHORIZE);
 
-		/*
-		 * Also double-check that intent isn't null, because something here
-		 * caused a NullPointerException for a user.
-		 */
+        /*
+         * Also double-check that intent isn't null, because something here
+         * caused a NullPointerException for a user.
+         */
         Uri uri;
         uri = intent.getData();
 
         if (uri != null) {
-			/*
-			 * TODO The logic should have cases for the various things coming in
-			 * on this protocol.
-			 */
+            /*
+             * TODO The logic should have cases for the various things coming in
+             * on this protocol.
+             */
             final String verifier = uri
                     .getQueryParameter(oauth.signpost.OAuth.OAUTH_VERIFIER);
 
             new Thread(new Runnable() {
                 public void run() {
                     try {
-				    		/*
-				    		 * Here, we're handling the callback from the completed OAuth.
-				    		 * We don't need to do anything highly visible, although it
-				    		 * would be nice to show a Toast or something.
-				    		 */
+                        /*
+                         * Here, we're handling the callback from the completed OAuth.
+                         * We don't need to do anything highly visible, although it
+                         * would be nice to show a Toast or something.
+                         */
                         httpOAuthProvider.retrieveAccessToken(
                                 httpOAuthConsumer, verifier);
                         HttpParameters params = httpOAuthProvider
@@ -328,9 +326,9 @@ public class MainActivity extends Activity implements OnClickListener {
 
                         runOnUiThread(new Runnable() {
                             public void run() {
-					    			/*
-					    			 * These settings live in the Zotero preferences tree.
-					    			 */
+                                /*
+                                 * These settings live in the Zotero preferences tree.
+                                 */
                                 SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
                                 SharedPreferences.Editor editor = settings.edit();
                                 // For Zotero, the key and secret are identical, it seems

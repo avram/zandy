@@ -22,10 +22,10 @@
 
 	<ListView android:id="@android:id/list" android:layout_width="fill_parent"
 		android:layout_height="fill_parent"
-		android:layout_weight="1" android:drawSelectorOnTop="false" />
+		android:drawSelectorOnTop="false" />
 
 	<!-- What to do if there's no data to show in the list  -->
 	<TextView android:id="@android:id/empty" android:layout_width="fill_parent"
 		android:layout_height="fill_parent" android:textAppearance="?android:attr/textAppearanceMedium"
-		android:text="No items to show. Try syncing, or create some." />
+		android:text="@string/no_items_to_show_try_syncing_or_create_some" />
 </RelativeLayout>
