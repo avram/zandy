@@ -7,7 +7,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:7.0.0-alpha02'
         //noinspection DifferentKotlinGradleVersion
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.40'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.20'
     }
 }
 
@@ -43,30 +43,29 @@ dependencies {
 
     implementation 'com.github.blocoio:faker:1.0.1'
 
-    implementation 'com.android.support:support-annotations:28.0.0'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.21"
+    implementation 'androidx.annotation:annotation:1.1.0'
 
-    implementation 'com.android.support:support-v4:28.0.0'
-    implementation 'com.android.support:design:28.0.0'
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.android.support:recyclerview-v7:28.0.0'
-    implementation 'com.android.support:cardview-v7:28.0.0'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'com.google.android.material:material:1.2.1'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
 
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.1'
 
     // Required for instrumented tests
-    androidTestImplementation 'com.android.support:support-annotations:28.0.0'
+    androidTestImplementation 'androidx.annotation:annotation:1.1.0'
 
     androidTestImplementation('com.schibsted.spain:barista:2.7.1') {
         exclude group: 'com.android.support'
         exclude group: 'org.jetbrains.kotlin' // Only if you already use Kotlin in your project
     }
 
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-intents:3.0.2'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestUtil 'com.android.support.test:orchestrator:1.0.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-intents:3.3.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+    androidTestUtil 'androidx.test:orchestrator:1.3.0'
 
 }
 
@@ -94,14 +93,14 @@ android {
         versionCode 1461
         versionName "1.4.6.1"
 
-        minSdkVersion 14
+        minSdkVersion 18
         targetSdkVersion 29
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
     testOptions {
-        execution 'ANDROID_TEST_ORCHESTRATOR'
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
     }
     
 

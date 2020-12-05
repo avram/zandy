@@ -1,6 +1,6 @@
 package com.gimranov.zandy.app
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import com.gimranov.zandy.app.data.Database

@@ -3,19 +3,18 @@ package com.gimranov.zandy.app;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.test.filters.SmallTest;
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.filters.SmallTest;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.gimranov.zandy.app.data.Database;
 import com.gimranov.zandy.app.task.APIException;
 import com.gimranov.zandy.app.task.APIRequest;
-import com.gimranov.zandy.app.test.BuildConfig;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static android.support.test.InstrumentationRegistry.getTargetContext;
+import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
 
@@ -40,7 +39,7 @@ public class ApiTest {
 
 	@Before
 	public void setUp() {
-		mContext = getTargetContext();
+		mContext = getApplicationContext();
 		mDb = new Database(mContext);
 		
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(mContext);
