@@ -4,7 +4,7 @@ by Avram Lyon (ajlyon@gmail.com)
 [![Build Status](https://travis-ci.org/avram/zandy.svg?branch=master)](https://travis-ci.org/avram/zandy)
 
 ## Installation
-A built and signed version of Zandy is available for purchase on the Android Market (https://market.android.com/details?id=com.gimranov.zandy.app). 
+A built and signed version of Zandy is available for purchase on the Google Play (https://play.google.com/store/apps/details?id=com.gimranov.zandy.app). 
 
 You can also check out this project and build an APK yourself:
 ```
@@ -12,7 +12,7 @@ You can also check out this project and build an APK yourself:
 ```
 
 ## Requirements
-Android 4.0.4 or later.
+Android 4.3 or later.
 
 ## Support
 See the Zandy User Guide (http://www.gimranov.com/avram/w/zandy-user-guide) for basic documentation. Feature requests and bug reports are highly encouraged-- please post to the issue tracker on GitHub or to the Zandy user forum (http://www.gimranov.com/forum). Also feel free to write to zandy@gimranov.com with questions.
