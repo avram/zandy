@@ -1,42 +1,25 @@
 package com.gimranov.zandy.app;
 
-import android.app.Instrumentation;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.support.test.espresso.intent.rule.IntentsTestRule;
-import android.support.test.filters.LargeTest;
-import android.support.test.orchestrator.callback.OrchestratorCallback;
-import android.support.test.orchestrator.listeners.OrchestrationRunListener;
-import android.support.test.runner.AndroidJUnit4;
+
+import androidx.test.espresso.intent.rule.IntentsTestRule;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.filters.LargeTest;
 
 import com.gimranov.zandy.app.data.Database;
-import com.gimranov.zandy.app.test.*;
-import com.gimranov.zandy.app.test.BuildConfig;
 
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static android.support.test.InstrumentationRegistry.getInstrumentation;
-import static android.support.test.InstrumentationRegistry.getTargetContext;
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.intent.Intents.intended;
-import static android.support.test.espresso.intent.matcher.ComponentNameMatchers.hasClassName;
-import static android.support.test.espresso.intent.matcher.IntentMatchers.hasAction;
-import static android.support.test.espresso.intent.matcher.IntentMatchers.hasComponent;
-import static android.support.test.espresso.intent.matcher.IntentMatchers.hasData;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.hasEntry;
+import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static org.hamcrest.Matchers.not;
 
 @RunWith(AndroidJUnit4.class)
@@ -48,7 +31,7 @@ public class MainActivityLoggedInTest {
                 @Override
                 protected void beforeActivityLaunched() {
                     super.beforeActivityLaunched();
-                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getTargetContext());
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                     preferences.edit()
                             .putString("user_id", BuildConfig.TEST_USER_ID)
                             .putString("user_key", BuildConfig.TEST_USER_KEY_READONLY)
@@ -58,7 +41,7 @@ public class MainActivityLoggedInTest {
 
     @Before
     public void setUpCredentials() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getTargetContext());
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         preferences.edit()
                 .putString("user_id", BuildConfig.TEST_USER_ID)
                 .putString("user_key", BuildConfig.TEST_USER_KEY_READONLY)
@@ -67,14 +50,14 @@ public class MainActivityLoggedInTest {
 
     @After
     public void clearCredentials() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getTargetContext());
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         preferences.edit().clear().commit();
     }
 
     @Before
     @After
     public void clearDatabase() {
-        Database database = new Database(getTargetContext());
+        Database database = new Database(getApplicationContext());
         database.resetAllData();
     }
 

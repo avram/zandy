@@ -3,10 +3,10 @@ package com.gimranov.zandy.app;
 
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.test.espresso.ViewInteraction;
-import android.support.test.filters.LargeTest;
-import android.support.test.rule.ActivityTestRule;
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.espresso.ViewInteraction;
+import androidx.test.filters.LargeTest;
+import androidx.test.rule.ActivityTestRule;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -20,16 +20,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static android.support.test.InstrumentationRegistry.getTargetContext;
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu;
-import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
-import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static android.support.test.espresso.matcher.ViewMatchers.withClassName;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.core.app.ApplicationProvider.getApplicationContext;
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.RootMatchers.withDecorView;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -43,7 +43,7 @@ public class SyncTest {
 
     @Before
     public void setUpCredentials() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getTargetContext());
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         preferences.edit()
                 .putString("user_id", BuildConfig.TEST_USER_ID)
                 .putString("user_key", BuildConfig.TEST_USER_KEY_READONLY)
@@ -52,20 +52,20 @@ public class SyncTest {
 
     @After
     public void clearCredentials() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getTargetContext());
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         preferences.edit().clear().commit();
     }
 
     @Before
     @After
     public void clearDatabase() {
-        Database database = new Database(getTargetContext());
+        Database database = new Database(getApplicationContext());
         database.resetAllData();
     }
 
     @Test
     public void syncTest() {
-        openActionBarOverflowOrOptionsMenu(getTargetContext());
+        openActionBarOverflowOrOptionsMenu(getApplicationContext());
 
         ViewInteraction textView = onView(
                 allOf(withId(android.R.id.title), withText(R.string.menu_sync),
