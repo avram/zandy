@@ -1,8 +1,6 @@
 # Zandy: a Zotero client for Android
 by Avram Lyon (ajlyon@gmail.com)
 
-[![Build Status](https://travis-ci.org/avram/zandy.svg?branch=master)](https://travis-ci.org/avram/zandy)
-
 ## Installation
 A built and signed version of Zandy is available for purchase on the Google Play (https://play.google.com/store/apps/details?id=com.gimranov.zandy.app). 
 
