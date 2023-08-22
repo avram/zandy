@@ -80,8 +80,8 @@ testProperties.load(new FileInputStream(testPropertiesFile))
 testProperties.putAll(gradle.getStartParameter().getProjectProperties())
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "28.0.3"
+    compileSdkVersion 33
+    buildToolsVersion "34.0.0"
 
     useLibrary 'org.apache.http.legacy'
 
@@ -94,7 +94,7 @@ android {
         versionName "1.4.6.1"
 
         minSdkVersion 18
-        targetSdkVersion 29
+        targetSdkVersion 33
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
